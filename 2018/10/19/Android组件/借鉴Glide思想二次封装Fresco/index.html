@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+      
+    
+    
+      
+    
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+  <link href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/favicon.ico?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本篇文章已授权微信公众号 dasu_Android（大苏）独家发布    最近封装了个 Fresco 的组件库：DFresco，就顺便来讲讲。 背景Fresco 图片库很强大，我们项目中就是使用的 Fresco，但有一点就是，不怎么好使用，略麻烦。不同项目中，多多少少都需要对 Fresco 进行一层封装才能在 ui 里快速使用。 这就导致了，不同项目都根据自己的业务需求场景来进行封装，每次有新项">
+<meta name="keywords" content="dasu, blog, 大苏">
+<meta property="og:type" content="article">
+<meta property="og:title" content="借鉴Glide思想二次封装Fresco">
+<meta property="og:url" content="http://woshidasusu.github.io/2018/10/19/Android组件/借鉴Glide思想二次封装Fresco/index.html">
+<meta property="og:site_name" content="dasu&#39;s blog">
+<meta property="og:description" content="本篇文章已授权微信公众号 dasu_Android（大苏）独家发布    最近封装了个 Fresco 的组件库：DFresco，就顺便来讲讲。 背景Fresco 图片库很强大，我们项目中就是使用的 Fresco，但有一点就是，不怎么好使用，略麻烦。不同项目中，多多少少都需要对 Fresco 进行一层封装才能在 ui 里快速使用。 这就导致了，不同项目都根据自己的业务需求场景来进行封装，每次有新项">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1924341-a5f473375cac6cf7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1924341-a0cfd99084357ca6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1924341-849966a1a62a8598.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1924341-1a196e6efa920365.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2019-10-13T12:11:16.498Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="借鉴Glide思想二次封装Fresco">
+<meta name="twitter:description" content="本篇文章已授权微信公众号 dasu_Android（大苏）独家发布    最近封装了个 Fresco 的组件库：DFresco，就顺便来讲讲。 背景Fresco 图片库很强大，我们项目中就是使用的 Fresco，但有一点就是，不怎么好使用，略麻烦。不同项目中，多多少少都需要对 Fresco 进行一层封装才能在 ui 里快速使用。 这就导致了，不同项目都根据自己的业务需求场景来进行封装，每次有新项">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/1924341-a5f473375cac6cf7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://woshidasusu.github.io/2018/10/19/Android组件/借鉴Glide思想二次封装Fresco/">
+
+
+
+
+
+  <title>借鉴Glide思想二次封装Fresco | dasu's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">dasu's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">I am dasu, and i'm coding</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://woshidasusu.github.io/2018/10/19/Android组件/借鉴Glide思想二次封装Fresco/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="请叫我大苏">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/img.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="dasu's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">借鉴Glide思想二次封装Fresco</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-10-19T21:30:25+08:00">
+                2018-10-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android组件/" itemprop="url" rel="index">
+                    <span itemprop="name">Android组件</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                  <span class="post-meta-divider">|</span>
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2.3k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  8 min
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p><strong>本篇文章已授权微信公众号 dasu_Android（大苏）独家发布</strong>  </p>
+</blockquote>
+<p>最近封装了个 Fresco 的组件库：<a href="https://github.com/woshidasusu/base-module/tree/master/fresco" target="_blank" rel="noopener">DFresco</a>，就顺便来讲讲。</p>
+<h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>Fresco 图片库很强大，我们项目中就是使用的 Fresco，但有一点就是，不怎么好使用，略麻烦。不同项目中，多多少少都需要对 Fresco 进行一层封装才能在 ui 里快速使用。</p>
+<p>这就导致了，不同项目都根据自己的业务需求场景来进行封装，每次有新项目，复制粘贴时又得解决好多业务耦合的错误，麻烦，是真的麻烦~</p>
+<p>而且，首次接触 Fresco，接入上手的成本相比其他图片库，如 Glide，成本都要大很多。</p>
+<p>举个例子，假如你有这么个需求：加载一张网络上的 gif 图片，为了防止内存占用过多，需要设置分辨率压缩，最后显示到圆形控件上，同时，需要设置占位图，错误图，拉伸方式等。</p>
+<p>那么此时，你的代码可能就是这样的： </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">ImageDecodeOptions imageDecodeOptions = ImageDecodeOptions.newBuilder()</span><br><span class="line">    	.setDecodePreviewFrame(<span class="keyword">true</span>).build();</span><br><span class="line">ImageRequestBuilder builder = ImageRequestBuilder.newBuilderWithSource(mUri)</span><br><span class="line">   		.setProgressiveRenderingEnabled(<span class="keyword">true</span>)</span><br><span class="line">    	.setImageDecodeOptions(imageDecodeOptions);</span><br><span class="line"><span class="keyword">if</span> (mWidth &gt; <span class="number">0</span> &amp;&amp; mHeight &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    builder.setResizeOptions(<span class="keyword">new</span> ResizeOptions(mWidth, mHeight));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">ImageRequest request = builder.build();</span><br><span class="line">AbstractDraweeController controller = Fresco.newDraweeControllerBuilder()</span><br><span class="line">    		.setImageRequest(request)</span><br><span class="line">   		 	.setControllerListener(listener)</span><br><span class="line">    		.setOldController(draweeView.getController())</span><br><span class="line">    		.setAutoPlayAnimations(<span class="keyword">true</span>).build();</span><br><span class="line">draweeView.setController(controller);</span><br></pre></td></tr></table></figure>
+
+<p>同时，你可能还需要在 xml 中对 SimpleDrawwView 控件进行占位图等等的配置：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">com.facebook.drawee.view.SimpleDraweeView</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:id</span>=<span class="string">"@+id/sdv_fresco"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:layout_width</span>=<span class="string">"500dp"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:layout_height</span>=<span class="string">"500dp"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">fresco:actualImageScaleType</span>=<span class="string">"centerCrop"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">fresco:fadeDuration</span>=<span class="string">"3000"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">fresco:failureImage</span>=<span class="string">"@mipmap/ic_launcher"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">fresco:failureImageScaleType</span>=<span class="string">"centerCrop"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">fresco:placeholderImage</span>=<span class="string">"@mipmap/ic_launcher"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">fresco:placeholderImageScaleType</span>=<span class="string">"centerCrop"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">fresco:progressBarAutoRotateInterval</span>=<span class="string">"1000"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">fresco:progressBarImage</span>=<span class="string">"@drawable/ani_rotate"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">fresco:progressBarImageScaleType</span>=<span class="string">"centerCrop"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">fresco:retryImage</span>=<span class="string">"@mipmap/ic_launcher"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">fresco:retryImageScaleType</span>=<span class="string">"centerCrop"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">fresco:backgroundImage</span>=<span class="string">"@mipmap/ic_launcher"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">fresco:overlayImage</span>=<span class="string">"@mipmap/ic_launcher"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">fresco:pressedStateOverlayImage</span>=<span class="string">"@mipmap/ic_launcher"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">fresco:roundAsCircle</span>=<span class="string">"false"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">fresco:roundingBorderWidth</span>=<span class="string">"2dip"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">fresco:roundingBorderColor</span>=<span class="string">"@color/colorPrimary"</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>如果忘记了某个自定义属性名是什么的时候，还得到网上搜索下资料，是吧。</p>
+<p>小结一下，使用 Fresco，你的接入学习成本至少需要知道 Fresco 的如下信息：</p>
+<ul>
+<li>SimpleDraweeView 的自定义属性</li>
+<li>ImageRequestBuilder 用法及大概用途</li>
+<li>AbstractDraweeController 用法及大概用途</li>
+<li>GenericDraweeHierarchy 用法及大概用途</li>
+</ul>
+<p>如果涉及到一些网络下载监听，缓存之类的，那么你还要了解：</p>
+<ul>
+<li>Imagepipeline 用法及大概用途</li>
+</ul>
+<p>总之，Fresco 强大是强大，但使用起来不方便，不得不封装一层。</p>
+<p>既然要封装，那么就直接借鉴 Glide 的使用思想来进行封装好了，如果有使用过 Glide 的应该很清楚，要实现以上功能，全程一个调用链即可。</p>
+<h1 id="二次封装"><a href="#二次封装" class="headerlink" title="二次封装"></a>二次封装</h1><p>封装要达到的目的有两点：</p>
+<ul>
+<li>使用简洁、方便</li>
+<li>其他人接入直接上手的成本尽可能少，最好不用去看文档，去看源码</li>
+</ul>
+<p>第一点可以参考 Glide 的使用方式来设计，那么第二点我的想法是借助 AndroidStudio 的代码提示功能来实现。</p>
+<p>比如，你只需知道，组件的入口是 DFresco 即可，其他都通过 AndroidStudio 来给你提示，如：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-a5f473375cac6cf7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Dfresco入口.png">  </p>
+<p>当你在 AndroidStudio 上输入 <code>DFresco.</code> 后，界面上会弹出你可用 api，这些就是我开放给你的入口，我将这个使用过程划分成几个步骤，每个步骤能做什么，该做什么，我都给你规定好了，你参照着提示，直接从方法命名上就能够知道该如何使用了，AndroidStudio 会一步步引导你。</p>
+<p>这里就两个入口，一个是用来初始化 Fresco 的：</p>
+<ul>
+<li><code>init(Context)</code></li>
+</ul>
+<p>这个内部封装了一些默认的初始化配置，比如内存大小配置，内部日志配置等等。</p>
+<ul>
+<li><code>init(Context, ImagePipelineConfig)</code></li>
+</ul>
+<p>这个是开放给你的自定义配置，如果你不想使用默认的配置的话。</p>
+<ul>
+<li><code>source(String url)</code> ：加载网络上的图片</li>
+<li><code>source(File localFile)</code> ：加载磁盘上的图片</li>
+<li><code>source(Context context, int resId)</code> ：加载 res 内的 drawable 资源图片</li>
+<li><code>source(Uri uri)</code> ：通用的加载方式</li>
+</ul>
+<p>我将常用的几种图片来源单独封装出来使用，方便。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-a0cfd99084357ca6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="DFresco第二步.png">  </p>
+<p>当调用了 <code>source()</code> 后就进入了第二个步骤，这个步骤中，我将图片相关的配置设计到另外一个步骤中去，否则连同图片配置的 api 也都在这里的话，会搞得蛮乱的，可能让使用者到这里后不清楚该调用哪些接口了。</p>
+<p>所以，我会把控每个步骤的 api，尽量让每个步骤的 api 做的事都比较相近，比如这里：</p>
+<ul>
+<li><code>intoTarget(SimpleDraweeView)</code> 加载图片显示到控件上</li>
+<li><code>intoTarget(SimpleDraweeView，ControllerListener)</code> 加载图片显示到控件上，允许监听这个过程</li>
+<li><code>intoTarget(BaseBitmapDataSubscriber)</code> 只加载图片到内存中，以 Bitmap 形式存在</li>
+</ul>
+<p>我的需求场景大概就是直接加载图片显示到控件上，或者有时候只是需要将图片加载到内存中，但不用显示到某个控件上，反而要取得图片的 Bitmap 对象，所以我将这些都封装起来了。</p>
+<ul>
+<li><code>resize(int width, int height)</code></li>
+</ul>
+<p>这个实际上就是对 Fresco 中的 ResizeOptions 的一层封装而已，简化使用，不至于像以前那么麻烦。</p>
+<ul>
+<li><code>enterImageConfig()</code></li>
+</ul>
+<p>如果你都使用默认配置的话，那么是不用再去调用那些各种配置的接口的，所以我才将图片配置封装到另外一个步骤中，这个步骤你可进，可不进，如果有需求，那么通过这个方法进入图片配置步骤：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-849966a1a62a8598.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="ImageConfig.png">  </p>
+<p>这里的配置项很多，也是因为这个原因，所以才不想让这些接口跟上一个步骤放一起，不然很容易让使用者懵掉。而进入了图片配置这个步骤后，这里提供的 api 其实就是对 GenericDraweeHierarchy 的用途进行了一层封装，或者说对 SimpleDraweeView 的自定义属性进行了一层封装。</p>
+<p>如果你不熟悉，没关系，其实就是一些常用的功能，如设置控件为圆形、圆角、边框，设置占位图、失败图、进度图、图片拉伸方式、淡入淡出动画时长等等。</p>
+<p>这样封装的目的在于，你可以通过一条调用链的形式就设置完所有的配置，就像 Glide 的使用一样，而不用再去 new 很多 Fresco 的类，再去拼接。</p>
+<p>进入图片配置步骤只是一个可选的步骤，进来之后当然就要出去，所以当完成了你的配置后，需要调用：<code>finishImageConfig()</code>，如：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-1a196e6efa920365.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="第三部.png">  </p>
+<p>这样就完成了图片配置，将流程切回主线了，就可以继续根据你的需要设置图片显示的目标了。</p>
+<p>当然，为了防止再次进入图片配置步骤这样造成之前的配置项失效的场景，我借鉴了 Fresco 的 <code>init</code> 处理方法，即，如果一次使用过程中，重复进入图片配置步骤，那么程序会抛异常来提醒你不能这么做。</p>
+<p>以上，就是 DFresco 组件的封装思想，欢迎指点一下哈~</p>
+<p>另外，参考了 Glide 的一些处理，当你的 intoTarget 是传入了 SimpleDraweeView 控件时，DFresco 内部会自动根据控件的大小对图片进行一次分辨率压缩，降低图片占用内存，当然，如果你有手动调用了 <code>resize()</code>，那么以你的为主。</p>
+<h1 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">compile &apos;com.dasu.image:fresco:0.0.1&apos;</span><br></pre></td></tr></table></figure>
+
+<p>使用之前，需先初始化，建议在 Application 中进行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DFresco.init(this);</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">//加载 res 中的 drawable 图片到 SimpleDraweeView 控件上（默认支持 gif 图，并且会自动根据控件宽高进行分辨率压缩，降低内存占用</span><br><span class="line">DFresco.source(mContext, R.drawable.weixin).intoTarget(mSimpleDraweeView);</span><br><span class="line"></span><br><span class="line">//加载磁盘中的图片，手动设置分辨率的压缩，并获取 bitmap 对象，监听回调，手动显示到 ImageView 控件上</span><br><span class="line">DFresco.source(new File(&quot;/mnt/sdcard/weixin.jpg&quot;))</span><br><span class="line">        .resize(500, 500)</span><br><span class="line">        .intoTarget(new BaseBitmapDataSubscriber() &#123;</span><br><span class="line">                @Override</span><br><span class="line">                protected void onNewResultImpl(Bitmap bitmap) &#123;</span><br><span class="line">                    Log.w(&quot;!!!!!!&quot;, &quot;bitmap：ByteCount = &quot; + bitmap.getByteCount() + &quot;:::bitmap：AllocationByteCount = &quot; + bitmap.getAllocationByteCount());</span><br><span class="line">                    Log.w(&quot;!!!!!!&quot;, &quot;width:&quot; + bitmap.getWidth() + &quot;:::height:&quot; + bitmap.getHeight());</span><br><span class="line">                    mImageView.setImageBitmap(bitmap);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                @Override</span><br><span class="line">                protected void onFailureImpl(DataSource&lt;CloseableReference&lt;CloseableImage&gt;&gt; dataSource) &#123;</span><br><span class="line">                    Log.e(&quot;!!!!!!&quot;, &quot;onFailureImpl&quot;);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line"></span><br><span class="line">//加载网络图片，进行各种配置，如缩放方式，占位图，圆形，圆角，动画时长等等，最后自动显示到 SimpleDraweeView 控件上</span><br><span class="line">DFresco.source(&quot;https://upload-images.jianshu.io/upload_images/1924341-9e528ee638e837a5.png&quot;)</span><br><span class="line">                    .enterImageConfig() //进入配置步骤</span><br><span class="line">                    .allFitXY()  //所有图片，包括占位图等等的拉伸方式</span><br><span class="line">                    .animFade(3000) //淡入淡出动画时长</span><br><span class="line">                    .placeholderScaleType(ScalingUtils.ScaleType.CENTER_INSIDE) //设置占位图的拉伸方式，后面设置的会覆盖前面的</span><br><span class="line">                    .actualScaleType(ScalingUtils.ScaleType.CENTER)</span><br><span class="line">//                    .asRound(50) //设置圆角，（圆角和圆形不能同时设置）</span><br><span class="line">                    .asCircle() //设置控件显示为圆形控件</span><br><span class="line">                    .roundBorderColor(Color.RED) //设置圆角或圆形的边框颜色</span><br><span class="line">                    .roundBorderWidth(20)  //设置圆角或圆形的边框宽度</span><br><span class="line">                    .failure(R.drawable.timg) //设置失败图</span><br><span class="line">                    .progressBar(R.drawable.aaaa) //设置加载进度图</span><br><span class="line">                    .retry(R.drawable.weixin) //设置重试时的图</span><br><span class="line">                    .placeholder(R.drawable.image) //设置占位图</span><br><span class="line">                    .finishImageConfig() //退出配置步骤</span><br><span class="line">                    .intoTarget(mSimpleDraweeView);</span><br></pre></td></tr></table></figure>
+
+<h1 id="Github-地址"><a href="#Github-地址" class="headerlink" title="Github 地址"></a><a href="https://github.com/woshidasusu/base-module/tree/master/fresco" target="_blank" rel="noopener">Github 地址</a></h1><p><a href="https://github.com/woshidasusu/base-module/tree/master/fresco" target="_blank" rel="noopener">DFresco：https://github.com/woshidasusu/base-module/tree/master/fresco</a>  </p>
+
+      
+    </div>
+    
+    
+    
+
+    
+      <div>
+        <div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center">
+    <img id="wechat_subscriber_qcode" src="/uploads/dasuAndroidTv2.png" alt="请叫我大苏 wechat" style="width: 200px; max-width: 100%;">
+    <div></div>
+</div>
+
+      </div>
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持将鼓励我继续创作！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/uploads/weixin.png" alt="请叫我大苏 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/uploads/alipay.jpg" alt="请叫我大苏 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/10/18/Android源码解析/Android-的-so-文件加载机制/" rel="next" title="Android 的 so 文件加载机制">
+                <i class="fa fa-chevron-left"></i> Android 的 so 文件加载机制
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/10/23/Android组件/继续封装个-Volley-组件/" rel="prev" title="继续封装个 Volley 组件">
+                继续封装个 Volley 组件 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div id="gitalk-container"></div>
+
+  
+
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/uploads/img.jpg" alt="请叫我大苏">
+            
+              <p class="site-author-name" itemprop="name">请叫我大苏</p>
+              <p class="site-description motion-element" itemprop="description">微信公众号：dasuAndroidTv</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">91</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/woshidasusu" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:295207731@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                其他平台
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.jianshu.com/u/bb52a2918096" title="简书" target="_blank">简书</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.cnblogs.com/dasusu/" title="博客园" target="_blank">博客园</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#二次封装"><span class="nav-number">2.</span> <span class="nav-text">二次封装</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#使用示例"><span class="nav-number">3.</span> <span class="nav-text">使用示例</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Github-地址"><span class="nav-number">4.</span> <span class="nav-text">Github 地址</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">请叫我大苏</span><br>
+	
+  <div class="powered-by">
+    <i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+    本站访客数:<span id="busuanzi_value_site_uv"></span> | 
+    </span>
+  </div>
+
+  <div class="theme-info">
+    <div class="powered-by"></div>
+    <span class="post-count">博客全站共 349.1k 字</span>
+  </div>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+  <script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+   <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID: '',
+          clientSecret: '',
+          repo: 'woshidasusu.github.io',
+          owner: '',
+          admin: [''],
+          id: md5(window.location.pathname),
+          distractionFreeMode: 'true'
+        })
+        gitalk.render('gitalk-container')
+       </script>
+
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

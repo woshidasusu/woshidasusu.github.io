@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+      
+    
+    
+      
+    
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+  <link href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/favicon.ico?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本篇文章已授权微信公众号 dasu_Android（大苏）独家发布    上一篇中我们已经一起学了怎么简单粗暴的撸个支持动态布局的网格控件出来，但在上一篇的介绍中，并没有学习实现网格控件的滑动效果，所以本篇就来讲讲，要如何让我们的网格控件可以支持自定义滑动策略。   效果    图一是Tv应用：当贝市场的主页   图二是咱自己撸的简单粗暴的 Tv 应用主界面网格控件：TvGridLayout 的">
+<meta name="keywords" content="dasu, blog, 大苏">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一起撸个简单粗暴的Tv应用主界面的网格布局控件（下）">
+<meta property="og:url" content="http://woshidasusu.github.io/2018/05/02/Android-Tv/一起撸个简单粗暴的Tv应用主界面的网格布局控件（下）/index.html">
+<meta property="og:site_name" content="dasu&#39;s blog">
+<meta property="og:description" content="本篇文章已授权微信公众号 dasu_Android（大苏）独家发布    上一篇中我们已经一起学了怎么简单粗暴的撸个支持动态布局的网格控件出来，但在上一篇的介绍中，并没有学习实现网格控件的滑动效果，所以本篇就来讲讲，要如何让我们的网格控件可以支持自定义滑动策略。   效果    图一是Tv应用：当贝市场的主页   图二是咱自己撸的简单粗暴的 Tv 应用主界面网格控件：TvGridLayout 的">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1924341-51acf54f0bda9948.gif?imageMogr2/auto-orient/strip">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1924341-218524f08ceefb17.gif?imageMogr2/auto-orient/strip">
+<meta property="og:updated_time" content="2019-10-13T11:52:11.317Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="一起撸个简单粗暴的Tv应用主界面的网格布局控件（下）">
+<meta name="twitter:description" content="本篇文章已授权微信公众号 dasu_Android（大苏）独家发布    上一篇中我们已经一起学了怎么简单粗暴的撸个支持动态布局的网格控件出来，但在上一篇的介绍中，并没有学习实现网格控件的滑动效果，所以本篇就来讲讲，要如何让我们的网格控件可以支持自定义滑动策略。   效果    图一是Tv应用：当贝市场的主页   图二是咱自己撸的简单粗暴的 Tv 应用主界面网格控件：TvGridLayout 的">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/1924341-51acf54f0bda9948.gif?imageMogr2/auto-orient/strip">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://woshidasusu.github.io/2018/05/02/Android-Tv/一起撸个简单粗暴的Tv应用主界面的网格布局控件（下）/">
+
+
+
+
+
+  <title>一起撸个简单粗暴的Tv应用主界面的网格布局控件（下） | dasu's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">dasu's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">I am dasu, and i'm coding</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://woshidasusu.github.io/2018/05/02/Android-Tv/一起撸个简单粗暴的Tv应用主界面的网格布局控件（下）/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="请叫我大苏">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/img.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="dasu's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">一起撸个简单粗暴的Tv应用主界面的网格布局控件（下）</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-02T21:30:25+08:00">
+                2018-05-02
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android-TV/" itemprop="url" rel="index">
+                    <span itemprop="name">Android-TV</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                  <span class="post-meta-divider">|</span>
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3.4k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  12 min
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p><strong>本篇文章已授权微信公众号 dasu_Android（大苏）独家发布</strong>  </p>
+</blockquote>
+<p>上一篇中我们已经一起学了怎么简单粗暴的撸个支持动态布局的网格控件出来，但在上一篇的介绍中，并没有学习实现网格控件的滑动效果，所以本篇就来讲讲，要如何让我们的网格控件可以支持自定义滑动策略。  </p>
+<h1 id="效果"><a href="#效果" class="headerlink" title="效果"></a>效果</h1><p><img src="https://upload-images.jianshu.io/upload_images/1924341-51acf54f0bda9948.gif?imageMogr2/auto-orient/strip" alt="当贝市场.gif">  </p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-218524f08ceefb17.gif?imageMogr2/auto-orient/strip" alt="TvGridLayout示例"></p>
+<p>图一是Tv应用：当贝市场的主页  </p>
+<p>图二是咱自己撸的简单粗暴的 Tv 应用主界面网格控件：TvGridLayout 的示例，每个 Tab 下，每一屏的卡位大小、位置都是动态计算出来的。</p>
+<h1 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h1><h4 id="第一步：定义布局数据结构"><a href="#第一步：定义布局数据结构" class="headerlink" title="第一步：定义布局数据结构"></a>第一步：定义布局数据结构</h4><h4 id="第二步：自定义-TvGridLayout"><a href="#第二步：自定义-TvGridLayout" class="headerlink" title="第二步：自定义 TvGridLayout"></a>第二步：自定义 TvGridLayout</h4><h4 id="第三步：自定义-Adapter"><a href="#第三步：自定义-Adapter" class="headerlink" title="第三步：自定义 Adapter"></a>第三步：自定义 Adapter</h4><h4 id="第四步：动态布局"><a href="#第四步：动态布局" class="headerlink" title="第四步：动态布局"></a>第四步：动态布局</h4><h4 id="第五步：初步使用"><a href="#第五步：初步使用" class="headerlink" title="第五步：初步使用"></a>第五步：初步使用</h4><p>以上内容是在上一篇中讲解的内容，所以如果还没有看过上一篇的，建议先阅读上一篇<a href="https://www.jianshu.com/p/9deba60113f7" target="_blank" rel="noopener">一起撸个简单粗暴的Tv应用主界面的网格布局控件（上）</a>。那么下面就开始我们今天的内容了：  </p>
+<h4 id="第六步：内嵌-OverScroller-自定义滑动策略"><a href="#第六步：内嵌-OverScroller-自定义滑动策略" class="headerlink" title="第六步：内嵌 OverScroller 自定义滑动策略"></a>第六步：内嵌 OverScroller 自定义滑动策略</h4><p>首先，我们的网格控件是继承自 FrameLayout，那么它本身就是没有支持滑动的效果的，但是我们的网格控件又需要支持多屏显示，那么当焦点滑到当前屏之外时，自然就需要将下一屏的卡位滑动到屏幕内进行显示。</p>
+<p>而实现滑动效果的方式有两种：</p>
+<ul>
+<li>将网格控件嵌套在 HorizontalScrollView</li>
+<li>自己在网格控件内部实现滑动效果</li>
+</ul>
+<p>第一种方式实现最简单，我们只要将自己的网格控件 TvGridLayout 嵌套在 HorizontalScrollView 中，就可以实现滑动效果了。</p>
+<p>虽然实现最简单，但缺点也很明显，就是滑动的策略只能按照 HorizontalScrollView 规则来，我们并没有办法进行修改。比如说，滑动的持续时长，滑动的距离，什么时候触发滑动等等。</p>
+<p>产品的口味可是很刁钻的，单单使用默认的滑动策略，通常是很难满足产品的，虽然也可以通过一些反射等手段来修改 HorizontalScrollView 的默认实现，但有点复杂，且容易出问题。</p>
+<p>本着不怕瞎折腾的精神，网格控件既然都已经自己撸了，那滑动的实现干脆也来自己撸好了。</p>
+<h5 id="6-1-实现滑动的方式"><a href="#6-1-实现滑动的方式" class="headerlink" title="6.1 实现滑动的方式"></a>6.1 实现滑动的方式</h5><p>想要让一个控件滑动起来的方式很多很多：</p>
+<ul>
+<li>动画</li>
+<li>ViewGroup#onLayout()</li>
+<li>View#scrollTo(), View#scrollBy()</li>
+<li>OverScroller</li>
+<li>…</li>
+</ul>
+<p>动画也行，重新对子 View 布局，修改子 View 位置也行，调用 View 自带的 scrollTo(), scrollBy() 也行，或者直接用系统提供的滑动辅助类 OverScroller 也行，都行，方式很多，只要能够让控件动起来就行。所以，<strong>让 View 动起来一直就不是个问题，问题是要怎么滑，什么时候滑，滑多长，滑多久，这些问题才是撸个滑动功能的问题所在。</strong></p>
+<h5 id="6-2-HorizontalScrollView-滑动原理"><a href="#6-2-HorizontalScrollView-滑动原理" class="headerlink" title="6.2 HorizontalScrollView 滑动原理"></a>6.2 HorizontalScrollView 滑动原理</h5><p>既然滑动要自己撸，那当然是要先参考一下 Google 大神的实现思路了，所以首先就先来看看 HorizontalScrollView 的滑动原理是怎样的？</p>
+<p>有一点需要先提一下的是，由于我们是着重分析 Tv 应用的滑动效果，也就是说是由遥控器来触发的滑动效果，那么 HorizontalScrollView 内部跟手指触摸相关的滑动原理就不分析了，着重分析跟 Tv 相关的滑动原理即可。</p>
+<p>而 Tv 应用由于都是通过遥控器事件即 KeyEvent 来进行 ui 的交互，那么，理所当然，要查看 HorizontalScrollView 的滑动原理的话，就需要跟着 <code>dispatchKeyEvent()</code> 走下去应该就可以了。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//HorizontalScrollView#dispatchKeyEvent()</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">dispatchKeyEvent</span><span class="params">(KeyEvent event)</span> </span>&#123;</span><br><span class="line">	<span class="comment">// 1. 如果事件没有被消耗掉，那么就交由滑动去处理</span></span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">super</span>.dispatchKeyEvent(event) || executeKeyEvent(event);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">executeKeyEvent</span><span class="params">(KeyEvent event)</span> </span>&#123;</span><br><span class="line">	...</span><br><span class="line"></span><br><span class="line">	<span class="keyword">boolean</span> handled = <span class="keyword">false</span>;</span><br><span class="line">	<span class="keyword">if</span> (event.getAction() == KeyEvent.ACTION_DOWN) &#123;</span><br><span class="line">	<span class="keyword">switch</span> (event.getKeyCode()) &#123;</span><br><span class="line">         <span class="comment">//2. 事件是方向键左键时，那么就向左滑动</span></span><br><span class="line">		<span class="keyword">case</span> KeyEvent.KEYCODE_DPAD_LEFT:</span><br><span class="line">			<span class="keyword">if</span> (!event.isAltPressed()) &#123;</span><br><span class="line">				handled = arrowScroll(View.FOCUS_LEFT);</span><br><span class="line">			&#125;</span><br><span class="line">            ...</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> handled;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">arrowScroll</span><span class="params">(<span class="keyword">int</span> direction)</span> </span>&#123;</span><br><span class="line">	...</span><br><span class="line">	<span class="comment">//3. 先寻找下个焦点的 view</span></span><br><span class="line">	View nextFocused = FocusFinder.getInstance().findNextFocus(<span class="keyword">this</span>, currentFocused, direction);</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">if</span> (nextFocused != <span class="keyword">null</span> &amp;&amp; isWithinDeltaOfScreen(nextFocused, maxJump)) &#123;</span><br><span class="line">        <span class="comment">//4. 根据下个焦点的位置，去计算是否需要进行滑动，需要的话那么计算滑动多长的距离</span></span><br><span class="line">		nextFocused.getDrawingRect(mTempRect);</span><br><span class="line">		offsetDescendantRectToMyCoords(nextFocused, mTempRect);</span><br><span class="line">		<span class="keyword">int</span> scrollDelta = computeScrollDeltaToGetChildRectOnScreen(mTempRect);</span><br><span class="line">        <span class="comment">//5. 根据计算出来的滑动距离去处理滑动逻辑</span></span><br><span class="line">		doScrollX(scrollDelta);</span><br><span class="line">		nextFocused.requestFocus(direction);</span><br><span class="line">	&#125; </span><br><span class="line">    ...</span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">doScrollX</span><span class="params">(<span class="keyword">int</span> delta)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">if</span> (delta != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">//6. HorizontalScrollView默认是开启了平衡滑动，但可也通过接口关掉</span></span><br><span class="line">		<span class="keyword">if</span> (mSmoothScrollingEnabled) &#123;</span><br><span class="line">			smoothScrollBy(delta, <span class="number">0</span>);</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			scrollBy(delta, <span class="number">0</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">smoothScrollBy</span><span class="params">(<span class="keyword">int</span> dx, <span class="keyword">int</span> dy)</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">	<span class="keyword">if</span> (duration &gt; ANIMATED_SCROLL_GAP) &#123;</span><br><span class="line">        <span class="comment">//7. 如果处于边界情况，那么需要对计算出来的滑动长度进行修正，确保边界情况不会出问题</span></span><br><span class="line">		<span class="keyword">final</span> <span class="keyword">int</span> width = getWidth() - mPaddingRight - mPaddingLeft;</span><br><span class="line">		<span class="keyword">final</span> <span class="keyword">int</span> right = getChildAt(<span class="number">0</span>).getWidth();</span><br><span class="line">		<span class="keyword">final</span> <span class="keyword">int</span> maxX = Math.max(<span class="number">0</span>, right - width);</span><br><span class="line">		<span class="keyword">final</span> <span class="keyword">int</span> scrollX = mScrollX;</span><br><span class="line">		dx = Math.max(<span class="number">0</span>, Math.min(scrollX + dx, maxX)) - scrollX;</span><br><span class="line">		<span class="comment">//8. 上述步骤均只是用于计算需要滑动的距离值，计算出来后滑动的实现交由mScroller处理</span></span><br><span class="line">		mScroller.startScroll(scrollX, mScrollY, dx, <span class="number">0</span>);</span><br><span class="line">		postInvalidateOnAnimation();</span><br><span class="line">	&#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//9. mScroller是OverScroller的实例</span></span><br><span class="line"><span class="keyword">private</span> OverScroller mScroller;</span><br></pre></td></tr></table></figure>
+
+<p>HorizontalScrollView 的滑动原理，例如是如何计算滑动距离的以及都有哪些会触发滑动的场景等等，就不深入去分析了，这不是本篇的目的，以后有时间再抽空来梳理。</p>
+<p>所以，只需要跟着遥控器事件 <code>dispatchKeyEvent()</code> 走下去后，就可以找到原来 HorizontalScrollView 内部是通过 OverScroller 来实现的滑动效果。</p>
+<p>而且，梳理了 HorizontalScrollView 从接收到遥控器事件到最终实现滑动的一个整体的流程后，我们再自己撸滑动的功能时，也可以参考这个思路、这个流程来写，所以这也是阅读源码的好处，大伙有时间得多抽抽时间来阅读源码多学习学习。</p>
+<h5 id="6-3-OverScroller-原理"><a href="#6-3-OverScroller-原理" class="headerlink" title="6.3 OverScroller 原理"></a>6.3 OverScroller 原理</h5><p>既然 HorizontalScrollView 内部是通过 OverScroller 来处理滑动的相关逻辑的，那么，我们也用 OverScroller 来做好了，向 Google 大佬模仿借鉴。</p>
+<p>网上关于 OverScroller 的使用教程很多，本篇就不着重讲了，要理解一点的是，OverScroller 只是一个滑动辅助类。</p>
+<p>说得白一点也就是，<strong>我们只需要告诉 OverScroller 我们想滑动多长的距离，多久时间滑完，那么，OverScroller 内部就会根据每一帧的时间去计算当前帧时滑动的进度</strong>。然后，我们再每一帧通过 OverScroller 计算出的滑动进度，去作用到需要滑动的 View 上面来达到滑动的效果。</p>
+<p>如果有看过我前面几篇关于动画的博客分析的话，那么上面这点就会很清楚了。OverScroller 实现滑动的整个流程原理跟属性动画的 ValueAnimator 非常相似，两个类内部都没有任何涉及 ui 的操作，两个类的作用都是用于根据当前帧的时间计算当前帧时的进度值。</p>
+<p>唯一有区别的点就是，ValueAnimator 内部会自己通过 Choreographer 去监听每一帧的屏幕刷新信号，然后内部在接收到每一帧信号时就会自动去根据当前帧时间计算；而 <strong>OverScroller 内部并没有任何监听屏幕刷新信号的逻辑，也就是说，如果要使用 OverScroller 的话，我们需要在接收到每一帧的屏幕刷新信号时手动去通知 OverScroller，它才可以正确去工作</strong>。</p>
+<p>这就是为什么，大伙在网上搜 OverScroller 的使用教程时，基本每一篇都会提到说 OverScroller 需要跟 View 的 <code>computeScroll()</code> 一起使用的原因。</p>
+<p><code>computeScroll()</code> 是 View 中的一个空方法，在 <code>draw()</code> 方法中被调用。所以，只要我们能够让需要滑动的 View 在滑动的这段时间内，每一帧都通知 View 进行重绘刷新，那么它每一帧就都会走到 <code>computeScroll()</code>，这样我们就可以在 <code>computeScroll()</code> 中手动去通知 OverScroller，它内部就可以根据当前帧时间去计算滑动的工作了。</p>
+<p>这也是为什么，大伙搜 OverScroller 的使用教程时，基本每篇也说了，在调用了 <code>startScroll()</code> 之后需要紧接着调用 View 的 <code>postInvalidateOnAnimation()</code> ，否则滑动就会失效的原因。因为我们只有通知了 View 需要重绘，<code>computeScroll()</code> 才会被调用，才可以再手动去通知 OverScroller 进行工作。</p>
+<h5 id="6-4-触发滑动的时机"><a href="#6-4-触发滑动的时机" class="headerlink" title="6.4 触发滑动的时机"></a>6.4 触发滑动的时机</h5><p>搞清了 OverScroller 的原理后，那么如果要在我们自己的网格控件里撸滑动逻辑的话，也可以大概清楚需要撸哪些代码了。</p>
+<p>因为 OverScroller 只负责根据我们指定的滑动距离和持续时长，在每一帧里去计算滑动进度的工作。那么，到底需要滑动多长的距离，持续多久，什么时候触发滑动，这三者就是自定义有滑动效果控件需要撸出来的代码了。</p>
+<p>我们只针对 Tv 应用的话，显然，滑动的时机就在于遥控器事件了，这是第一点。</p>
+<p>HorizontalScorllView 是在 <code>dispatchKeyEvent()</code>中，每次都去检查是否需要滑动，而满足滑动的条件则是下个焦点的 View 是否在屏幕上是可见的，而滑动的距离则是将这个不可见的 View 滑动到刚刚好全部可见。当然，它内部还有其它滑动策略，比如整页滑等等，但这些就需要手动去调用相关接口。</p>
+<p>仅仅使用 HorizontalScrollView 默认的滑动效果很难满足产品需求，就像开头的当贝市场的示例图，很明显，它的滑动策略跟 HorizontalScrollView  就是不一样的，它是焦点快接近边缘时，就会去触发滑动了，即使下个焦点的 View 还是全部可见时。</p>
+<h5 id="6-5-自定义滑动策略"><a href="#6-5-自定义滑动策略" class="headerlink" title="6.5 自定义滑动策略"></a>6.5 自定义滑动策略</h5><p>滑动的时机、滑动的策略、滑动的距离，这些并不是一成不变的，而是取决于业务场景需求；也是因为这样，才想到要自己撸个滑动的功能出来。</p>
+<p>下面我会举个例子，将代码思路讲一下，但并不一定适用于你，所以大伙根据自己的需求自己撸一个就行了。</p>
+<p>由于 Tv 应用都是通过遥控器控制，因此滑动的时机就在 <code>dispatchKeyEvent()</code>中进行检测就行了：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">dispatchKeyEvent</span><span class="params">(KeyEvent event)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//1. 事件如果没有被消耗掉，那么就交由滑动去处理</span></span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">super</span>.dispatchKeyEvent(event) || executeKeyEvent(event);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//这里的滑动策略：</span></span><br><span class="line"><span class="comment">//如果下个焦点的 View 属于另外一屏的话，那么就触发滑动</span></span><br><span class="line"><span class="comment">//滑动的距离为下一屏的宽度</span></span><br><span class="line"><span class="comment">//这里的下一屏是指上一篇提到的 ScreenEntity 数据模型，因为每个 Tab 下可能存在多屏数据，以屏作为单位来进行滑动，两焦点在两屏之间切换时，就触发滑动</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">executeKeyEvent</span><span class="params">(KeyEvent event)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">int</span> keyCode = event.getKeyCode();</span><br><span class="line">	<span class="keyword">if</span> (event.getAction() == KeyEvent.ACTION_DOWN) &#123;</span><br><span class="line">		...</span><br><span class="line">		<span class="keyword">if</span> (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) &#123;</span><br><span class="line">            <span class="comment">//2. 检测下个焦点的 View 是否是属于另一屏中，是的话，将当前切换的这两屏的下标保存在 sTwoInt中</span></span><br><span class="line">			<span class="keyword">if</span> (checkIfOnBorder(FOCUS_LEFT, sTwoInt)) &#123;</span><br><span class="line">				...</span><br><span class="line">                  <span class="comment">//3. 对外提供屏边界回调，当焦点在两屏之间切换时，触发回调</span></span><br><span class="line">				<span class="keyword">if</span> (mBorderListener != <span class="keyword">null</span> &amp;&amp; mBorderListener.onLeft(sTwoInt[<span class="number">0</span>], sTwoInt[<span class="number">1</span>])) &#123;</span><br><span class="line">					<span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">				&#125;</span><br><span class="line">                 <span class="comment">//4. 如果外部在接收到屏切换回调时，没有拦截，那么就去触发滑动</span></span><br><span class="line">                 scrollToPage(sTwoInt[<span class="number">1</span>]);</span><br><span class="line">             &#125;</span><br><span class="line">        &#125; </span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上述是提供了一种滑动策略的思路，滑动策略并不一定需要按照系统默认的来，也不一定要按照上述来，适合自己的业务场景就行，不然干嘛要瞎折腾来自己撸这个滑动。</p>
+<p>上述的滑动策略思路是当焦点在两屏之间切换时触发滑动，滑动的距离为下一屏的宽度。这种策略就完全不同于系统默认的策略，因此 HorizontalScrollView 就排不上用场了，那么就自己撸吧，不就是滑动的时机和滑动的距离计算要自己撸嘛，不难。</p>
+<h5 id="6-6-完工"><a href="#6-6-完工" class="headerlink" title="6.6 完工"></a>6.6 完工</h5><p>以上，就将需要撸一个滑动的控件的思路讲完了。</p>
+<p>小结一下，如果大伙想要自己撸个滑动的功能的话，很简单，可以用动画、scrollTo() 等方式；</p>
+<p>如果大伙选择使用 OverScroller 的话，那么有几点需要注意：</p>
+<ul>
+<li>OverScroller 只负责根据指定的滑动距离，持续时长来计算每一帧内的滑动进度</li>
+<li>因此我们需要在每一帧的屏幕刷新信号事件中手动去通知 OverScroller 进行工作，并取得经过它计算得到的当前帧的滑动进度来手动应用到 View 上</li>
+<li>这就是为什么使用 OverScroller 需要结合 <code>View#computeScroll()</code>一起使用，并且在调用了 <code>startScroll()</code> 之后需要紧接着调用 <code>View#postInvalidateOnAnimation()</code>的原因</li>
+<li>一个完整的滑动功能需要包括：触发滑动的时机、滑动策略、滑动距离的计算、OverScroller 辅助计算、应用到 View 上</li>
+<li>触发滑动的时机可以在 <code>dispatchKeyEvent()</code> 中进行检查是否满足滑动条件</li>
+<li>满足滑动的条件和滑动策略以及滑动距离的计算基于具体业务需求而实现</li>
+<li>整个流程设计可以参考 HorizontalScrollView 的源码  </li>
+</ul>
+<p>Github 链接：<a href="https://github.com/woshidasusu/TvUiDemo" target="_blank" rel="noopener">https://github.com/woshidasusu/TvUiDemo</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+      <div>
+        <div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center">
+    <img id="wechat_subscriber_qcode" src="/uploads/dasuAndroidTv2.png" alt="请叫我大苏 wechat" style="width: 200px; max-width: 100%;">
+    <div></div>
+</div>
+
+      </div>
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持将鼓励我继续创作！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/uploads/weixin.png" alt="请叫我大苏 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/uploads/alipay.jpg" alt="请叫我大苏 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/04/30/Android-Tv/一起撸个简单粗暴的Tv应用主界面的网格布局控件（上）/" rel="next" title="一起撸个简单粗暴的Tv应用主界面的网格布局控件（上）">
+                <i class="fa fa-chevron-left"></i> 一起撸个简单粗暴的Tv应用主界面的网格布局控件（上）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/06/教程类/教你一步步发布一个开源库到-JCenter/" rel="prev" title="教你一步步发布一个开源库到 JCenter">
+                教你一步步发布一个开源库到 JCenter <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div id="gitalk-container"></div>
+
+  
+
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/uploads/img.jpg" alt="请叫我大苏">
+            
+              <p class="site-author-name" itemprop="name">请叫我大苏</p>
+              <p class="site-description motion-element" itemprop="description">微信公众号：dasuAndroidTv</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">91</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/woshidasusu" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:295207731@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                其他平台
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.jianshu.com/u/bb52a2918096" title="简书" target="_blank">简书</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.cnblogs.com/dasusu/" title="博客园" target="_blank">博客园</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#效果"><span class="nav-number">1.</span> <span class="nav-text">效果</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#实现"><span class="nav-number">2.</span> <span class="nav-text">实现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#第一步：定义布局数据结构"><span class="nav-number">2.0.0.1.</span> <span class="nav-text">第一步：定义布局数据结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#第二步：自定义-TvGridLayout"><span class="nav-number">2.0.0.2.</span> <span class="nav-text">第二步：自定义 TvGridLayout</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#第三步：自定义-Adapter"><span class="nav-number">2.0.0.3.</span> <span class="nav-text">第三步：自定义 Adapter</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#第四步：动态布局"><span class="nav-number">2.0.0.4.</span> <span class="nav-text">第四步：动态布局</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#第五步：初步使用"><span class="nav-number">2.0.0.5.</span> <span class="nav-text">第五步：初步使用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#第六步：内嵌-OverScroller-自定义滑动策略"><span class="nav-number">2.0.0.6.</span> <span class="nav-text">第六步：内嵌 OverScroller 自定义滑动策略</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#6-1-实现滑动的方式"><span class="nav-number">2.0.0.6.1.</span> <span class="nav-text">6.1 实现滑动的方式</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#6-2-HorizontalScrollView-滑动原理"><span class="nav-number">2.0.0.6.2.</span> <span class="nav-text">6.2 HorizontalScrollView 滑动原理</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#6-3-OverScroller-原理"><span class="nav-number">2.0.0.6.3.</span> <span class="nav-text">6.3 OverScroller 原理</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#6-4-触发滑动的时机"><span class="nav-number">2.0.0.6.4.</span> <span class="nav-text">6.4 触发滑动的时机</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#6-5-自定义滑动策略"><span class="nav-number">2.0.0.6.5.</span> <span class="nav-text">6.5 自定义滑动策略</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#6-6-完工"><span class="nav-number">2.0.0.6.6.</span> <span class="nav-text">6.6 完工</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">请叫我大苏</span><br>
+	
+  <div class="powered-by">
+    <i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+    本站访客数:<span id="busuanzi_value_site_uv"></span> | 
+    </span>
+  </div>
+
+  <div class="theme-info">
+    <div class="powered-by"></div>
+    <span class="post-count">博客全站共 349.1k 字</span>
+  </div>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+  <script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+   <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID: '',
+          clientSecret: '',
+          repo: 'woshidasusu.github.io',
+          owner: '',
+          admin: [''],
+          id: md5(window.location.pathname),
+          distractionFreeMode: 'true'
+        })
+        gitalk.render('gitalk-container')
+       </script>
+
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

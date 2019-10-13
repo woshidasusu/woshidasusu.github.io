@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+      
+    
+    
+      
+    
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+  <link href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/favicon.ico?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前言：咳咳，一个多月了，最近忙这忙那，都把这个故事给落下了，昨晚刚回到家，白天得干活，晚上赶紧把这个故事写完，以此纪念自己的软工。说明：故事中的人物均是化名，故事情节经过些许加工，故事情节并没有针对任何人，仅以此纪念自己的成长。回顾上一章：详情请猛戳  ##第四章：Alpha冲刺  　　Alpha阶段的冲刺就这么的来了，似乎来得有点晚，因为你已经接近一个月没有敲过代码了。这个月来，懂哥一直要求你">
+<meta name="keywords" content="dasu, blog, 大苏">
+<meta property="og:type" content="article">
+<meta property="og:title" content="小码农的故事04">
+<meta property="og:url" content="http://woshidasusu.github.io/2016/09/07/瞎扯扯/小码农的故事04/index.html">
+<meta property="og:site_name" content="dasu&#39;s blog">
+<meta property="og:description" content="前言：咳咳，一个多月了，最近忙这忙那，都把这个故事给落下了，昨晚刚回到家，白天得干活，晚上赶紧把这个故事写完，以此纪念自己的软工。说明：故事中的人物均是化名，故事情节经过些许加工，故事情节并没有针对任何人，仅以此纪念自己的成长。回顾上一章：详情请猛戳  ##第四章：Alpha冲刺  　　Alpha阶段的冲刺就这么的来了，似乎来得有点晚，因为你已经接近一个月没有敲过代码了。这个月来，懂哥一直要求你">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-10-13T12:29:12.975Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="小码农的故事04">
+<meta name="twitter:description" content="前言：咳咳，一个多月了，最近忙这忙那，都把这个故事给落下了，昨晚刚回到家，白天得干活，晚上赶紧把这个故事写完，以此纪念自己的软工。说明：故事中的人物均是化名，故事情节经过些许加工，故事情节并没有针对任何人，仅以此纪念自己的成长。回顾上一章：详情请猛戳  ##第四章：Alpha冲刺  　　Alpha阶段的冲刺就这么的来了，似乎来得有点晚，因为你已经接近一个月没有敲过代码了。这个月来，懂哥一直要求你">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://woshidasusu.github.io/2016/09/07/瞎扯扯/小码农的故事04/">
+
+
+
+
+
+  <title>小码农的故事04 | dasu's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">dasu's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">I am dasu, and i'm coding</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://woshidasusu.github.io/2016/09/07/瞎扯扯/小码农的故事04/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="请叫我大苏">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/img.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="dasu's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">小码农的故事04</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-09-07T21:30:25+08:00">
+                2016-09-07
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/谈人生/" itemprop="url" rel="index">
+                    <span itemprop="name">谈人生</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                  <span class="post-meta-divider">|</span>
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2.8k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  9 min
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <hr>
+<p>前言：咳咳，一个多月了，最近忙这忙那，都把这个故事给落下了，昨晚刚回到家，白天得干活，晚上赶紧把这个故事写完，以此纪念自己的软工。<br>说明：故事中的人物均是化名，故事情节经过些许加工，故事情节并没有针对任何人，仅以此纪念自己的成长。<br>回顾上一章：<a href="http://www.jianshu.com/p/484754ba3356" target="_blank" rel="noopener">详情请猛戳</a></p>
+<hr>
+<p>##第四章：Alpha冲刺</p>
+<hr>
+<p>　　Alpha阶段的冲刺就这么的来了，似乎来得有点晚，因为你已经接近一个月没有敲过代码了。这个月来，懂哥一直要求你们写文档，学工具。其实，这些都是编程前的准备，但你们确实还没领悟到它们的重要性。</p>
+<p>　　冲刺的阶段碰上了你们的电工实习，懂哥说这段时间不用上课，正好可以拿来敲代码。</p>
+<p>　　但第一天的电工实习，你们发现，似乎时间不够，白天一整天都要在实验室焊字焊表，敲代码的时间就只剩下晚上了。在你们第一次的会议上（懂哥要求你们在Alpha冲刺阶段必须要有十次的会议记录），瓜哥为你们其他三人都分配了任务，你负责界面的编写，而BOSS继续学生服务器的知识，元哥负责一些工具的编写。瓜哥表示他不参与编程，他专心做PM。</p>
+<p>　　一开始都是处于各种探索的状态，不管是任务的分配，还是敲码的分工，以及编码规范等。这些任务都是由瓜哥来负责，并且瓜哥还特意花了一晚上的时间给你们讲解编码规范的各种要求。虽然在日后你们并不是次次按照文档的要求，毕竟你们各自的风格习惯一时改不过来。</p>
+<p>　　你的第一次任务就是编写一些基本界面，有标题栏，有列表等。虽然是第一次接触安卓，你照着教程书上的代码，自己做些修改，勉强算是完成了任务。但花费的时间其实比瓜哥给你预定的时间还长，但你觉得还行，毕竟还是在当天就完成了，虽然为此熬夜到了半夜一二点。</p>
+<p>　　第一天过了，瓜哥审核了你们提交的代码，然后合并到仓库中。瓜哥找到你，叫你可以先写个基类的界面，把所有界面的一些共有属性提取出来。你一听，这个好，可以这么做。然后在自己琢磨时才发现，其实你对Java的继承，多态并不是很了解，而且你似乎没办法找出各个界面的共有属性，你突然觉得好烦躁。这一天的时间就要这么的浪费掉了，一点进展都没有。</p>
+<p>　　无奈之下，你只能出下下策。你跟瓜哥表示，你找不出有多少共有的属性可以提取出来的。而且，一旦界面是继承基类的话，就没办法再实现自己的界面布局了，其实是你没搞懂安卓的界面机制。但也没时间留给你慢慢去推敲了，所以只能在以后碰到共有的属性时复制粘贴了，这是个很低级但却能解决的办法。</p>
+<p>　　就这样，你们小组的项目在一点点的进展着，期间你们又开了几次会议。其实，你之前并没有这么正式的开发软件的经验，以前的实践课虽然也有组队，但都是各做各的，有的同学是抱大腿的，大家也都心知肚明，能带就带。开会这种事，也就是QQ上说两句而已。因此，在第一次开会中，你看见瓜哥那么重视，你觉得似乎没这种必要。</p>
+<p>　　但瓜哥仍旧一直这么严肃下去，在之后的几次开会中，瓜哥次次要求围成一个圈，不能坐着，不能嘻哈。看见瓜哥那么重视会议，你也渐渐的端正了态度，也重视起了会议来。在会议上都是汇报自己的进展，然后说一下自己遇到了什么困难，最后再讨论一些解决方案。</p>
+<p>　　一个礼拜的时间，你负责的界面却还没有全部完成，懂哥给的时间是两个礼拜。只剩下一个礼拜，既要完成界面，又要完成各种逻辑的书写，你突然觉得时间来不及了。而且，这并不是你们这一组的状况，似乎有很多小组都进展缓慢，很多人在群里抱怨说任务量太大了，白天要焊字，晚上敲代码，已经连续一个礼拜在熬夜了。</p>
+<p>　　最后，懂哥表示，截止时间可以延后一个星期。这确实是一个令人兴奋的消息。</p>
+<p>　　瓜哥为了能更好的安排进展，叫你们把各自每天能挤出多少时间来敲代码都自己先算一下，然后汇报给他。然后，瓜哥根据你们各自的安排，给你们安排了一个礼拜的工作量。</p>
+<p>　　这样看下来，进展似乎就能保证了。而且，每个人也具体到每天要做什么了，但其实，就像你在几个月后读人月神话中看到的一句话一样，<strong>“我们采用的估算技术隐含地假设人和月可以互换，错误地将进度和工作量混淆”</strong></p>
+<p>　　瓜哥给你的安排的每天的任务里，都给出了预计的用时。但真正开始时，总会碰上各种想不通的问题，为了解决自己不断地找资料，这样一来，时间将大大的超出了预计的用时。当实在不知道怎么实现的时候，你烦躁得想吐槽，并不是给你时间，你就能做出结果来。有的问题，实在是无法搞定。</p>
+<p>　　吐槽归吐槽，项目还是要继续做。这条路不行，那就换一条试试。时间超了，今天的任务要来不及了，那就自己熬夜去吧，反正给瓜哥汇报的时间里又没有算上熬夜的时间，自己在预定的时间里完成不了，就只能自己再次挤时间来补充了。</p>
+<p>　　时间一天一天地过，在第一个礼拜里，你白天都用来焊字了，瓜哥还曾表示说没必要花这么多的时间在上面，项目重要。但你觉得这毕竟这门2学分的实践课，老师布置的作业还是好好做吧。但当第一个礼拜末，你含辛茹苦的焊了四五天的字在老师的手中待了不到0.5秒时，你才意识到自己太年轻了。之前还吐槽说学长骗人，这门课根本就不水，白天都要焊字。现在，算是见识到了。</p>
+<p>　　在第二个礼拜的实践里，你花费更多的时间投入到了项目里去了。至于电工实习，花完时间学懂就放一边了。算上第一个礼拜，你总共花费了一个半礼拜将所有界面草草完成。接下去必须进入逻辑的书写了，或者有专业术语叫业务层的逻辑。但由于你们之前并没有对这个项目进行架构设计，这些东西并没有区分得特别开。</p>
+<p>　　甚至你还在界面代码里混杂着对数据库的操作，因此，被瓜哥一顿批评。</p>
+<p>　　会议保持着一定周期开着，进展也一天天的提高。你和元哥一起负责着安卓端的逻辑实现，两个礼拜过去了，一些基层的逻辑也完成了，但也找出了几处BUG，而且有的思路不懂怎么实现，只能暂时假想客户会正确的使用软件，这样程序就不会崩了。</p>
+<p>　　是时候跟服务器端连接上了，在一次的会议上，针对这个问题的实现思路组员出现了分歧。元哥，你还有瓜哥都有各自的实现思路，都觉得对方的并不合理。为此，你们讨论了将近一个小时，但仍然没有谁说服谁，瓜哥不得不终止这场会议。瓜哥说怎么实现，搜集好更多的资料再来继续讨论。</p>
+<p>　　而且，BOSS负责的服务器端进展也很缓慢。后来，为了能按时完成任务，瓜哥表示，他要开始参与进敲代码的工作了。瓜哥说，让团队里编码能力最强的来做PM是个错误的决定，你却觉得这才是正确的决定。或许放到公司里这是错误的，但这只是在学生之间，团队的成员并没有像公司的职员一样，已经具备基础能力，懂得各种开发流程，只剩下一个PM来领导。</p>
+<p>　　相反，团队成员里基本都是零基础，都是第一次接触。这时，要是没有一个能力强的来领导团队，给队员安排好任务，指导学习方向，那么这个项目很可能根本就启动不了。</p>
+<p>　　瓜哥参与编程后，先是完成了一个服务器端的接口，然后让BOSS照着学习，完成剩余的。而安卓端也可以开始着手进行与服务器的交互。之后，瓜哥便参与进了安卓端的任务，就这样项目的进展一下子快了起来。</p>
+<p>　　但参与越多，瓜哥越生气，他表示你跟元哥的代码实在让人看不下去，太多地方需要重构了。为此，瓜哥叫停了你们的工作，他要先对当前的项目代码进行一次大修改，然后大家再继续去完成。</p>
+<p>　　瓜哥是怕到时会出现太多冲突，然后才让你们停下手头工作。你却觉得自己对Github已经足够掌握了，没有听取瓜哥的安排，继续你的开发。结果，你算是体会到了大冲突的滋味了，而且冲突最后也是交由瓜哥进行处理，你才彻底的服了，对于Github的操作你还需要多学习。</p>
+<p>　　就这样，三个多礼拜的Alpah冲刺，你们碰上了各种问题。有过冲突，有过争吵，有过烦躁，甚至有过厌工。最终，算是挺过来了，Alpha版本预计的功能基本上已经实现。懂哥的验收演示上，虽然临时出了各种意想不到的问题，比如没网络，服务器崩了！但最终还是完成了，成绩也不错，这几个礼拜的努力也是值得了。</p>
+<p>　　接下去就是好好休息几天，然后等待懂哥的Beta冲刺了。
+　　</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+      <div>
+        <div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center">
+    <img id="wechat_subscriber_qcode" src="/uploads/dasuAndroidTv2.png" alt="请叫我大苏 wechat" style="width: 200px; max-width: 100%;">
+    <div></div>
+</div>
+
+      </div>
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持将鼓励我继续创作！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/uploads/weixin.png" alt="请叫我大苏 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/uploads/alipay.jpg" alt="请叫我大苏 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/09/06/瞎扯扯/小码农的故事03/" rel="next" title="小码农的故事03">
+                <i class="fa fa-chevron-left"></i> 小码农的故事03
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/09/08/瞎扯扯/小码农的故事05/" rel="prev" title="小码农的故事05">
+                小码农的故事05 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div id="gitalk-container"></div>
+
+  
+
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/uploads/img.jpg" alt="请叫我大苏">
+            
+              <p class="site-author-name" itemprop="name">请叫我大苏</p>
+              <p class="site-description motion-element" itemprop="description">微信公众号：dasuAndroidTv</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">91</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/woshidasusu" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:295207731@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                其他平台
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.jianshu.com/u/bb52a2918096" title="简书" target="_blank">简书</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.cnblogs.com/dasusu/" title="博客园" target="_blank">博客园</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">请叫我大苏</span><br>
+	
+  <div class="powered-by">
+    <i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+    本站访客数:<span id="busuanzi_value_site_uv"></span> | 
+    </span>
+  </div>
+
+  <div class="theme-info">
+    <div class="powered-by"></div>
+    <span class="post-count">博客全站共 349.1k 字</span>
+  </div>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+  <script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+   <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID: '',
+          clientSecret: '',
+          repo: 'woshidasusu.github.io',
+          owner: '',
+          admin: [''],
+          id: md5(window.location.pathname),
+          distractionFreeMode: 'true'
+        })
+        gitalk.render('gitalk-container')
+       </script>
+
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

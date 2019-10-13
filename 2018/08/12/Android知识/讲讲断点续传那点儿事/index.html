@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+      
+    
+    
+      
+    
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+  <link href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/favicon.ico?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本篇文章已授权微信公众号 dasu_Android（大苏）独家发布    这次想来讲讲断点续传，以前没相关需求，所以一直没去接触，近阶段了解了之后，其实并不复杂，那么也便来写一篇记录一下，分享给大伙，也方便自己后续查阅。 提问Q1：如果你的 app 需要下载大文件，那么是否有方法可以缩短下载耗时？   Q2：如果你的 app 在下载大文件时，程序因各种原因被迫中断了，那么下次再重启时，文件是否还">
+<meta name="keywords" content="dasu, blog, 大苏">
+<meta property="og:type" content="article">
+<meta property="og:title" content="讲讲断点续传那点儿事">
+<meta property="og:url" content="http://woshidasusu.github.io/2018/08/12/Android知识/讲讲断点续传那点儿事/index.html">
+<meta property="og:site_name" content="dasu&#39;s blog">
+<meta property="og:description" content="本篇文章已授权微信公众号 dasu_Android（大苏）独家发布    这次想来讲讲断点续传，以前没相关需求，所以一直没去接触，近阶段了解了之后，其实并不复杂，那么也便来写一篇记录一下，分享给大伙，也方便自己后续查阅。 提问Q1：如果你的 app 需要下载大文件，那么是否有方法可以缩短下载耗时？   Q2：如果你的 app 在下载大文件时，程序因各种原因被迫中断了，那么下次再重启时，文件是否还">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1924341-e01bee6c8b81e0e5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1924341-91495ddefb8b2eb7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2019-10-13T12:20:08.959Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="讲讲断点续传那点儿事">
+<meta name="twitter:description" content="本篇文章已授权微信公众号 dasu_Android（大苏）独家发布    这次想来讲讲断点续传，以前没相关需求，所以一直没去接触，近阶段了解了之后，其实并不复杂，那么也便来写一篇记录一下，分享给大伙，也方便自己后续查阅。 提问Q1：如果你的 app 需要下载大文件，那么是否有方法可以缩短下载耗时？   Q2：如果你的 app 在下载大文件时，程序因各种原因被迫中断了，那么下次再重启时，文件是否还">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/1924341-e01bee6c8b81e0e5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://woshidasusu.github.io/2018/08/12/Android知识/讲讲断点续传那点儿事/">
+
+
+
+
+
+  <title>讲讲断点续传那点儿事 | dasu's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">dasu's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">I am dasu, and i'm coding</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://woshidasusu.github.io/2018/08/12/Android知识/讲讲断点续传那点儿事/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="请叫我大苏">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/img.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="dasu's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">讲讲断点续传那点儿事</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-08-12T21:30:25+08:00">
+                2018-08-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android知识/" itemprop="url" rel="index">
+                    <span itemprop="name">Android知识</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                  <span class="post-meta-divider">|</span>
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2.8k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  10 min
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p><strong>本篇文章已授权微信公众号 dasu_Android（大苏）独家发布</strong>  </p>
+</blockquote>
+<p>这次想来讲讲断点续传，以前没相关需求，所以一直没去接触，近阶段了解了之后，其实并不复杂，那么也便来写一篇记录一下，分享给大伙，也方便自己后续查阅。</p>
+<h1 id="提问"><a href="#提问" class="headerlink" title="提问"></a>提问</h1><p><strong>Q1：如果你的 app 需要下载大文件，那么是否有方法可以缩短下载耗时？</strong>  </p>
+<p><strong>Q2：如果你的 app 在下载大文件时，程序因各种原因被迫中断了，那么下次再重启时，文件是否还需要重头开始下载？</strong>  </p>
+<p><strong>Q3：你的 app 下载大文件时，支持暂停并恢复下载么？即使这两个操作分布在程序进程被杀前后。</strong></p>
+<h1 id="理论基础"><a href="#理论基础" class="headerlink" title="理论基础"></a>理论基础</h1><p>讲之前，先来通俗的解释下什么是<strong>断点续传</strong>：</p>
+<p>说得白一点，其实也就是下载文件时，不必重头开始下载，而是从指定的位置继续下载，这样的功能就叫做断点续传。</p>
+<p>既然如此，那么要实现断点续传的关键点其实也就是两点：</p>
+<ul>
+<li><strong>如何告知服务端，从指定的位置下载</strong></li>
+<li><strong>如何知道客户端想要的指定位置是多少</strong></li>
+</ul>
+<p>是吧，理论上来讲，当这两点都可以做到的时候，自然就可以实现断点续传了。那么，要如何做到呢？</p>
+<p>其实，也很简单，并不需要我们自己去写一些什么，HTTP 协议本身就支持断点续传了，所以借助它就可以实现告知服务端，从指定位置下载的功能了。</p>
+<p>而另一点，就更简单了，文件是下载到客户端设备上的，那么只要获取到这份下载到一半的文件，看一下它目前的大小，也就知道需要让服务端从哪开始继续下载了。</p>
+<p>那么，下面就介绍一下涉及到的相关理论：</p>
+<p><strong>Range  &amp; Content-Length &amp; Content-Range &amp; If-Range</strong> </p>
+<p>这些都是 HTTP 包中 Header 头部的一些字段信息，其中 Range 和 If-Range 是请求头中的字段，Content-Length 和 Content-Range 是响应头中的字段。</p>
+<h3 id="Range"><a href="#Range" class="headerlink" title="Range"></a>Range</h3><p>当请求头中出现 Range 字段时，表示告知服务端，客户端下载该文件想要从指定的位置开始下载，至于 Range 字段属性值的格式有以下几种：</p>
+<table>
+<thead>
+<tr>
+<th>格式</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Range:bytes=0-500</td>
+<td>表示下载从0到500字节的文件，即头500个字节</td>
+</tr>
+<tr>
+<td>Range:bytes=501-1000</td>
+<td>表示下载从500到1000这部分的文件，单位字节</td>
+</tr>
+<tr>
+<td>Range:bytes=-500</td>
+<td>表示下载最后的500个字节</td>
+</tr>
+<tr>
+<td>Range:bytes=500-</td>
+<td>表示下载从500开始到文件结束这部分的内容</td>
+</tr>
+</tbody></table>
+<p>当 app 想实现缩短大文件的下载耗时，可以开启多个下载线程，每个线程只负责文件的一部分下载，当所有线程下载结束后，将每个线程下载的文件按顺序拼接成一个完整的文件，这样就可以达到缩短下载大文件的耗时目的了。</p>
+<p>那么，此时，就可以使用 <code>Range:bytes=501-1000</code> 这种格式了，每个线程在各自的请求头字段中，以这种格式加入相对应的信息即可达到目的了。</p>
+<p>如果 app 想实现断点续传，文件下载到一半被迫中断，下次启动还可以继续接着上次进度下载时，那么此时可以使用 <code>Range:bytes=500-</code> 这种格式了，只要先获取本地那份文件目前的大小，通过在请求头中加入 Range 字段信息即可。</p>
+<h3 id="Content-Length"><a href="#Content-Length" class="headerlink" title="Content-Length"></a>Content-Length</h3><p>Content-Length 字段出现在响应头中，用于告知客户端此次下载的文件大小。</p>
+<p>一般，如果客户端需要实现下载进度实时更新时，就需要知道文件的总大小和目前下载的大小，后者可以通过对本地文件的操作得知，前者一般就是通过响应头中的 Content-Length 字段得知。</p>
+<p>另外，如果想要实现多线程同时分段下载大文件功能时，显然在下载前，客户端需要先知道文件总大小，才可以做到动态进行分段，因此一般在下载前都会先发送一个不需要携带 body 信息请求，用于先获取响应头中的 Content-Length 字段来得知文件总大小。</p>
+<p><strong>但有一点需要注意：Content-Length 只表示此链接中下载的文件大小</strong>  </p>
+<p>什么意思，也就是说，如果这条链接是一次性将整个文件下载下来的，那么 Content-Length 就表示这个文件的总大小。</p>
+<p>但，如果这条链接指定了 Range，表明了只是下载文件的指定部分的内容，那么此时 Content-Length 表示的就只是这一部分的大小。</p>
+<p>所以，如果客户端实现了下载进度实时更新功能时，需要注意一下。因为如果文件是断点续传的，那么进度条的分母就不能用每次 HTTP 链接中的 Content-Length。要么下载前先发一条获取用于文件总大小的请求，然后一直维护着这个数据，要么就使用 Content-Range 字段。</p>
+<h3 id="Content-Range"><a href="#Content-Range" class="headerlink" title="Content-Range"></a>Content-Range</h3><p>Content-Range 字段也是出现在响应头中，用于告知客户端此链接下载的文件是哪个部分的，以及文件的总大小。</p>
+<p>比如，当客户端在请求头中指定了 <code>Range:bayes=501-1000</code> 来下载一个总大小为 2000 字节文件的中间一部分内容时，此时，响应头中的 Content-Range 字段信息如下：</p>
+<p><code>Content-Range:bytes 501-1000/2000</code></p>
+<p>斜杠前表示此链接下载的文件是哪一部分，斜杠后表示文件的总大小。</p>
+<h3 id="If-Range"><a href="#If-Range" class="headerlink" title="If-Range"></a>If-Range</h3><p>断点续传，说白点也就是分多次下载，既然不是一次性下载，那么就无法保证多次下载的间隔。</p>
+<p>也就是说，有可能出现这种场景，这次由于某些原因只下载的一部分，而下次重启继续下载，但可能等到过了很多天后才重启去继续下载，如果在这期间，服务端的这份文件更新了怎么办？</p>
+<p>只要不是一次性下载的，那么就有可能会出现这种场景，显然，这时候，就不希望断点续传了，而是要让客户端直接重头开始下载，毕竟文件都已经发生更新了，不是同一份了，再继续恢复下载也没有什么意义。</p>
+<p>那么，客户端要如何知道服务端的文件是否发生变化，要重头下载呢？</p>
+<p>这时就可以结合 If-Range 字段来实现了，这个也是在请求头中的字段，跟 Range 字段一起使用，它的作用是给 Range 字段生效设置了一些条件，只有满足这些条件，Range 才能生效。</p>
+<p>也就是说，只有先满足 If-Range，那么才能通过 Range 来实现断点续传。</p>
+<p>那它的条件值可以设置为哪些呢？有两种，Last-Modified 或者 ETag，这两个也都是响应头中的字段。  </p>
+<p>具体可以参考这篇文章：<a href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/If-Range" target="_blank" rel="noopener">MDN If-Range</a>  </p>
+<h3 id="抓包示例"><a href="#抓包示例" class="headerlink" title="抓包示例"></a>抓包示例</h3><p>以上就是断点续传相关的理论基础，下面抓个包，看看请求头和响应头中的信息，来总结一下理论基础。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-e01bee6c8b81e0e5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="断点续传.png">  </p>
+<p>首先先发起一个请求，设置了不携带 BODY 信息，这样就可以在下载前先获取到文件的总大小。至于怎么设置不携带 BODY 信息，不同的网络框架不同，具体下节代码示例中说明。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-91495ddefb8b2eb7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="断点续传2.png">  </p>
+<p>这是下载中断后，重启想要继续下载时发起的请求信息，请求头中指定了 <code>Range:bytes=12341380-</code> 表示本地已经下载了这么多，需要从这里开始继续往下下载。</p>
+<p>响应头中返回了这部分的内容，并在 Content-Length 和 Content-Range 字段中给出了相关信息。  </p>
+<h1 id="代码示例"><a href="#代码示例" class="headerlink" title="代码示例"></a>代码示例</h1><p>理论基础掌握了，那么下面就是来看看代码怎么实现。不管用什么语言，使用了什么网络框架，要写的代码都有两个部分：</p>
+<ul>
+<li><strong>文件处理操作</strong></li>
+<li><strong>添加请求头信息操作</strong>  </li>
+</ul>
+<p>文件处理操作有两个关键点，一是获取文件大小，二是以追加的方式写文件。添加请求头的操作则是参考各自网络框架的指示即可。</p>
+<p>下面介绍了三种示例，分别是 C++&amp;libcurl，Android&amp;HttpURLConnection，Android&amp;OkHttp。&amp;前面是语言，后面是所使用的网络框架。</p>
+<h3 id="C-amp-libcurl"><a href="#C-amp-libcurl" class="headerlink" title="C++&amp;libcurl"></a>C++&amp;libcurl</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//引入libcurl库</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;curl\curl.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> comment(lib,<span class="meta-string">"libcurl.lib"</span>) </span></span><br><span class="line"><span class="comment">//文件操作库</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fstream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">char</span>* mLocalFilePath;<span class="comment">//下载到本地的文件</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//获取已下载部分的大小，如果没有则返回0</span></span><br><span class="line"><span class="keyword">curl_off_t</span> getLocalFileLength()</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">curl_off_t</span> ret = <span class="number">0</span>;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">stat</span> <span class="title">fileStat</span>;</span></span><br><span class="line">	ret = stat(mLocalFilePath, &amp;fileStat);</span><br><span class="line">	<span class="keyword">if</span> (ret == <span class="number">0</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">return</span> fileStat.st_size;<span class="comment">//返回本地文件已下载的大小</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//下载前先发送一次请求，获取文件的总大小</span></span><br><span class="line"><span class="function"><span class="keyword">double</span> <span class="title">getDownloadFileLength</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">double</span> rel = <span class="number">0</span>, downloadFileLenth = <span class="number">0</span>;</span><br><span class="line">	CURL *handle = curl_easy_init();</span><br><span class="line">	curl_easy_setopt(handle, CURLOPT_URL, mDownloadFileUrl);</span><br><span class="line">	curl_easy_setopt(handle, CURLOPT_HEADER, <span class="number">1</span>);    <span class="comment">//只需要header头</span></span><br><span class="line">	curl_easy_setopt(handle, CURLOPT_NOBODY, <span class="number">1</span>);    <span class="comment">//不需要body</span></span><br><span class="line">	<span class="keyword">if</span> (curl_easy_perform(handle) == CURLE_OK) &#123;</span><br><span class="line">		curl_easy_getinfo(handle, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &amp;downloadFileLenth);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span> &#123;</span><br><span class="line">		downloadFileLenth = <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	rel = downloadFileLenth;</span><br><span class="line">	curl_easy_cleanup(handle);</span><br><span class="line">	<span class="keyword">return</span> rel;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//文件下载</span></span><br><span class="line"><span class="function">CURLcode <span class="title">downloadInternal</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">//1. 获取本地已下载的大小，有则断点续传</span></span><br><span class="line">	<span class="keyword">curl_off_t</span> localFileLenth = getLocalFileLength();</span><br><span class="line">    <span class="comment">//2. 以追加的方式写入文件</span></span><br><span class="line">	FILE *file = fopen(mLocalFilePath, <span class="string">"ab+"</span>);</span><br><span class="line">	CURL* mHandler = curl_easy_init();</span><br><span class="line">	<span class="keyword">if</span> (mHandler &amp;&amp; file)</span><br><span class="line">	&#123;</span><br><span class="line">         <span class="comment">//3. 设置url</span></span><br><span class="line">		curl_easy_setopt(mHandler, CURLOPT_URL, mDownloadFileUrl);</span><br><span class="line">		<span class="comment">//4. 设置请求头 Range 字段信息，localFileLength 不等于0时，值大小就表示从哪开始下载 </span></span><br><span class="line">		curl_easy_setopt(mHandler, CURLOPT_RESUME_FROM_LARGE, localFileLenth);</span><br><span class="line">		</span><br><span class="line">		<span class="comment">//5. 设置接收数据的处理函数和存放变量</span></span><br><span class="line">		curl_easy_setopt(mHandler, CURLOPT_WRITEFUNCTION, writeFile);</span><br><span class="line">		curl_easy_setopt(mHandler, CURLOPT_WRITEDATA, file);</span><br><span class="line">		<span class="comment">// 6. 发起请求</span></span><br><span class="line">		CURLcode rel = curl_easy_perform(mHandler);</span><br><span class="line">		fclose(file);</span><br><span class="line">		<span class="keyword">return</span> rel;</span><br><span class="line">	&#125;</span><br><span class="line">	curl_easy_cleanup(mHandler);</span><br><span class="line">	<span class="keyword">return</span> CURLE_FAILED_INIT;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>writeFile 函数和下载进度通知的函数我都没贴，用过 libcurl 的应该都知道怎么写，或者网上搜一下，资料很多。上面就是将断点续传的几个关键函数贴出来，理清楚了即可。</p>
+<h3 id="Android-amp-HttpURLConnection"><a href="#Android-amp-HttpURLConnection" class="headerlink" title="Android&amp;HttpURLConnection"></a>Android&amp;HttpURLConnection</h3><h3 id="Android-amp-OkHttp"><a href="#Android-amp-OkHttp" class="headerlink" title="Android&amp;OkHttp"></a>Android&amp;OkHttp</h3><p>由于最近都在忙 C++ 的项目了，Android 暂时还没时间自己写个 demo 测试一下，所以先给几篇网上找的链接占个坑，后续抽个时间自己再来写个 demo。</p>
+<p>之所以列了这两点，是因为感觉目前 Android 中网络框架大多都是用的 OkHttp 了，而下载文件还有很多都是用的 HttpURLConnection，所以这两个都想研究一下，怎么写断点续传。</p>
+<p><a href="https://www.jianshu.com/p/2b82db0a5181" target="_blank" rel="noopener">Android多线程断点续传下载</a>  </p>
+<p><a href="https://blog.csdn.net/cfy137000/article/details/54838608" target="_blank" rel="noopener">Android使用OKHttp3实现下载(断点续传、显示进度)</a>  </p>
+<p>两篇我都有大概过了下，其实断点续传原理不难，真的蛮简单的，所以实现上基本也大同小异，就是不同的网络框架的 api 用法不同而已。以及，如何维护本地已下载文件的大小的思路，有的是直接去获取文件对象查看，有的则是手动自己建个数据库维护。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+      <div>
+        <div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center">
+    <img id="wechat_subscriber_qcode" src="/uploads/dasuAndroidTv2.png" alt="请叫我大苏 wechat" style="width: 200px; max-width: 100%;">
+    <div></div>
+</div>
+
+      </div>
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持将鼓励我继续创作！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/uploads/weixin.png" alt="请叫我大苏 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/uploads/alipay.jpg" alt="请叫我大苏 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/08/04/Android知识/讲讲网络模块中加解密那点儿事--AES+BASE64/" rel="next" title="讲讲网络模块中加解密那点儿事--AES+BASE64">
+                <i class="fa fa-chevron-left"></i> 讲讲网络模块中加解密那点儿事--AES+BASE64
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/10/14/Android组件/封装个-Android-的高斯模糊组件/" rel="prev" title="封装个-Android-的高斯模糊组件">
+                封装个-Android-的高斯模糊组件 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div id="gitalk-container"></div>
+
+  
+
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/uploads/img.jpg" alt="请叫我大苏">
+            
+              <p class="site-author-name" itemprop="name">请叫我大苏</p>
+              <p class="site-description motion-element" itemprop="description">微信公众号：dasuAndroidTv</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">91</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/woshidasusu" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:295207731@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                其他平台
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.jianshu.com/u/bb52a2918096" title="简书" target="_blank">简书</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.cnblogs.com/dasusu/" title="博客园" target="_blank">博客园</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#提问"><span class="nav-number">1.</span> <span class="nav-text">提问</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#理论基础"><span class="nav-number">2.</span> <span class="nav-text">理论基础</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Range"><span class="nav-number">2.0.1.</span> <span class="nav-text">Range</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Content-Length"><span class="nav-number">2.0.2.</span> <span class="nav-text">Content-Length</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Content-Range"><span class="nav-number">2.0.3.</span> <span class="nav-text">Content-Range</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#If-Range"><span class="nav-number">2.0.4.</span> <span class="nav-text">If-Range</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#抓包示例"><span class="nav-number">2.0.5.</span> <span class="nav-text">抓包示例</span></a></li></ol></li></ol><li class="nav-item nav-level-1"><a class="nav-link" href="#代码示例"><span class="nav-number">3.</span> <span class="nav-text">代码示例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#C-amp-libcurl"><span class="nav-number">3.0.1.</span> <span class="nav-text">C++&amp;libcurl</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Android-amp-HttpURLConnection"><span class="nav-number">3.0.2.</span> <span class="nav-text">Android&amp;HttpURLConnection</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Android-amp-OkHttp"><span class="nav-number">3.0.3.</span> <span class="nav-text">Android&amp;OkHttp</span></a></li></ol></li></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">请叫我大苏</span><br>
+	
+  <div class="powered-by">
+    <i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+    本站访客数:<span id="busuanzi_value_site_uv"></span> | 
+    </span>
+  </div>
+
+  <div class="theme-info">
+    <div class="powered-by"></div>
+    <span class="post-count">博客全站共 349.1k 字</span>
+  </div>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+  <script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+   <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID: '',
+          clientSecret: '',
+          repo: 'woshidasusu.github.io',
+          owner: '',
+          admin: [''],
+          id: md5(window.location.pathname),
+          distractionFreeMode: 'true'
+        })
+        gitalk.render('gitalk-container')
+       </script>
+
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

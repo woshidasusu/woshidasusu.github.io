@@ -1,0 +1,1860 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+      
+    
+    
+      
+    
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+  <link href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/favicon.ico?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本篇文章已授权微信公众号 dasu_Android（大苏）独家发布    声明本系列文章内容全部梳理自以下四个来源：  《HTML5权威指南》 《JavaScript权威指南》 MDN web docs Github:smyhvae/web  作为一个前端小白，入门跟着这四个来源学习，感谢作者的分享，在其基础上，通过自己的理解，梳理出的知识点，或许有遗漏，或许有些理解是错误的，如有发现，欢迎指点">
+<meta name="keywords" content="dasu, blog, 大苏">
+<meta property="og:type" content="article">
+<meta property="og:title" content="前端06-JavaScript客户端API&amp;jQuery（入门）">
+<meta property="og:url" content="http://woshidasusu.github.io/2018/10/30/前端/入门/前端入门6-JavaScript客户端api&jQuery/index.html">
+<meta property="og:site_name" content="dasu&#39;s blog">
+<meta property="og:description" content="本篇文章已授权微信公众号 dasu_Android（大苏）独家发布    声明本系列文章内容全部梳理自以下四个来源：  《HTML5权威指南》 《JavaScript权威指南》 MDN web docs Github:smyhvae/web  作为一个前端小白，入门跟着这四个来源学习，感谢作者的分享，在其基础上，通过自己的理解，梳理出的知识点，或许有遗漏，或许有些理解是错误的，如有发现，欢迎指点">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1924341-f00ee7cbc68cca59.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1924341-644928b460e66903.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1924341-5b6fd09f655b28b3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1924341-068ee7907828bde2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2019-10-13T13:04:12.302Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="前端06-JavaScript客户端API&amp;jQuery（入门）">
+<meta name="twitter:description" content="本篇文章已授权微信公众号 dasu_Android（大苏）独家发布    声明本系列文章内容全部梳理自以下四个来源：  《HTML5权威指南》 《JavaScript权威指南》 MDN web docs Github:smyhvae/web  作为一个前端小白，入门跟着这四个来源学习，感谢作者的分享，在其基础上，通过自己的理解，梳理出的知识点，或许有遗漏，或许有些理解是错误的，如有发现，欢迎指点">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/1924341-f00ee7cbc68cca59.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://woshidasusu.github.io/2018/10/30/前端/入门/前端入门6-JavaScript客户端api&jQuery/">
+
+
+
+
+
+  <title>前端06-JavaScript客户端API&jQuery（入门） | dasu's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">dasu's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">I am dasu, and i'm coding</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://woshidasusu.github.io/2018/10/30/前端/入门/前端入门6-JavaScript客户端api&jQuery/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="请叫我大苏">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/img.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="dasu's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">前端06-JavaScript客户端API&jQuery（入门）</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-10-30T21:30:25+08:00">
+                2018-10-30
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/前端/" itemprop="url" rel="index">
+                    <span itemprop="name">前端</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/前端/入门/" itemprop="url" rel="index">
+                    <span itemprop="name">入门</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                  <span class="post-meta-divider">|</span>
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  5.2k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  19 min
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p><strong>本篇文章已授权微信公众号 dasu_Android（大苏）独家发布</strong>  </p>
+</blockquote>
+<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本系列文章内容全部梳理自以下四个来源：</p>
+<ul>
+<li>《HTML5权威指南》</li>
+<li>《JavaScript权威指南》</li>
+<li><a href="https://developer.mozilla.org/zh-CN/docs/Web" target="_blank" rel="noopener">MDN web docs</a></li>
+<li><a href="https://github.com/smyhvae/Web" target="_blank" rel="noopener">Github:smyhvae/web</a></li>
+</ul>
+<p>作为一个前端小白，入门跟着这四个来源学习，感谢作者的分享，在其基础上，通过自己的理解，梳理出的知识点，或许有遗漏，或许有些理解是错误的，如有发现，欢迎指点下。</p>
+<h1 id="正文-JavaScript-客户端API-amp-jQuery"><a href="#正文-JavaScript-客户端API-amp-jQuery" class="headerlink" title="正文-JavaScript-客户端API &amp; jQuery"></a>正文-JavaScript-客户端API &amp; jQuery</h1><p>JavaScript 是用来丰富网站的内容的，让网站支持各种交互行为功能等等。</p>
+<p>JavaScript 是一门脚本语言，自然有它自己的语法标准，这个标准由 ECMAScript 发布，因此相对应的版本标准通常都简写成 ES5、ES6。</p>
+<p>这次入门系列，并不打算先从语法入手学习，而是打算先学学客户端 API，也就是浏览器提供的相关 JS API，用来操作 HTML 文档，毕竟入门学习的话，并不会涉及很多复杂的业务逻辑，相反，大多都是 JS 操作 DOM 的相关操作，因此，先从这方面进行学习。</p>
+<h3 id="基础语法"><a href="#基础语法" class="headerlink" title="基础语法"></a>基础语法</h3><p>如果有一定的 Java 基础，那么，只需了解下一些基础的 JS 语法，便可开始学习相关的客户端 API，熟悉后，足够编写 JS 代码来操作 DOM，达到动态网页的效果了。</p>
+<ul>
+<li><strong>弱语言类型</strong></li>
+</ul>
+<p>所谓的弱语言类型，就是说，声明变量类型时不必明确声明其类型，只需用 var 声明即可：</p>
+<p>比如 Java 中需要定义如下变量：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> a;     </span><br><span class="line"><span class="keyword">float</span> a;</span><br><span class="line"><span class="keyword">double</span> a;</span><br><span class="line">String a;</span><br><span class="line"><span class="keyword">boolean</span> a;</span><br></pre></td></tr></table></figure>
+
+<p>而 JavaScript 中，统一用 var 定义一个变量：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>变量的数据类型</strong></li>
+</ul>
+<p>虽然声明变量时，不必指出变量的类型，但也要清楚下，JS 中的基本数据类型 :</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-f00ee7cbc68cca59.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="数据类型">  </p>
+<p>在 JavaScript 中，只要是数，就是 Number 数值型的。无论整浮、浮点数、无论大小、无论正负，都是 Number 类型的。</p>
+<p>可以使用内置方法：isNaN()，来判断某个变量是否是数值类型。</p>
+<p>关键字 typeof 可以打出变量的类型，如果需要查看某个变量的类型时。</p>
+<ul>
+<li><strong>类型的强制转换</strong></li>
+</ul>
+<p>转 String:</p>
+<ul>
+<li>变量 +  “”</li>
+<li>变量.toString()</li>
+<li>String(变量)</li>
+</ul>
+<p>转 Number:</p>
+<ul>
+<li>parseInt/Float(变量)</li>
+</ul>
+<p>跟 Java 有些类似。</p>
+<ul>
+<li><strong>函数</strong></li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">sum</span>(<span class="params">a, b</span>)</span>&#123;</span><br><span class="line">	<span class="keyword">return</span> a+b;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> sum = <span class="function"><span class="keyword">function</span>(<span class="params">a, b</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> a+b;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>函数声明有两种方式，这两种方式的声明是有一定的区别的，在于 JS 中的声明提前的影响，这部分先不用过多了解，后续详细讲语法时再来讨论。在其他方面，这两种声明方式基本等效。</p>
+<p>当需要有返回值时，直接在最后一行代码里加上 return。函数名也可以省略，此时称匿名函数。</p>
+<p>当定义了函数之后，需要调用函数的时候，直接用函数名()，如 sum(1,2)</p>
+<p>但如果只是想把函数跟某一事件绑定时，此时只需要函数名，如：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">button.onclick() = sum;</span><br></pre></td></tr></table></figure>
+
+<p>如果此时 sum 也带上括号: sum()，那么函数就会被调用，这里需要注意。</p>
+<ul>
+<li><strong>对象</strong></li>
+</ul>
+<p>在 Js 中可以不必像 Java 那样新建个类，然后从这个类 new 出对象。在 Js 中，需要对象时，直接 new Object()，然后赋予想要的属性和行为即可。</p>
+<p>首先创建一个对象：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> obj = <span class="keyword">new</span> <span class="built_in">Object</span>();</span><br></pre></td></tr></table></figure>
+
+<p>向对象中添加属性:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">obj.name = <span class="string">"dasu"</span>;</span><br><span class="line">obj.age = <span class="number">25</span>;</span><br></pre></td></tr></table></figure>
+
+<p>对象的属性值可以是任何的数据类型，也可以是个函数： </p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">obj.sayName = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'dasu'</span>);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>创建对象的方式也可以用另外一种方式： </p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> o = &#123;</span><br><span class="line">            name: <span class="string">"dasu"</span>,</span><br><span class="line">            age: <span class="number">25</span>,</span><br><span class="line">            sayName: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">                <span class="built_in">console</span>.log(<span class="keyword">this</span>.name);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br></pre></td></tr></table></figure>
+
+<p>当然也可以使用类似于 Java 定义类，实例化对象的方式。 </p>
+<ul>
+<li><strong>相等比较</strong></li>
+</ul>
+<p>Js 中比较分两种，严格和非严格，对应的操作符：<code>===&amp;!==</code> 和 <code>==&amp;!=</code></p>
+<p>两个等号的比较时，比较的两个变量只要数值上相等，那么就返回 true，三个等号的比较时，需要同时满足类型和数值相等两个条件才会返回 true。</p>
+<p>以上基本的语法了解后，至少就知道如何声明变量、函数、对象，如何使用了，这就足够了，那么接下去就是熟悉下客户端 API，也可以说是浏览器按照标准提供的各 API 的使用。</p>
+<h3 id="DOM-概念"><a href="#DOM-概念" class="headerlink" title="DOM 概念"></a>DOM 概念</h3><p>DOM（document object model）：文档对象模型</p>
+<p>了解 JavaScript 基本语法后，就要接着了解 DOM 概念。类似于 CSS 通过选择器来操作 HTML 文档中的元素。那么，同样的道理，js 也需要有个中间媒介来操作 HTML 文档中的元素，这个媒介就是 DOM。</p>
+<h4 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h4><p>那么，什么是 DOM 呢，其实就是浏览器根据 HTML 文档构建出的一颗 DOM 树，树中每个节点对应着 HTML 文档中的每个元素标签，因此树的结构可以很好的表现出各个元素之间的层级关系。</p>
+<p>另外，每个节点都携带着当前元素的所有信息，包括 CSS 作用的样式属性表，设置的类型，id 等等，这些信息可以通过节点的各种属性方法获取到。</p>
+<p>但有一点需要注意下，元素修饰的文本内容也会被创建成一个节点，作为这个元素的子元素加入 DOM 树中。</p>
+<p>这种 DOM 树的概念跟 Android 中的视图树很类似。所以，每份 HTML 文档都会对应一颗 DOM 树。</p>
+<p>JavaScript 可以通过全局变量 document 拿到这个 DOM 树对象，那么之后就可以根据 DOM 提供的各种 API 接口来操纵这颗 DOM 树，包括获取指定节点的元素，动态修改该节点元素的信息，给这个节点元素绑定上事件操作等等。</p>
+<h4 id="模型示例"><a href="#模型示例" class="headerlink" title="模型示例"></a>模型示例</h4><p>一颗DOM树究竟长什么样子呢？看个例子： </p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE html&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"UTF-8"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">title</span>&gt;</span>博雅<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span>&gt;</span>这里<span class="tag">&lt;<span class="name">span</span>&gt;</span>行内<span class="tag">&lt;/<span class="name">span</span>&gt;</span>不行<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">p</span>&gt;</span>示例<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>上述是一份特别简单的 HTML 文档，看看它相对应的 DOM 树 :</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-644928b460e66903.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="DOM">  </p>
+<p>这就是对应的 DOM 树，层次分明，各节点都表示相对应的元素信息。但有一点需要注意下，橘色框都是相对应元素的文本内容，它也是 DOM 树中的节点，类型是 Text 对象。并且，并不是一个元素的所有文本内容作为一个 Text 对象，如果文本内容被其他元素标签分割开了，那么这些文本内容会被分割成多份节点，都作为元素的子元素拼接在 DOM 树中。 </p>
+<h3 id="兼容性"><a href="#兼容性" class="headerlink" title="兼容性"></a>兼容性</h3><p>想想，这颗 DOM 树是谁来建模生成的呢？很明显，是浏览器吧，浏览器解析 HTML 文档以及 CSS 后，根据当前的视图建模出一颗 DOM 树出来。并提供了各种 API 接口供 JavaScript 来操纵。</p>
+<p>那么，不同的浏览器厂商实现可能就会有所不同，比如 W3C 规定了一系列操纵 DOM 的 API 接口，但浏览器不想全部实现，就实现了其中核心部分，或者就算实现了，具体表现也有可能有所不同。</p>
+<p>那么，这时就会存在一个问题了，也就是我们通过 JavaScript，然后根据 W3C 规范的 API 接口来操纵 DOM 时，可能在不同浏览器上有不同的变现行为。所以，这时就需要考虑兼容性处理了。</p>
+<p>但有一个更方便的解决方案，那就是使用jQuery，这是一个基于 JavaScript 的框架库，它封装了操纵 DOM 的各种功能，内部对不同浏览器进行了兼容性处理，那么我们使用的时候就可以不用再去考虑那么兼容性的处理了。</p>
+<p>所以，下面会分别介绍 W3C 规范的标准 API 和 jQuery 的使用：</p>
+<h3 id="DOM-API"><a href="#DOM-API" class="headerlink" title="DOM API"></a>DOM API</h3><h4 id="document"><a href="#document" class="headerlink" title="document"></a>document</h4><p>document 是内置的全局变量，在 JavaScript 可以直接通过该关键字使用，使用时会获取到当前 HTML 文档对应的 Document 对象。</p>
+<p>拿到这个对象后，就可以调用它的一些属性和方法来获取或修改我们想要的数据。</p>
+<table>
+<thead>
+<tr>
+<th>readyState</th>
+<th>查看当前文档的被浏览器加载的状态（加载中等）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>body/head/title</td>
+<td>直接获取文档的相关元素标签信息</td>
+</tr>
+<tr>
+<td>getElementByXXX()</td>
+<td>根据id，class，tag等在文档中查找指定元素</td>
+</tr>
+<tr>
+<td>createElement(tag)</td>
+<td>创建指定标签的元素节点</td>
+</tr>
+<tr>
+<td>craeteTextNode(text)</td>
+<td>创建指定文本内容的Text对象</td>
+</tr>
+<tr>
+<td>location</td>
+<td>返回当前文档地址的Location对象</td>
+</tr>
+</tbody></table>
+<p>API很多，需要的时候再查就行，主要清楚下，document 是 JavaScript 操纵 DOM 树的入口，从这里开始，可以获取一些关于文档的元数据方面的属性信息，也可以来查找指定的文档中某个节点的元素对象。</p>
+<h4 id="location"><a href="#location" class="headerlink" title="location"></a>location</h4><p>Location 对象提供了细粒度的文档地址信息，也支持导航到其他文档上。当打开新文档在 URL 中有携带了一些信息时，可以通过这个来获取这些信息。</p>
+<table>
+<thead>
+<tr>
+<th>protocol</th>
+<th>获取或设置文档URL的协议部分</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>host</td>
+<td>获取或设置文档URL的主机和端口部分</td>
+</tr>
+<tr>
+<td>href</td>
+<td>获取或设置当前文档的地址</td>
+</tr>
+<tr>
+<td>hostname</td>
+<td>获取或设置文档URL的主机名部分</td>
+</tr>
+<tr>
+<td>port</td>
+<td>获取或设置文档URL的端口部分</td>
+</tr>
+<tr>
+<td>pathname</td>
+<td>获取或设置文档URL的路径部分</td>
+</tr>
+<tr>
+<td>search</td>
+<td>获取或设置文档URL的查询（问号串）部分</td>
+</tr>
+<tr>
+<td>hash</td>
+<td>获取或设置文档URL的锚（#号串）部分</td>
+</tr>
+<tr>
+<td>assign(url)</td>
+<td>导航到指定的URL</td>
+</tr>
+<tr>
+<td>replace(url)</td>
+<td>清除当前文档并导航到新的URL</td>
+</tr>
+<tr>
+<td>reload()</td>
+<td>重新载入当前文档</td>
+</tr>
+<tr>
+<td>resolveURL(url)</td>
+<td>将指定的相对URL解析成绝对URL</td>
+</tr>
+</tbody></table>
+<h4 id="window"><a href="#window" class="headerlink" title="window"></a>window</h4><p>window 直译过来就是窗口，其实也就是表示文档当前所显示的窗口对象，所以一些窗口性的功能都可以通过这个对象来调用。</p>
+<p>比如：调用浏览器弹框、定时器的使用、获取窗口信息包括窗口宽高，屏幕宽高等等、窗口的滑动、操纵浏览器窗口的历史记录、向其他窗口发送消息等等。</p>
+<ul>
+<li>获取窗口相关信息：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>innerHeight/Width</th>
+<th>获取窗口内容区域的宽高</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>outerHeight/Width</td>
+<td>获取窗口的宽高，包括边框和菜单栏等等</td>
+</tr>
+<tr>
+<td>screen</td>
+<td>获取描述屏幕的Screen对象</td>
+</tr>
+<tr>
+<td>Screen.width/height</td>
+<td>Screen对象获取屏幕宽高</td>
+</tr>
+<tr>
+<td>Screen.availWidth/Height</td>
+<td>获取屏幕可用的宽高，去掉工具栏菜单栏</td>
+</tr>
+<tr>
+<td>pageX/Yoffset</td>
+<td>获取窗口在水平/垂直方向已滚动过的像素</td>
+</tr>
+<tr>
+<td>document</td>
+<td>获取次窗口关联的Document对象</td>
+</tr>
+<tr>
+<td>history</td>
+<td>访问浏览器历史</td>
+</tr>
+<tr>
+<td>location</td>
+<td>获取当前文档地址的详细信息</td>
+</tr>
+</tbody></table>
+<ul>
+<li>与窗口交互：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>blur()</th>
+<th>让窗口失去键盘焦点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>close()</td>
+<td>关闭窗口（不是所有浏览器都允许js关闭窗口）</td>
+</tr>
+<tr>
+<td>focus()</td>
+<td>让窗口获得键盘焦点</td>
+</tr>
+<tr>
+<td>scrollBy(x, y)</td>
+<td>让文档相对于当前位置进行滚动</td>
+</tr>
+<tr>
+<td>scrollTo(x, y)</td>
+<td>滚动到指定位置</td>
+</tr>
+<tr>
+<td>alert(msg)</td>
+<td>弹出一个对话框</td>
+</tr>
+<tr>
+<td>confirm(msg)</td>
+<td>弹出一个带有确认和取消的对话框</td>
+</tr>
+<tr>
+<td>showModalDialog(url)</td>
+<td>弹出窗口，显示指定的URL</td>
+</tr>
+<tr>
+<td>postMessage(msg, origin)</td>
+<td>给另一个文档发送消息</td>
+</tr>
+<tr>
+<td>set/clearInterval(fun, time)</td>
+<td>创建/撤销周期性的任务</td>
+</tr>
+<tr>
+<td>set/clearTimeout(fun, time)</td>
+<td>创建/撤销延时任务</td>
+</tr>
+</tbody></table>
+<h4 id="HTMLElement"><a href="#HTMLElement" class="headerlink" title="HTMLElement"></a>HTMLElement</h4><p>通过 document 获取到 Document 对象，以此来获取操纵 DOM 的入口，根据需要获取所需的文档相关信息，或者搜索指定的 DOM 中节点的元素，此时这个节点的元素对象就是 HTMLElement 对象。</p>
+<p>所有的标签元素的基类对象都是 HTMLElement，这个类定义的公共的、基础的操作元素节点的方法和属性。</p>
+<p>但每个标签实际上都有具体的实现类，比如 body 对应 HTMLBodyElement，script 对应 HTMLScriptElement，具体实现类由这个标签独有的属性和方法。</p>
+<p>基类 HTMLElement 对象定义的基础的方法、属性包括：获取或修改元素的指定属性，添加或移除元素某个 class，查看或修改该标签包装的内容等等。</p>
+<ul>
+<li>元素的元数据属性：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>classList</th>
+<th>获取元素设置的class列表，返回DOMTokenList对象，可直接add,remove等操作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>className</td>
+<td>获取元素设置的class列表，返回字符串</td>
+</tr>
+<tr>
+<td>disabled/hidden/id</td>
+<td>获取或设置disable/hidden/id…</td>
+</tr>
+<tr>
+<td>attributes</td>
+<td>获取元素设置的属性值列表，返回Attr[]对象</td>
+</tr>
+<tr>
+<td>innerHTML</td>
+<td>获取元素标签包装的内容，包括文本内容及子元素</td>
+</tr>
+<tr>
+<td>outerHTML</td>
+<td>获取元素整个内容</td>
+</tr>
+</tbody></table>
+<ul>
+<li>节点元素操纵</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>get/has/removeAttribute(name)</th>
+<th>获取/判断/移除元素的某个属性</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>setAttribute(name, value)</td>
+<td>设置元素的某个属性</td>
+</tr>
+<tr>
+<td>appendChild(HTMLElement)</td>
+<td>为当前元素添加子元素</td>
+</tr>
+<tr>
+<td>cloneNode(boolean)</td>
+<td>拷贝一份当前的元素，返回新的HTMElement对象，参数设置是否拷贝当前元素的子元素</td>
+</tr>
+<tr>
+<td>isEqualNode(HTMLElement)</td>
+<td>判断指定元素与当前是否相同，具有相同的class，相同的属性，相同的子元素</td>
+</tr>
+<tr>
+<td>isSameNode(HTMLElement)</td>
+<td>判断是否是同一个元素</td>
+</tr>
+<tr>
+<td>removeChild(HTMLElement)</td>
+<td>移除指定的子元素</td>
+</tr>
+<tr>
+<td>replaceChild(HTMLElement, H.)</td>
+<td>替换指定的子元素</td>
+</tr>
+</tbody></table>
+<h3 id="DOM-事件"><a href="#DOM-事件" class="headerlink" title="DOM 事件"></a>DOM 事件</h3><p>通过上述一些方法，JavaScript 可以定位找到所需的元素，然后也可以动态的修改相关数据，但通常，这些动态修改的操作都是用户操作了某些事件后去触发的。</p>
+<p>所以，即使找到了元素后，还需要将元素与一些事件进行绑定，比如点击事件等等。</p>
+<p>有两种方式让元素绑定事件和处理的方法：</p>
+<h4 id="addEventListener"><a href="#addEventListener" class="headerlink" title="addEventListener"></a>addEventListener</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> aElems = <span class="built_in">document</span>.getElementsByTagName(<span class="string">"a"</span>);</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; aElems.length; i++) &#123;</span><br><span class="line">    aElems[i].addEventListener(<span class="string">"click"</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">"addEventListener:"</span> +  <span class="keyword">this</span>);</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>调用 HTMLElement 对象的 <code>addEventListener()</code> 方法，第一个参数传入需要监听的事件名称，第二个参数为事件触发时的响应方法。</p>
+<p>相对应的，还有一个 <code>removeEventListener()</code> 方法，同样接收这两个参数。</p>
+<h4 id="onXXX"><a href="#onXXX" class="headerlink" title="onXXX"></a>onXXX</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> aElems = <span class="built_in">document</span>.getElementsByTagName(<span class="string">"a"</span>);</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; aElems.length; i++) &#123;</span><br><span class="line">    aElems[i].onclick = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">"onclick:"</span> +  <span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第二种方式，是在需要注册的事件类型前面加 on 作为元素的属性来注册事件的监听，这种比较常见。 </p>
+<h4 id="所有事件类型"><a href="#所有事件类型" class="headerlink" title="所有事件类型"></a>所有事件类型</h4><ul>
+<li>document 的事件</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>事件类型</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>readystatechange</td>
+<td>readyState属性值发生变化时触发，也就是文档加载的不同阶段触发</td>
+</tr>
+</tbody></table>
+<ul>
+<li>window 的事件</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>onabort</th>
+<th>在文档或资源加载过程中被终止时触发</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>onerror</td>
+<td>在文档或资源加载发生错误时触发</td>
+</tr>
+<tr>
+<td>onhaschange</td>
+<td>在锚部分发生变化时触发</td>
+</tr>
+<tr>
+<td>onload</td>
+<td>在文档或资源加载完成时触发</td>
+</tr>
+<tr>
+<td>onresize</td>
+<td>在窗口缩放时触发</td>
+</tr>
+<tr>
+<td>onunload</td>
+<td>在文档从窗口或浏览器中卸载时触发</td>
+</tr>
+</tbody></table>
+<ul>
+<li>鼠标事件</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>click</th>
+<th>单击，释放时触发</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>dblclick</td>
+<td>双击，释放时触发</td>
+</tr>
+<tr>
+<td>mousedown</td>
+<td>点击鼠标键时触发</td>
+</tr>
+<tr>
+<td>mouseenter</td>
+<td>在光标移入元素或某个后代元素所占据的屏幕区域时触发</td>
+</tr>
+<tr>
+<td>mouseleave</td>
+<td>在光标移出元素及所有后代元素所占据的屏幕区域时触发</td>
+</tr>
+<tr>
+<td>mousemove</td>
+<td>光标在元素上移动时触发</td>
+</tr>
+<tr>
+<td>mouseout</td>
+<td>与mouseleave基本相同，除了当光标仍然在某个后代元素上时也会触发</td>
+</tr>
+<tr>
+<td>mouseenter</td>
+<td>与mouseenter基本相同，除了当光标仍然在某个后代元素上时也会触发</td>
+</tr>
+<tr>
+<td>mouseup</td>
+<td>当释放鼠标时触发</td>
+</tr>
+</tbody></table>
+<p>鼠标事件被触发时，指定的处理方法都会传入一个 MouseEvent 对象，该对象携带一些额外的属性和方法供处理。</p>
+<ul>
+<li>MouseEvent</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>button</th>
+<th>标明点击的是哪个键，0：鼠标主键，1：中键，2：次键</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>altkey</td>
+<td>事件触发时是否有点击alt键</td>
+</tr>
+<tr>
+<td>clientX</td>
+<td>事件触发时鼠标相对于元素视口的X坐标</td>
+</tr>
+<tr>
+<td>clientY</td>
+<td>事件触发时鼠标相对于元素视口的Y坐标</td>
+</tr>
+<tr>
+<td>screenX</td>
+<td>事件触发时鼠标相对于屏幕坐标系的X坐标</td>
+</tr>
+<tr>
+<td>screenY</td>
+<td>事件触发时鼠标相对于屏幕坐标系的Y坐标</td>
+</tr>
+<tr>
+<td>shiftKey</td>
+<td>事件触发时是否有点击shift键</td>
+</tr>
+<tr>
+<td>ctrlKey</td>
+<td>事件触发时是否有点击ctrl键</td>
+</tr>
+</tbody></table>
+<ul>
+<li>键盘焦点事件</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>blur</th>
+<th>在元素失去焦点时触发</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>focus</td>
+<td>在元素获得焦点时触发</td>
+</tr>
+<tr>
+<td>focusin</td>
+<td>在元素即将获得焦点时触发</td>
+</tr>
+<tr>
+<td>focusout</td>
+<td>在元素即将失去焦点时触发</td>
+</tr>
+</tbody></table>
+<p>键盘焦点事件传入的是 FocusEvent 对象。</p>
+<ul>
+<li>键盘点击事件</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>keydown</th>
+<th>在用户按下某个键时触发</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>keypress</td>
+<td>在用户按下并释放某个键时触发</td>
+</tr>
+<tr>
+<td>keyup</td>
+<td>在用户释放某个键时触发</td>
+</tr>
+</tbody></table>
+<p>键盘点击事件传入的是 KeyboardEvent 对象。</p>
+<h3 id="jQuery"><a href="#jQuery" class="headerlink" title="jQuery"></a>jQuery</h3><h4 id="为什么使用-jQuery"><a href="#为什么使用-jQuery" class="headerlink" title="为什么使用 jQuery"></a>为什么使用 jQuery</h4><p>类似于 JVM 隐藏了不同操作系统之间的差异，让开发能够更专注于功能的实现，而不必花费过多时间适配不同操作系统。jQuery 隐藏了不同浏览器之间的差异，减少开发者花费在适配不同浏览器之间的精力。</p>
+<p>举个例子：float 属性</p>
+<p>原生 js 的话，ie 需要通过 styleFloat 获取对象修改，W3C 标准为 cssFloat，jQuery 统一封装成 float，内部会自动根据不同浏览器的实现进行处理。</p>
+<p>同时，它封装了很多基本实用的功能，如 ajax，基本动画等。</p>
+<h4 id="API-中文文档"><a href="#API-中文文档" class="headerlink" title="API 中文文档"></a>API 中文文档</h4><p><a href="http://www.css88.com/jqapi-1.9/css/" target="_blank" rel="noopener">http://www.css88.com/jqapi-1.9/css/</a>  </p>
+<h4 id="Ajax"><a href="#Ajax" class="headerlink" title="Ajax"></a>Ajax</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$.ajax(&#123;</span><br><span class="line">    url: <span class="string">"https://easy-mock.com/mock/5b592c01e4e04f38c7a55958/ywb/is/version/checkVersion"</span>,</span><br><span class="line">    data: &#123;<span class="string">"key"</span>: <span class="number">122</span>&#125;,</span><br><span class="line">    type: <span class="string">"POST"</span>,</span><br><span class="line">    success: <span class="function"><span class="keyword">function</span> (<span class="params">data</span>) </span>&#123;</span><br><span class="line">        logUtils(data.content);</span><br><span class="line">        <span class="keyword">var</span> con = <span class="built_in">JSON</span>.parse(data.content);</span><br><span class="line">        callback &amp;&amp; callback(con);<span class="comment">//通知回调</span></span><br><span class="line">    &#125;,</span><br><span class="line">    error: <span class="function"><span class="keyword">function</span> (<span class="params">e</span>) </span>&#123;</span><br><span class="line">        logUtils(e);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="CSS"><a href="#CSS" class="headerlink" title="CSS"></a>CSS</h4><ul>
+<li>修改 display 样式</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//第一种方式</span></span><br><span class="line">$(<span class="string">"div"</span>).css(<span class="string">"display"</span>, <span class="string">"none"</span>);</span><br><span class="line">$(<span class="string">"span"</span>).css(&#123;<span class="attr">display</span>:<span class="string">"block"</span>, <span class="attr">background</span>: <span class="string">"#f2f"</span>&#125;);<span class="comment">//好用</span></span><br><span class="line">$(<span class="string">"span"</span>).css(&#123;<span class="string">"display"</span>:<span class="string">"block"</span>, <span class="string">"background"</span>: <span class="string">"#f2f"</span>&#125;);<span class="comment">//这种也可以</span></span><br><span class="line"><span class="comment">//第2种方式</span></span><br><span class="line">$(<span class="string">"div"</span>).each(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.style.display = <span class="string">"none"</span>;</span><br><span class="line">&#125;);</span><br><span class="line">$(<span class="string">"div"</span>)[<span class="number">0</span>].style.display = <span class="string">"none"</span>;</span><br><span class="line"><span class="comment">//第3种方式</span></span><br><span class="line">$(<span class="string">"div"</span>).show();<span class="comment">//等效于display:block(inline)</span></span><br><span class="line">$(<span class="string">"div"</span>).hide();<span class="comment">//等效于display:none</span></span><br><span class="line">$(<span class="string">"div"</span>).toggle();<span class="comment">//取相反的值</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>读取样式</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$(<span class="string">"div"</span>).css(<span class="string">"display"</span>);</span><br></pre></td></tr></table></figure>
+
+<h4 id="class"><a href="#class" class="headerlink" title="class"></a>class</h4><ul>
+<li>添加 class</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$(selector).addClass(<span class="string">"liItem"</span>);  <span class="comment">//为指定元素添加类className</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>移除 class</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$(selector).removeClass(<span class="string">"liItem"</span>);  <span class="comment">//为指定元素移除类 className</span></span><br><span class="line">$(selector).removeClass();          <span class="comment">//不指定参数，表示移除被选中元素的所有类</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>判断有没有指定 class</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$(selector).hasClass(<span class="string">"liItem"</span>);   <span class="comment">//判断指定元素是否包含类 className</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>切换 class</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$(selector).toggleClass(<span class="string">"liItem"</span>);    <span class="comment">//为指定元素切换类 className，该元素有类则移除，没有指定类则添加</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>应用场景</li>
+</ul>
+<p>当 js 动态修改的样式较少时，可直接通过 .css() 实现。 </p>
+<p>当 js 动态修改的样式比较多时，选择 class 操作较方便，事件将需要的样式写在 css 中，在 js 里直接添加或移除指定 class 实现。</p>
+<p>如果考虑以后维护方便（把 CSS 从 js 中分离出来）的话，推荐使用类的方式来操作。</p>
+<h4 id="html"><a href="#html" class="headerlink" title="html"></a>html</h4><ul>
+<li>创建元素 </li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//类似于js中: document.createElement("标签名")</span></span><br><span class="line"><span class="keyword">var</span> node1 = $(<span class="string">"&lt;span&gt;我是一个span元素&lt;/span&gt;"</span>);<span class="comment">//返回的是jQuery对象</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>添加子元素</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//方式1:在.main元素的子元素末尾加入新的子元素</span></span><br><span class="line">$(<span class="string">".main"</span>).append(node1);</span><br><span class="line">$(<span class="string">".main"</span>).append(<span class="string">"&lt;span&gt;我是一个span元素&lt;/span&gt;"</span>);</span><br><span class="line"><span class="comment">//方式2:在.main元素的子元素开头加入新的子元素</span></span><br><span class="line">$(<span class="string">".main"</span>).prepend(<span class="string">"&lt;span&gt;我是第一个span元素&lt;/span&gt;"</span>);</span><br><span class="line"><span class="comment">//方式3：替换掉所有子元素内容</span></span><br><span class="line">$(<span class="string">".main"</span>).html(<span class="string">"&lt;span&gt;我把所有子元素都替换掉了&lt;/span&gt;"</span>);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>添加兄弟元素</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$(<span class="string">".main"</span>).after(<span class="string">"&lt;span&gt;我是兄弟后span元素&lt;/span&gt;"</span>);</span><br><span class="line">$(<span class="string">".main"</span>).before(<span class="string">"&lt;span&gt;我是兄弟前span元素&lt;/span&gt;"</span>);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>移除 html</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//移除所有子元素</span></span><br><span class="line">$(<span class="string">".main"</span>).html(<span class="string">""</span>);</span><br><span class="line"><span class="comment">//移除自已，自然子元素也被跟着移除</span></span><br><span class="line">$(<span class="string">".main"</span>).remove();</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>查看元素内容（包括标签）</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log($(<span class="string">".main"</span>).html());<span class="comment">//下面是元素标签和打出的日志</span></span><br><span class="line">$(<span class="string">".main"</span>).prepend(<span class="string">"&lt;span&gt;我是第&lt;a&gt;dsfds&lt;span&gt;23543&lt;/span&gt;&lt;/a&gt;一个span元素&lt;/span&gt;"</span>);</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-5b6fd09f655b28b3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="jquery1">  </p>
+<ul>
+<li>查看元素的纯文本内容</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log($(<span class="string">".main"</span>).text());<span class="comment">//下面是元素标签和打出的日志</span></span><br><span class="line">$(<span class="string">".main"</span>).prepend(<span class="string">"&lt;span&gt;我是第&lt;a&gt;dsfds&lt;span&gt;23543&lt;/span&gt;&lt;/a&gt;一个span元素&lt;/span&gt;"</span>);</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-068ee7907828bde2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="jquery2">  </p>
+<p>text() 会返回当前元素内的所有文本内容，包括子孙后代元素所包装的文本内容。 </p>
+<ul>
+<li>小结</li>
+</ul>
+<p>获取元素的内容（包括标签）可用 <code>html()</code>，创建元素时用 <code>$ (&quot;xxx&quot;)</code>，如果元素只有一个子元素，那么获取文本内容时可直接用 <code>text()</code>，添加子元素时用 <code>append()</code>。 </p>
+<h4 id="attr"><a href="#attr" class="headerlink" title="attr"></a>attr</h4><ul>
+<li>设置属性</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$(selector).attr(<span class="string">"title"</span>, <span class="string">"生命壹号"</span>);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>获取属性</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$(selector).attr(<span class="string">"title"</span>);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>移除属性</li>
+</ul>
+<pre><code class="javascript">$(selector).removeAttr(<span class="string">"title"</span>);</code></pre>
+
+      
+    </div>
+    
+    
+    
+
+    
+      <div>
+        <div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center">
+    <img id="wechat_subscriber_qcode" src="/uploads/dasuAndroidTv2.png" alt="请叫我大苏 wechat" style="width: 200px; max-width: 100%;">
+    <div></div>
+</div>
+
+      </div>
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持将鼓励我继续创作！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/uploads/weixin.png" alt="请叫我大苏 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/uploads/alipay.jpg" alt="请叫我大苏 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/10/29/前端/入门/前端入门5-CSS弹性布局flex/" rel="next" title="前端05-CSS弹性布局flex（入门）">
+                <i class="fa fa-chevron-left"></i> 前端05-CSS弹性布局flex（入门）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/10/30/前端/入门/前端入门7-JavaScript语法之相关术语/" rel="prev" title="前端07-JavaScript语法之相关术语（入门）">
+                前端07-JavaScript语法之相关术语（入门） <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div id="gitalk-container"></div>
+
+  
+
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/uploads/img.jpg" alt="请叫我大苏">
+            
+              <p class="site-author-name" itemprop="name">请叫我大苏</p>
+              <p class="site-description motion-element" itemprop="description">微信公众号：dasuAndroidTv</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">91</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/woshidasusu" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:295207731@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                其他平台
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.jianshu.com/u/bb52a2918096" title="简书" target="_blank">简书</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.cnblogs.com/dasusu/" title="博客园" target="_blank">博客园</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#声明"><span class="nav-number">1.</span> <span class="nav-text">声明</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#正文-JavaScript-客户端API-amp-jQuery"><span class="nav-number">2.</span> <span class="nav-text">正文-JavaScript-客户端API &amp; jQuery</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基础语法"><span class="nav-number">2.0.1.</span> <span class="nav-text">基础语法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DOM-概念"><span class="nav-number">2.0.2.</span> <span class="nav-text">DOM 概念</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#概念"><span class="nav-number">2.0.2.1.</span> <span class="nav-text">概念</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#模型示例"><span class="nav-number">2.0.2.2.</span> <span class="nav-text">模型示例</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#兼容性"><span class="nav-number">2.0.3.</span> <span class="nav-text">兼容性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DOM-API"><span class="nav-number">2.0.4.</span> <span class="nav-text">DOM API</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#document"><span class="nav-number">2.0.4.1.</span> <span class="nav-text">document</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#location"><span class="nav-number">2.0.4.2.</span> <span class="nav-text">location</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#window"><span class="nav-number">2.0.4.3.</span> <span class="nav-text">window</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#HTMLElement"><span class="nav-number">2.0.4.4.</span> <span class="nav-text">HTMLElement</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DOM-事件"><span class="nav-number">2.0.5.</span> <span class="nav-text">DOM 事件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#addEventListener"><span class="nav-number">2.0.5.1.</span> <span class="nav-text">addEventListener</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#onXXX"><span class="nav-number">2.0.5.2.</span> <span class="nav-text">onXXX</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#所有事件类型"><span class="nav-number">2.0.5.3.</span> <span class="nav-text">所有事件类型</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#jQuery"><span class="nav-number">2.0.6.</span> <span class="nav-text">jQuery</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#为什么使用-jQuery"><span class="nav-number">2.0.6.1.</span> <span class="nav-text">为什么使用 jQuery</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#API-中文文档"><span class="nav-number">2.0.6.2.</span> <span class="nav-text">API 中文文档</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Ajax"><span class="nav-number">2.0.6.3.</span> <span class="nav-text">Ajax</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#CSS"><span class="nav-number">2.0.6.4.</span> <span class="nav-text">CSS</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#class"><span class="nav-number">2.0.6.5.</span> <span class="nav-text">class</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#html"><span class="nav-number">2.0.6.6.</span> <span class="nav-text">html</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#attr"><span class="nav-number">2.0.6.7.</span> <span class="nav-text">attr</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">请叫我大苏</span><br>
+	
+  <div class="powered-by">
+    <i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+    本站访客数:<span id="busuanzi_value_site_uv"></span> | 
+    </span>
+  </div>
+
+  <div class="theme-info">
+    <div class="powered-by"></div>
+    <span class="post-count">博客全站共 349.1k 字</span>
+  </div>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+  <script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+   <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID: '',
+          clientSecret: '',
+          repo: 'woshidasusu.github.io',
+          owner: '',
+          admin: [''],
+          id: md5(window.location.pathname),
+          distractionFreeMode: 'true'
+        })
+        gitalk.render('gitalk-container')
+       </script>
+
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

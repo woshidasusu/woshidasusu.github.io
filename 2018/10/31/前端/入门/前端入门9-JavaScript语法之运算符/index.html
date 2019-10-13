@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+      
+    
+    
+      
+    
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+  <link href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/favicon.ico?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="声明本系列文章内容全部梳理自以下几个来源：  《JavaScript权威指南》 MDN web docs Github:smyhvae/web Github:goddyZhao/Translation/JavaScript  作为一个前端小白，入门跟着这几个来源学习，感谢作者的分享，在其基础上，通过自己的理解，梳理出的知识点，或许有遗漏，或许有些理解是错误的，如有发现，欢迎指点下。 PS：梳理的内">
+<meta name="keywords" content="dasu, blog, 大苏">
+<meta property="og:type" content="article">
+<meta property="og:title" content="前端09-JavaScript语法之运算符（入门）">
+<meta property="og:url" content="http://woshidasusu.github.io/2018/10/31/前端/入门/前端入门9-JavaScript语法之运算符/index.html">
+<meta property="og:site_name" content="dasu&#39;s blog">
+<meta property="og:description" content="声明本系列文章内容全部梳理自以下几个来源：  《JavaScript权威指南》 MDN web docs Github:smyhvae/web Github:goddyZhao/Translation/JavaScript  作为一个前端小白，入门跟着这几个来源学习，感谢作者的分享，在其基础上，通过自己的理解，梳理出的知识点，或许有遗漏，或许有些理解是错误的，如有发现，欢迎指点下。 PS：梳理的内">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1924341-5e1f6e7688a10452.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1924341-7e4ae9891a2780a0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2019-10-13T13:04:19.618Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="前端09-JavaScript语法之运算符（入门）">
+<meta name="twitter:description" content="声明本系列文章内容全部梳理自以下几个来源：  《JavaScript权威指南》 MDN web docs Github:smyhvae/web Github:goddyZhao/Translation/JavaScript  作为一个前端小白，入门跟着这几个来源学习，感谢作者的分享，在其基础上，通过自己的理解，梳理出的知识点，或许有遗漏，或许有些理解是错误的，如有发现，欢迎指点下。 PS：梳理的内">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/1924341-5e1f6e7688a10452.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://woshidasusu.github.io/2018/10/31/前端/入门/前端入门9-JavaScript语法之运算符/">
+
+
+
+
+
+  <title>前端09-JavaScript语法之运算符（入门） | dasu's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">dasu's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">I am dasu, and i'm coding</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://woshidasusu.github.io/2018/10/31/前端/入门/前端入门9-JavaScript语法之运算符/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="请叫我大苏">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/img.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="dasu's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">前端09-JavaScript语法之运算符（入门）</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-10-31T21:40:25+08:00">
+                2018-10-31
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/前端/" itemprop="url" rel="index">
+                    <span itemprop="name">前端</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/前端/入门/" itemprop="url" rel="index">
+                    <span itemprop="name">入门</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                  <span class="post-meta-divider">|</span>
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  4.3k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  15 min
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本系列文章内容全部梳理自以下几个来源：</p>
+<ul>
+<li>《JavaScript权威指南》</li>
+<li><a href="https://developer.mozilla.org/zh-CN/docs/Web" target="_blank" rel="noopener">MDN web docs</a></li>
+<li><a href="https://github.com/smyhvae/Web" target="_blank" rel="noopener">Github:smyhvae/web</a></li>
+<li><a href="https://github.com/goddyZhao/Translation/tree/master/JavaScript" target="_blank" rel="noopener">Github:goddyZhao/Translation/JavaScript</a></li>
+</ul>
+<p>作为一个前端小白，入门跟着这几个来源学习，感谢作者的分享，在其基础上，通过自己的理解，梳理出的知识点，或许有遗漏，或许有些理解是错误的，如有发现，欢迎指点下。</p>
+<p>PS：梳理的内容以《JavaScript权威指南》这本书中的内容为主，因此接下去跟 JavaScript 语法相关的系列文章基本只介绍 ES5 标准规范的内容、ES6 等这系列梳理完再单独来讲讲。</p>
+<h1 id="正文-运算符"><a href="#正文-运算符" class="headerlink" title="正文-运算符"></a>正文-运算符</h1><p>程序中的代码其实就是利用各种运算符来辅助完成各种指令功能，在 JavaScript 中，有一些不同于 Java 中的运算符处理，这次就来讲讲这些运算符。 </p>
+<p>由于我已经有了 Java 的基础了，本节不会讲基础的运算符介绍，比如算术表达式中的加减乘除取余等、关系表达式中的大于小于等、逻辑表示式中的自增、自减、移位等等，这些基础运算符的含义、用法、优先级这些跟 Java 基本没有区别，所以就不介绍了。</p>
+<p>下面着重讲一些在 JavaScript 比较不同的行为的一些运算符：</p>
+<h3 id="“-”-运算符"><a href="#“-”-运算符" class="headerlink" title="“+” 运算符"></a>“+” 运算符</h3><p>任何数据类型的变量都可以通过 “+” 运算符来进行计算，所以它有一套处理规则，通常要么就是按数字的加法运算处理、要么就是按照字符串的拼接处理，处理规则如下：</p>
+<ol>
+<li>如果操作数中存在对象类型，先将其按照上节介绍的转换规则，转成原始值；</li>
+<li>如果操作数已经全部是原始值，此时如果有字符串类型的原始值，那么将两个原始值都转为字符串后，按字符串拼接操作处理；</li>
+<li>如果操作数已经全部是原始值且没有字符串类型的，那么将操作数都转为数字类型后，按数字的加法处理;</li>
+<li>NaN 加上任意类型的值后都是 NaN.</li>
+</ol>
+<p>以上的处理规则是针对于通过 “+” 运算符处理两个操作数的场景，如果一个表达式中存在多个 “+” 运算符，那么分别以优先级计算过程中，每一次计算 “+” 运算符的两个操作数使用上述规则进行处理。</p>
+<p>举个例子：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span> + <span class="number">2</span>    <span class="comment">// =&gt; 3, 因为操作数都是数字类型的原始值</span></span><br><span class="line"><span class="number">1</span> + <span class="string">"2"</span>  <span class="comment">// =&gt; "12"，因为操作数中存在字符串类型的原始值，所以是按字符串拼接来处理</span></span><br><span class="line"><span class="number">1</span> + &#123;&#125;   <span class="comment">// =&gt; "1[object Object]"，因为有操作是对象类型，先将其转为原始值，&#123;&#125; 转为原始值为字符串 "[object Object]"，所以将操作数都转为字符串后，按字符串拼接处理</span></span><br><span class="line"><span class="number">1</span> + <span class="literal">true</span> <span class="comment">// =&gt; 2，因为两个都是原始值，且没有字符串类型，所以将 true 转为数字类型后是 1，按加法处理</span></span><br><span class="line"><span class="number">1</span> + <span class="literal">undefined</span> <span class="comment">// =&gt; NaN，因为 undefined 转为数字类型后为 NaN，NaN 与任何数运算结果都为 NaN </span></span><br><span class="line"></span><br><span class="line"><span class="number">1</span> + <span class="number">2</span> + <span class="string">" dasu"</span>  <span class="comment">// =&gt; "3 dasu"， 因为先计算 1+2=3，然后再计算 3 + " dasu"，所以是 "3 dasu"</span></span><br><span class="line"><span class="number">1</span> + (<span class="number">2</span> + <span class="string">" dasu"</span>) <span class="comment">// =&gt; "12 dasu"，因为先计算 2 + " dasu" = "2 dasu"，再计算 1 + "2 dasu" = "12 dasu"</span></span><br></pre></td></tr></table></figure>
+
+<p>因为 “+” 运算符在编程中很常见，也很常用，而 JavaScript 又是弱类型语言，变量无需声明类型，那么程序中，”+” 运算符的两个操作数究竟是哪两种类型在进行计算，结果又会是什么，这点在心里至少是要明确的。</p>
+<h3 id="“-”-和-“-”-相等运算符"><a href="#“-”-和-“-”-相等运算符" class="headerlink" title="“==” 和 “===” 相等运算符"></a>“==” 和 “===” 相等运算符</h3><p>“==” 和 “===” 都是用于判断两个操作数是否相等的运算符，但它们是有区别的。</p>
+<p>“==” 比较相等的两个操作数会自动进行一些隐式的类型转换后，再进行比较，俗称不严格相等。</p>
+<p>“===” 比较相等的两个操作数，不会进行任何类型转换，相等的条件就是类型一样，数值也一样，所以俗称严格相等。</p>
+<p>而 “!=” 和 “!==” 自然就是这两个相等运算符的求反运算。下面分别来看看：</p>
+<h4 id="“-”"><a href="#“-”" class="headerlink" title="“===”"></a>“===”</h4><p>当通过这个运算符来比较两个操作数是否严格相等时，具体规则如下：</p>
+<ul>
+<li>如果两个操作数的类型不相同，则它们不相等</li>
+<li>如果其中一个操作数是 NaN 时，则它们不相等（因为 NaN 跟任何数包括它本身都不相等）</li>
+<li>如果两个操作数都是对象类型，那么只有当两个操作数都指向同一个对象，即它们的引用一样时，它们才相等</li>
+<li>如果两个操作数都是字符串类型时，当字符串一致时，在某些特殊场景下，比如具有不同编码的 16 位值时，它们也不相等，但大部分情况下，字符串一致是会相等，但要至少清楚不是百分百</li>
+<li>如果两个操作数都是布尔类型、数字类型、null、undefined，且值都一致时，那它们相等</li>
+</ul>
+<p>总之，这里的规则跟 Java 里的相等比较类似，Java 里没有严格不严格之分，它处理的规则就是按照 JavaScript 这里的严格相等来处理，所以大部分比较逻辑可参考 Java。</p>
+<p>需要注意的就是，NaN 与任何数包括它本身也不相等、同一个字符串内容可能会有不同的编码值，所以并不是百分百相等。</p>
+<h4 id="“-”-1"><a href="#“-”-1" class="headerlink" title="“==”"></a>“==”</h4><p>这个通常称为不严格相等，当比较是否相等的两个操作数的数据类型不一样时，会尝试先进行转换，然后再进行比较，相比于上面的 “===” 严格相等运算符来说，它其实就是放宽了比较的条件，具体规则如下：</p>
+<ul>
+<li>如果两个操作数的类型一样，那么规则跟 “===” 一样</li>
+<li>如果一个类型是 null，另一个类型是 undefined，此时，它们也是相等的</li>
+<li>如果一个类型是数字，另一个类型是字符串，那么先将字符串转为数字，再进行比较</li>
+<li>如果一个类型是布尔，先将布尔转成 1（true）或 0（false），然后再根据当前两个类型是否需要再进一步处理再比较</li>
+<li>如果一个类型是对象，那么先将对象转换成原始值，然后再根据当前两个类型是否需要再进一步处理再比较</li>
+</ul>
+<p>总之，”==” 的比较相对于 “===” 会将条件放宽，下面可以看些例子：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="literal">null</span> === <span class="literal">undefined</span>    <span class="comment">// =&gt; false，两个类型不一样</span></span><br><span class="line"><span class="literal">null</span> == <span class="literal">undefined</span>     <span class="comment">// =&gt; true，不严格情况下两者可认为相等   </span></span><br><span class="line"></span><br><span class="line"><span class="number">1</span> == <span class="string">"1"</span>              <span class="comment">// =&gt; true，"1" 转为数字 1 后，再比较</span></span><br><span class="line"><span class="number">1</span> == [<span class="number">1</span>]              <span class="comment">// =&gt; true，[1] 先转为字符串 "1"，此时等效于比较 1 == "1"，所以相等</span></span><br><span class="line"><span class="number">2</span> == <span class="literal">true</span>             <span class="comment">// =&gt; false，因为 true 先转为数字 1，此时等效于比较 2 == 1</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="“-amp-amp-”-逻辑与"><a href="#“-amp-amp-”-逻辑与" class="headerlink" title="“&amp;&amp;” 逻辑与"></a>“&amp;&amp;” 逻辑与</h3><p>逻辑与就是两个条件都要满足，这点跟 Java 里的逻辑与操作 &amp;&amp; 没有任何区别。</p>
+<p>但 JavaScript 里的逻辑与 &amp;&amp; 操作会更强大，在 Java 里，逻辑与 &amp;&amp; 运算符的两个操作数都必须是关系表达式才行，而且整个逻辑与表达式最终的结果只返回 true 或 false。</p>
+<p>但在 JavaScript 里，允许逻辑与 &amp;&amp; 运算符的两个操作数是任意的表达式，而且整个逻辑与 &amp;&amp; 表达式最终返回的值并不是 true 或 false，而是其中某个操作数的值。</p>
+<p>什么意思，来看个例子：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x == <span class="number">0</span> &amp;&amp; y == <span class="number">0</span></span><br></pre></td></tr></table></figure>
+
+<p>这是最基本的用法，跟 Java 没有任何区别，当且仅当 x 和 y 都为 0 时，返回 true，否则返回 false。</p>
+<p>上面那句话，是从这个例子以及延用 Java 那边对逻辑与 &amp;&amp; 运算符的理解所进行的解释。</p>
+<p>但实际上，在 JavaScript 里，它是这么处理逻辑与 &amp;&amp; 运算符的：</p>
+<ul>
+<li>如果左操作数的值是假值，那么不会触发右操作数的计算，且整个逻辑与 &amp;&amp; 表达式返回左操作数的值</li>
+<li>如果左操作数的值是真值，那么整个逻辑与 &amp;&amp; 表达式返回右操作数的值</li>
+<li>假值真值可以通俗的理解成，上节介绍各种数据类型间的转换规则中，各类型转换为布尔类型的值，转为布尔后为 true，表示这个值为真值。反之，为假值。</li>
+</ul>
+<p>所以，按照这种理论，我们再来看看上面那个例子，首先左操作数是个关系表达式：<code>x == 0</code>，如果 x 为 0，这个表达式等于 true，所以它为真值，那么整个逻辑与 &amp;&amp; 表达式返回右操作数的值。右操作数也是个关系表达式：<code>y == 0</code>，如果 y 也等于 0，右操作数的值就为 true，所以整个逻辑与 &amp;&amp; 表达式就返回 true。</p>
+<p>虽然结果一样，但在 JavaScript 里对于逻辑与 &amp;&amp; 表达式的解释应该按照第二种，而不是按照第一种的 Java 里的解释。如果还不理解，那么再来看几个例子：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getName</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="string">"dasu"</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="literal">null</span> &amp;&amp; getName()   <span class="comment">//输出 =&gt; null，因为左操作数 null 转成布尔是 false，所以它是假值，所以逻辑与 &amp;&amp; 直接返回左操作数的值 null</span></span><br><span class="line"></span><br><span class="line">getName &amp;&amp; getName()  <span class="comment">//输出 =&gt; "dasu"，因为左操作数是一个函数对象，如果该函数对象被声明定义了，那么转为布尔值就是 true，所以逻辑与 &amp;&amp; 表达式返回右操作数的值，右操作数是 getName()，调用了函数，返回了 "dasu"，所以这个就是这个逻辑与 &amp;&amp; 表达式的值。</span></span><br></pre></td></tr></table></figure>
+
+<p>第一个逻辑与表达式：<code>null &amp;&amp; getName()</code> 会输出 null，是因为左操作数 null 转成布尔是 false，所以它是假值，所以逻辑与 &amp;&amp; 直接返回左操作数的值 null。</p>
+<p>第二个逻辑与表达式：<code>getName &amp;&amp; getName()</code> 会输出 “dasu”，是因为左操作数是一个函数对象，如果该函数对象被声明定义了，那么转为布尔值就是 true，所以逻辑与 &amp;&amp; 表达式返回右操作数的值，右操作数是 getName()，调用了函数，返回了 “dasu”，所以这个就是这个逻辑与 &amp;&amp; 表达式的值。</p>
+<p>所以 JavaScript 里的逻辑与 &amp;&amp; 表达式会比 Java 更强大，它有一种应用场景：</p>
+<h4 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">queryName</span>(<span class="params">callback</span>) </span>&#123;</span><br><span class="line">    <span class="comment">//... </span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">//回调处理</span></span><br><span class="line">    callback &amp;&amp; callback();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在 Java 中，我们提供回调机制的处理通常是定义了一个接口，然后接口作为函数的参数，如果调用的时候，传入了这个接口的具体实现，那么在内部会去判断如果传入的接口参数不为空，就调用接口里的方法实现通知回调的效果。</p>
+<p>在 JavaScript 里实现这种回调机制就特别简单，通过逻辑与 &amp;&amp; 表达式，一行代码就搞定了，如果有传入 callback 函数，那么 callback 就会是真值，逻辑与 &amp;&amp; 表达式就会去执行右操作数的 callback()。</p>
+<p>当然，如果你想严谨点，你可以多加几个逻辑与 &amp;&amp; 表达式来验证传入的 callback 参数是否是函数类型。</p>
+<h3 id="“-”-逻辑或"><a href="#“-”-逻辑或" class="headerlink" title="“||” 逻辑或"></a>“||” 逻辑或</h3><p>逻辑或 || 跟逻辑与 &amp;&amp; 就基本是一个东西了，理解了上面讲的逻辑与 &amp;&amp; 运算符的理论，那么自然也就能够理解逻辑或 || 运算符了。</p>
+<p>它们的区别，仅在于对表达式的处理，逻辑或 || 表达式是这么处理的：</p>
+<ul>
+<li>如果左操作数的值是真值，那么不会触发右操作数的计算，且整个逻辑或 || 表达式返回左操作数的值</li>
+<li>如果左操作数的值是假值，那么整个逻辑或 || 表达式返回右操作数的值</li>
+<li>假值真值可以通俗的理解成，上节介绍各种数据类型间的转换规则中，各类型转换为布尔类型的值，转为布尔后为 true，表示这个值为真值。反之，为假值。</li>
+</ul>
+<p>这里就直接来说下它的一个应用场景了：</p>
+<h4 id="应用场景-1"><a href="#应用场景-1" class="headerlink" title="应用场景"></a>应用场景</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">queryNameById</span>(<span class="params">id</span>) </span>&#123;</span><br><span class="line">    <span class="comment">//参数的默认值</span></span><br><span class="line">    id = id || <span class="number">10086</span>;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>处理参数的默认值，如果调用函数时，没有传入指定的参数时。</p>
+<p>当然，还有其他很多应用场景。总之，善用逻辑与 &amp;&amp; 和逻辑或 || 运算符，可以节省很多编程量，同时实现很多功能。</p>
+<h2 id="“-”-逗号运算符"><a href="#“-”-逗号运算符" class="headerlink" title="“,” 逗号运算符"></a>“,” 逗号运算符</h2><p>在 Java 中，”,” 逗号只用于在声明同一类型变量时，可同时声明，如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> a, b, c;</span><br></pre></td></tr></table></figure>
+
+<p>在 JavaScript 里，”,” 逗号运算符同样具有这个功能，但它更强大，因为带有 “,” 逗号运算符的表达式会有一个返回值，返回值是逗号最后一项操作数的值。</p>
+<p>逗号运算符跟逻辑与和逻辑或唯一的区别，就在于：逗号运算符会将每一项的操作数都进行计算，而且表示式一直返回最后一项的操作数的值，它不管每个操作数究竟是真值还是假值，也不管后续操作数是否可以不用计算了。</p>
+<p>举个例子：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getName</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="string">"dasu"</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">queryNameById</span>(<span class="params">id, callback</span>) </span>&#123;</span><br><span class="line">    id = id || <span class="number">10086</span>;</span><br><span class="line">    callback &amp;&amp; callback();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">myCallback</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">"I am dasu"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> me = (queryNameById(<span class="number">0</span>, myCallback), getName()) <span class="comment">//me会被赋值为 "dasu",且控制台输出 "I am dasu"</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-5e1f6e7688a10452.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="逗号运算符">  </p>
+<p>变量 me 会被赋值为 “dasu”，且控制台输出 “I am dasu”。  </p>
+<h3 id="typeof-运算符"><a href="#typeof-运算符" class="headerlink" title="typeof 运算符"></a>typeof 运算符</h3><p>返回指定操作数的数据类型，例：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-7e4ae9891a2780a0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="typeOf">  </p>
+<p>在 JavaScript 中数据类型大体上分两类：原始类型和引用类型。</p>
+<p>原始类型对应的值是原始值，引用类型对应的值为对象。</p>
+<p>对于原始值而言，使用 typeof 运算符可以获取原始值所属的原始类型，对于函数对象，也可以使用 typeof 运算符来获取它的数据类型，但对于其他自定义对象、数组对象、以及 null，它返回的都是 object，所以它的局限性也很大。</p>
+<h3 id="delete-运算符"><a href="#delete-运算符" class="headerlink" title="delete 运算符"></a>delete 运算符</h3><p>delete 是用来删除对象上的属性的，因为 JavaScript 里的对象有个特性，允许在运行期间，动态的为对象添加某个属性，那么，自然也允许动态的删除属性，就是通过这个运算符来操作。</p>
+<p>这个在对象一节还会拿出来讲，因为并不是所有的属性都可以成功被删除的，属性可以设置为不可配置，此时就无法通过 delete 来删除。</p>
+<p>另外，之前也说过，在函数外声明的全局变量，本质上都是以属性的形式被存在在全局对象上的，但这些通过 var 或 function 声明的全局变量，无法通过 delete 来进行删除。</p>
+<p>之前也说过，如果在声明变量时，不小心漏掉了 var 关键字，此时程序并不会出异常，因为漏掉 var 关键字对一个不存在的变量进行赋值操作，会被 js 解释器认为这行代码是要动态的为全局对象添加一个属性，这个动态添加的属性就可以通过 delete 来进行删除，因为动态添加的属性默认都是可配置的。</p>
+<h3 id="instanceof-运算符"><a href="#instanceof-运算符" class="headerlink" title="instanceof 运算符"></a>instanceof 运算符</h3><p>在 Java 中，可以通过 instanceof 运算符来判断某个对象是否是从指定类实例化出来的，也可以用于判断一群对象是否属于同一个类的实例。</p>
+<p>在 JavaScript 中有些区别，但也有些类似。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> b = &#123;&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">A</span>(<span class="params"></span>) </span>&#123;&#125;</span><br><span class="line">A.prototype = b;</span><br><span class="line"><span class="keyword">var</span> a = <span class="keyword">new</span> A();</span><br><span class="line"><span class="keyword">if</span> (a <span class="keyword">instanceof</span> A) &#123; <span class="comment">//符合，因为 a 是从A实例化的，继承自A.prototype即b</span></span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">"true"</span>); </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">B</span>(<span class="params"></span>) </span>&#123;&#125;</span><br><span class="line">B.prototype = b;</span><br><span class="line"><span class="keyword">var</span> c = <span class="keyword">new</span> B();</span><br><span class="line"><span class="keyword">if</span> (c <span class="keyword">instanceof</span> A) &#123;<span class="comment">//符合，虽然c是从B实例化的，但c也同样继承自b，而A.prototype指向b，所以满足</span></span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">"true"</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (c <span class="keyword">instanceof</span> <span class="built_in">Object</span>) &#123;<span class="comment">//符合，虽然 c 是继承自 b，但 b 继承自 Object.prototype，所以c的原型链中有 Object.prototype</span></span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">"true"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在 JavaScript 中，instanceof 运算符的左侧是对象，右侧是构造函数。但他们的判断是，只要左侧对象的原型链中包括右侧构造函数的 prototype 指向的原型，那么条件就满足，即使左侧对象不是从右侧构造函数实例化的对象。 </p>
+<p>例子代码看不懂么事，这个在后续介绍原型时，还会再拿出来说，先清楚有这么个运算符，运算符大概的作用是什么就可以了。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+      <div>
+        <div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center">
+    <img id="wechat_subscriber_qcode" src="/uploads/dasuAndroidTv2.png" alt="请叫我大苏 wechat" style="width: 200px; max-width: 100%;">
+    <div></div>
+</div>
+
+      </div>
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持将鼓励我继续创作！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/uploads/weixin.png" alt="请叫我大苏 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/uploads/alipay.jpg" alt="请叫我大苏 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/10/30/前端/入门/前端入门8-JavaScript语法之数据类型和变量/" rel="next" title="前端08-JavaScript语法之数据类型和变量（入门）">
+                <i class="fa fa-chevron-left"></i> 前端08-JavaScript语法之数据类型和变量（入门）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/10/31/前端/入门/前端入门10-JavaScript语法之对象/" rel="prev" title="前端10-JavaScript语法之对象（入门）">
+                前端10-JavaScript语法之对象（入门） <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div id="gitalk-container"></div>
+
+  
+
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/uploads/img.jpg" alt="请叫我大苏">
+            
+              <p class="site-author-name" itemprop="name">请叫我大苏</p>
+              <p class="site-description motion-element" itemprop="description">微信公众号：dasuAndroidTv</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">91</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/woshidasusu" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:295207731@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                其他平台
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.jianshu.com/u/bb52a2918096" title="简书" target="_blank">简书</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.cnblogs.com/dasusu/" title="博客园" target="_blank">博客园</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#声明"><span class="nav-number">1.</span> <span class="nav-text">声明</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#正文-运算符"><span class="nav-number">2.</span> <span class="nav-text">正文-运算符</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#“-”-运算符"><span class="nav-number">2.0.1.</span> <span class="nav-text">“+” 运算符</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#“-”-和-“-”-相等运算符"><span class="nav-number">2.0.2.</span> <span class="nav-text">“==” 和 “===” 相等运算符</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#“-”"><span class="nav-number">2.0.2.1.</span> <span class="nav-text">“===”</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#“-”-1"><span class="nav-number">2.0.2.2.</span> <span class="nav-text">“==”</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#“-amp-amp-”-逻辑与"><span class="nav-number">2.0.3.</span> <span class="nav-text">“&amp;&amp;” 逻辑与</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#应用场景"><span class="nav-number">2.0.3.1.</span> <span class="nav-text">应用场景</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#“-”-逻辑或"><span class="nav-number">2.0.4.</span> <span class="nav-text">“||” 逻辑或</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#应用场景-1"><span class="nav-number">2.0.4.1.</span> <span class="nav-text">应用场景</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#“-”-逗号运算符"><span class="nav-number">2.1.</span> <span class="nav-text">“,” 逗号运算符</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#typeof-运算符"><span class="nav-number">2.1.1.</span> <span class="nav-text">typeof 运算符</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#delete-运算符"><span class="nav-number">2.1.2.</span> <span class="nav-text">delete 运算符</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#instanceof-运算符"><span class="nav-number">2.1.3.</span> <span class="nav-text">instanceof 运算符</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">请叫我大苏</span><br>
+	
+  <div class="powered-by">
+    <i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+    本站访客数:<span id="busuanzi_value_site_uv"></span> | 
+    </span>
+  </div>
+
+  <div class="theme-info">
+    <div class="powered-by"></div>
+    <span class="post-count">博客全站共 349.1k 字</span>
+  </div>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+  <script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+   <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID: '',
+          clientSecret: '',
+          repo: 'woshidasusu.github.io',
+          owner: '',
+          admin: [''],
+          id: md5(window.location.pathname),
+          distractionFreeMode: 'true'
+        })
+        gitalk.render('gitalk-container')
+       </script>
+
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

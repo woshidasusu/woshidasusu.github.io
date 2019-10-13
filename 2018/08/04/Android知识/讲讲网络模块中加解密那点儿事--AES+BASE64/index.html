@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+      
+    
+    
+      
+    
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+  <link href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/favicon.ico?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本篇文章已授权微信公众号 dasu_Android（大苏）独家发布    这次想来讲讲网络安全通信这一块，也就是网络层封装的那一套加密、解密，编码、解码的规则，不会很深入，但会大概将这一整块的讲一讲。 之所以想写这篇，是因为，最近被抽过去帮忙做一个 C++ 项目，在 Android 中，各种编解码、加解密算法官方都已经封装好了，我们要使用非常的方便，但在 C++ 项目中很多都要自己写。 然而，自">
+<meta name="keywords" content="dasu, blog, 大苏">
+<meta property="og:type" content="article">
+<meta property="og:title" content="讲讲网络模块中加解密那点儿事--AES+BASE64">
+<meta property="og:url" content="http://woshidasusu.github.io/2018/08/04/Android知识/讲讲网络模块中加解密那点儿事--AES+BASE64/index.html">
+<meta property="og:site_name" content="dasu&#39;s blog">
+<meta property="og:description" content="本篇文章已授权微信公众号 dasu_Android（大苏）独家发布    这次想来讲讲网络安全通信这一块，也就是网络层封装的那一套加密、解密，编码、解码的规则，不会很深入，但会大概将这一整块的讲一讲。 之所以想写这篇，是因为，最近被抽过去帮忙做一个 C++ 项目，在 Android 中，各种编解码、加解密算法官方都已经封装好了，我们要使用非常的方便，但在 C++ 项目中很多都要自己写。 然而，自">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1924341-66628f61bc02489e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1924341-03059a86616e8391.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1924341-e12adc004153766d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2019-10-13T12:20:34.997Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="讲讲网络模块中加解密那点儿事--AES+BASE64">
+<meta name="twitter:description" content="本篇文章已授权微信公众号 dasu_Android（大苏）独家发布    这次想来讲讲网络安全通信这一块，也就是网络层封装的那一套加密、解密，编码、解码的规则，不会很深入，但会大概将这一整块的讲一讲。 之所以想写这篇，是因为，最近被抽过去帮忙做一个 C++ 项目，在 Android 中，各种编解码、加解密算法官方都已经封装好了，我们要使用非常的方便，但在 C++ 项目中很多都要自己写。 然而，自">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/1924341-66628f61bc02489e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://woshidasusu.github.io/2018/08/04/Android知识/讲讲网络模块中加解密那点儿事--AES+BASE64/">
+
+
+
+
+
+  <title>讲讲网络模块中加解密那点儿事--AES+BASE64 | dasu's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">dasu's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">I am dasu, and i'm coding</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://woshidasusu.github.io/2018/08/04/Android知识/讲讲网络模块中加解密那点儿事--AES+BASE64/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="请叫我大苏">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/img.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="dasu's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">讲讲网络模块中加解密那点儿事--AES+BASE64</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-08-04T21:30:25+08:00">
+                2018-08-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android知识/" itemprop="url" rel="index">
+                    <span itemprop="name">Android知识</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                  <span class="post-meta-divider">|</span>
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  4.7k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  18 min
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p><strong>本篇文章已授权微信公众号 dasu_Android（大苏）独家发布</strong>  </p>
+</blockquote>
+<p>这次想来讲讲网络安全通信这一块，也就是网络层封装的那一套加密、解密，编码、解码的规则，不会很深入，但会大概将这一整块的讲一讲。</p>
+<p>之所以想写这篇，是因为，最近被抽过去帮忙做一个 C++ 项目，在 Android 中，各种编解码、加解密算法官方都已经封装好了，我们要使用非常的方便，但在 C++ 项目中很多都要自己写。</p>
+<p>然而，自己写是不可能的了，没这么牛逼也没这么多时间去研究这些算法，网上自然不缺少别人写好的现成算法。但不同项目应用场景自然不一样，一般来说，都需要对其进行修修改改才能拿到项目中来用。</p>
+<p>踩的坑实在有点儿多，所以想写一篇来总结一下。好了，废话结束，开始正文。</p>
+<h1 id="提问"><a href="#提问" class="headerlink" title="提问"></a>提问</h1><p><strong>Q1: 你的 app 与后台各接口通信时有做身份校验吗？</strong>  </p>
+<p><strong>Q2: 你的 app 与后台各接口通信的数据有涉及敏感数据吗？你是如何处理的？</strong>  </p>
+<p><strong>Q3: MD5 了解过吗？</strong>  </p>
+<p><strong>Q4: AES(16位密钥 + CBC + PKCS5Padding) 呢？</strong></p>
+<p><strong>Q5: BASE64 呢？或者 UTF-8?</strong></p>
+<h1 id="理论"><a href="#理论" class="headerlink" title="理论"></a>理论</h1><h3 id="身份校验-–-MD5-算法"><a href="#身份校验-–-MD5-算法" class="headerlink" title="身份校验 – MD5 算法"></a>身份校验 – MD5 算法</h3><p>第一点：<strong>为什么需要身份校验？</strong>  </p>
+<p>身份校验是做什么，其实也就是校验访问接口的用户合法性。说得白一点，也就是要过滤掉那些通过脚本或其他非正常  app 发起的访问请求。</p>
+<p>试想一下，如果有人破解了服务端某个接口，然后写个脚本，模拟接口所需的各种参数，这样它就可以伪装成正常用户从这个接口拿到他想要的数据了。</p>
+<p>更严重点的是，如果他想图摸不轨，向服务端发送了一堆伪造的数据，如果这些数据会对服务端造成损失怎么办。</p>
+<p>所以，基本上服务端的接口都会有身份校验机制，来检测访问的对象是否合法。</p>
+<p>第二点：<strong>MD5 算法是什么？</strong>  </p>
+<p>通俗的讲，MD5 算法能对一串输入生成一串唯一的不可逆的 128 bit 的 0 和 1 的二进制串信息。</p>
+<p>通常 app 都会在发起请求前根据自己公司所定义的规则做一次 MD5 计算，作为 token 发送给服务端进行校验。</p>
+<p>MD5 有两个特性：唯一性和不可逆性。</p>
+<p>唯一性可以达到防止输入被篡改的目的，因为一旦第三方攻击者劫持了这个请求，篡改了携带的参数，那么服务端只要再次对这些输入做一次 MD5 运算，比较计算的结果与 app 上传的 token 即可检测出输入是否有被修改。</p>
+<p>不可逆的特点，则是就算第三方攻击者劫持了这次请求，看到了携带的参数，以及 MD5 计算后的 token，那么他也无法从这串 token 反推出我们计算 MD5 的规则，自然也就无法伪造新的 token，那么也就无法通过服务端的校验了。</p>
+<p>第三点：<strong>理解 16 位和 32 位 MD5 值的区别</strong></p>
+<p>网上有很多在线进行 MD5 计算的工具，如 <a href="http://www.cmd5.com/" target="_blank" rel="noopener">http://www.cmd5.com/</a>，这里演示一下，尝试一下分别输入：</p>
+<p><code>I am dasu</code> 和 <code>I&#39;m dasu</code> 看一下经过 MD5 运算后的结果：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-66628f61bc02489e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="MD5.png">  </p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-03059a86616e8391.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="MD5_.png">  </p>
+<p>首先确认一点，不同的输入，输出就会不一样，即使只做了细微修改，两者输出仍旧毫无规律而言。</p>
+<p>另外，因为经过 MD5 计算后输出是 128 bit 的 0 和 1 二进制串，但通常都是用十六进制来表示比较友好，1个十六进制是 4 个 bit，128 / 4 = 32，所以常说的 32 位的 MD5 指的是用十六进制来表示的输出串。</p>
+<p>那么，为什么还会有 16 位的 MD5 值？其实也就是嫌 32 位的数据太长了，所以去掉开头 8 位，末尾 8 位，截取中间的 16 位来作为 MD5 的输出值。</p>
+<p>所以，MD5 算法的输出只有一种：128 bit 的二进制串，而通常结果都用十六进制表示而已，32 位与 16 位的只是精度的区别而已。</p>
+<p>第四点：<strong>MD5 的应用</strong>  </p>
+<p>应用场景很多：数字签名、身份校验、完整性（一致性）校验等等。</p>
+<p>这里来讲讲 app 和服务端接口访问通过 MD5 来达到身份校验的场景。</p>
+<p>app 持有一串密钥，这串密钥服务端也持有，除此外别人都不知道，因此 app 就可以跟服务端协商，两边统一下交互的时候都有哪些数据是需要加入 MD5 计算的，以怎样的规则拼接进行 MD5 运算的，这样一旦这些数据被三方攻击者篡改了，也能检查出来。</p>
+<p>也就是说，密钥和拼接规则都是关键点，不可以泄漏出去。</p>
+<h3 id="敏感数据加密-–-AES-BASE64"><a href="#敏感数据加密-–-AES-BASE64" class="headerlink" title="敏感数据加密 – AES + BASE64"></a>敏感数据加密 – AES + BASE64</h3><p>MD5 只能达到校验的目的，而 app 与服务端交互时，数据都是在网络中传输的，这些请求如果被三方劫持了，那么如果交互的数据里有一些敏感信息，就会遭到泄漏，存在安全问题。</p>
+<p>当然，如果你的 app 与服务端的交互都是 HTTPS 协议了的话，那么自然就是安全的，别人抓不到包，也看不到信息。</p>
+<p>如果还是基于 HTTP 协议的话，那么有很多工具都可以劫持到这个 HTTP 包，app 与服务端交互的信息就这样赤裸裸的展示在别人面前。</p>
+<p>所以，通常一些敏感信息都会经过加密后再发送，接收方拿到数据后再进行解密即可。</p>
+<p>而加解密的世界很复杂，对称加密、非对称加密，每一种类型的加解密算法又有很多种，不展开了，因为实在展开不了，我门槛都没踏进去，实在没去深入学习过，目前只大概知道个流程原理，会用的程度。</p>
+<p>那么，本篇就介绍一种网上很常见的一整套加解密、编解码流程：</p>
+<h4 id="UTF-8-AES-BASE64"><a href="#UTF-8-AES-BASE64" class="headerlink" title="UTF-8 + AES + BASE64"></a>UTF-8 + AES + BASE64</h4><p>UTF-8 和 BASE64 都属于编解码，AES 属于对称加密算法。</p>
+<p>信息其实本质上是由二进制串组成，通过各种不同的编码格式，来将这段二进制串信息解析成具体的数据。比如 ASCII 编码定义了一套标准的英文、常见符号、数字的编码；UTF-8 则是支持中文的编码。目前大部分的 app 所使用的数据都是基于 UTF-8 格式的编码的吧。</p>
+<p>AES 属于对称加密算法，对称的意思是说，加密方和解密方用的是同一串密钥。信息经过加密后会变成一串毫无规律的二进制串，此时再选择一种编码方式来展示，通常是 BASE64 格式的编码。</p>
+<p>BASE64 编码是将所有信息都编码成只用大小写字母、0-9数字以及 + 和 / 64个字符表示，所有称作 BASE64。</p>
+<p>不同的编码所应用的场景不同，比如 UTF-8 倾向于在终端上呈现各种复杂字符包括简体、繁体中文、日文、韩文等等数据时所使用的一种编码格式。而 BASE64 编码通常用于在网络中传输较长的信息时所使用的一种编码格式。</p>
+<p>基于以上种种，目前较为常见的 app 与服务端交互的一套加解密、编解码流程就是：UTF-8 + AES + BASE64</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-e12adc004153766d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="加解密流程.png">  </p>
+<p>上图就是从 app 端发数据给服务端的一个加解密、编解码过程。</p>
+<p>需要注意的是，因为 AES 加解密时输入和输出都是二进制串的信息，因此，在发送时需先将明文通过 UTF-8 解码成二进制串，然后进行加密，再对这串二进制密文通过 BASE64 编码成密文串发送给接收方。</p>
+<p>接收方的流程就是反着来一遍就对了。</p>
+<h1 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h1><p>理论上基本清楚了，那么接下去就是代码实现了，Android 项目中要实现很简单，因为 JDK 和 SDK 中都已经将这些算法封装好了，直接调用 api 接口就可以了。</p>
+<h3 id="Java"><a href="#Java" class="headerlink" title="Java"></a>Java</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EncryptDecryptUtils</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String ENCODE = <span class="string">"UTF-8"</span>;</span><br><span class="line">    <span class="comment">//AES算法加解密模式有多种，这里选择 CBC + PKCS5Padding 模式，CBC 需要一个AES_IV偏移量参数，而AES_KEY 是密钥。当然，这里都是随便写的，这些信息很关键，不宜泄露</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String AES = <span class="string">"AES"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String AES_IV = <span class="string">"aaaaaaaaaaaaaaaa"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String AES_KEY = <span class="string">"1111111111111111"</span>;<span class="comment">//16字节，128bit，三种密钥长度中的一种</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String CIPHER_ALGORITHM = <span class="string">"AES/CBC/PKCS5Padding"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * AES加密后再Base64编码，输出密文。注意AES加密的输入是二进制串，所以需要先将UTF-8明文转成二进制串</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title">doEncryptEncode</span><span class="params">(String content)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        SecretKeySpec secretKeySpec = <span class="keyword">new</span> SecretKeySpec(AES_KEY.getBytes(ENCODE), AES);</span><br><span class="line">        Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);</span><br><span class="line">        cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, <span class="keyword">new</span> IvParameterSpec(AES_IV.getBytes(ENCODE)));</span><br><span class="line">        <span class="comment">//1. 先获取二进制串，再进行AES（CBC+PKCS5Padding)模式加密</span></span><br><span class="line">        <span class="keyword">byte</span>[] result = cipher.doFinal(content.getBytes(ENCODE));</span><br><span class="line">        <span class="comment">//2. 将二进制串编码成BASE64串</span></span><br><span class="line">        <span class="keyword">return</span> Base64.encodeToString(result, Base64.NO_WRAP);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * Base64解码后再进行AES解密，最后对二进制明文串进行UTF-8编码输出明文串</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title">doDecodeDecrypt</span><span class="params">(String content)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        SecretKeySpec secretKeySpec = <span class="keyword">new</span> SecretKeySpec(AES_KEY.getBytes(ENCODE), AES);</span><br><span class="line">        Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);</span><br><span class="line">        cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, <span class="keyword">new</span> IvParameterSpec(AES_IV.getBytes(ENCODE)));</span><br><span class="line">        <span class="comment">//1. 先将BASE64密文串解码成二进制串</span></span><br><span class="line">        <span class="keyword">byte</span>[] base64 = Base64.decode(content, Base64.NO_WRAP);</span><br><span class="line">        <span class="comment">//2. 再将二进制密文串进行AES(CBC+PKCS5Padding)模式解密</span></span><br><span class="line">        <span class="keyword">byte</span>[] result = cipher.doFinal(base64);</span><br><span class="line">        <span class="comment">//3. 最后将二进制的明文串以UTF-8格式编码成字符串后输出</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> String(result, Charset.forName(ENCODE)); </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Java 的实现代码是不是很简单，具体算法的实现都已经封装好了，就是调一调 api 的事。</p>
+<p>这里需要稍微知道下，AES 加解密模式分很多种，首先，它有三种密钥形式，分别是 128 bit，192 bit，256 bit，注意是 bit，Java 中的字符串每一位是 1B = 8 bit，所以上面例子中密钥长度是 16 位的字符串。</p>
+<p>除了密钥外，AES 还分四种模式的加解密算法：ECB，CBC，CFB，OFB，这涉及到具体算法，我也不懂，就不介绍了，清楚上面是使用了 CBC 模式就可以了。</p>
+<p>最后一点，使用 CBC 模式进行加密时，是对明文串进行分组加密的，每组的大小都一样，因此在分组时就有可能会存在最后一组的数量不够的情况，那么这时就需要进行填充，而这个填充的概念就是 PKCS5Padding 和 PKCS7Padding 两种。</p>
+<p>这两种的填充规则都一样，具体可看其他的文章，区别只在于分组时规定的每组的大小。在PKCS5Padding中，明确定义 Block 的大小是 8 位，而在 PKCS7Padding 定义中，对于块的大小是不确定的，可以在 1-255 之间。</p>
+<p>稍微了解下这些就够了，如果你不继续往下研究 C++ 的写法，这些不了解也没事，会用就行。</p>
+<h3 id="C"><a href="#C" class="headerlink" title="C++"></a>C++</h3><p>c++ 坑爹的地方就在于，这整个流程，包括 UTF-8 编解码、AES 加解密、BASE64 编解码都得自己写。</p>
+<p>当然，不可能自己写了，网上轮子那么多了，但问题就在于，因为 AES 加解密模式太多了，网上的资料大部分都只是针对其中一种进行介绍，因此，如果不稍微了解一下相关原理的话，就无从下手进行修改了。</p>
+<p>我这篇，自然也只是介绍我所使用的模式，如果你刚好跟我一样，那也许可以帮到你，如果跟你不一样，至少我列出了资料的来源，整篇下来也稍微讲了一些基础性的原理，掌握这些，做点儿修修补补应该是可以的。</p>
+<p>贴代码前，先将我所使用的模式列出来：</p>
+<p><strong>UTF-8 + AES(16位密钥 + CBC + PKCS5Padding) + BASE64</strong>  </p>
+<p>其实这些都类似于工具类，官方库没提供，那网上找个轮子就好了，都是一个 h 和 cpp 文件而已，复制粘贴下就可以了。重点在于准备好了这些工具类后，怎么用，怎么稍微修改。</p>
+<p>如果你不想自己网上找，那下面我已经将相关链接都贴出来了，去复制粘贴下就可以了。</p>
+<p><a href="https://blog.csdn.net/yinshi_blog/article/details/6731809" target="_blank" rel="noopener">c++ string、UTF8相互转换方法</a>  </p>
+<p><a href="https://blog.csdn.net/csdn49532/article/details/50686222" target="_blank" rel="noopener">C++使用AES+Base64算法对文本进行加密</a>  </p>
+<p>我最开始就是拿的第二篇来用的，然后才发现他所采用的模式是：AES(16位密钥 + CBC + PKCS7Padding) + BASE64</p>
+<p>也就是说，他的例子中不支持中文的加解密，而且填充模式采用的是 PKCS7Padding，跟我的不一致。一开始我也不了解相关原理基础，怎么调都调不出结果，无奈只能先去学习下原理基础。</p>
+<p>还好后面慢慢的理解了，也懂得该改哪些地方，也增加了 UTF-8 编解码的处理。下面贴的代码中注释会写得很清楚，整篇看下来，我相信，就算你模式跟我的也不一样，你的密钥是24位的、32位的，没关系，稍微改一改就可以了。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//EncryptDecryptUtils.h</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> once</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> AES_INFO</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> AES_INFO</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> AES_KEY <span class="meta-string">"1111111111111111"</span>  <span class="comment">//AES 16B的密钥</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> AES_IV <span class="meta-string">"aaaaaaaaaaaaaaaa"</span> <span class="comment">//AES CBC加解密模式所需的偏移量</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span> </span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">EncryptDecryptUtils</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">//解码解密</span></span><br><span class="line">	<span class="function"><span class="keyword">static</span> <span class="built_in">string</span> <span class="title">doDecodeDecrypt</span><span class="params">(<span class="built_in">string</span> content)</span></span>;</span><br><span class="line">	<span class="comment">//加密编码</span></span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="built_in">string</span> <span class="title">doEncryptEncode</span><span class="params">(<span class="built_in">string</span> content)</span></span>;</span><br><span class="line">	EncryptDecryptUtils();</span><br><span class="line">    ~EncryptDecryptUtils();</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="comment">//去除字符串中的空格、换行符</span></span><br><span class="line">	<span class="function"><span class="keyword">static</span> <span class="built_in">string</span> <span class="title">removeSpace</span><span class="params">(<span class="built_in">string</span> content)</span></span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>以下才是具体实现，其中在头部 include 的 AES.h，Base64.h，UTF8.h 需要先从上面给的博客链接中将相关代码复制粘贴过来。这些文件基本都是作为工具类使用，不需要进行改动。可能需要稍微改一改的就只是 AES.h 文件，因为不同的填充模式需要改一个常量值。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//EncryptDecryptUtils.cpp</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"EncryptDecryptUtils.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"AES.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"Base64.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"UTF8.h"</span></span></span><br><span class="line"></span><br><span class="line">EncryptDecryptUtils::EncryptDecryptUtils()</span><br><span class="line">&#123;</span><br><span class="line">&#125;</span><br><span class="line">~EncryptDecryptUtils::EncryptDecryptUtils()</span><br><span class="line">&#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 流程：服务端下发的BASE64编码的密文字符串 -&gt; 去除字符串中的换行符 -&gt; BASE64解码 -&gt; AES::CBC模式解密 -&gt; 去掉AES::PKCS5Padding 填充 -&gt; UTF-8编码 -&gt; 明文字符串</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="built_in">string</span> EncryptDecryptUtils::doDecodeDecrypt(<span class="built_in">string</span> content)</span><br><span class="line">&#123;	</span><br><span class="line">	<span class="comment">//1.去掉字符串中的\r\n换行符</span></span><br><span class="line"> 	<span class="built_in">string</span> noWrapContent = removeSpace(<span class="built_in">string</span>);</span><br><span class="line">	<span class="comment">//2. Base64解码</span></span><br><span class="line">	<span class="built_in">string</span> strData = base64_decode(noWrapContent);</span><br><span class="line">	<span class="keyword">size_t</span> length = strData.length();</span><br><span class="line"></span><br><span class="line">    <span class="comment">//3. new些数组，给解密用</span></span><br><span class="line">	<span class="keyword">char</span> *szDataIn = <span class="keyword">new</span> <span class="keyword">char</span>[length + <span class="number">1</span>];</span><br><span class="line">	<span class="built_in">memcpy</span>(szDataIn, strData.c_str(), length + <span class="number">1</span>);</span><br><span class="line">	<span class="keyword">char</span> *szDataOut = <span class="keyword">new</span> <span class="keyword">char</span>[length + <span class="number">1</span>];</span><br><span class="line">	<span class="built_in">memcpy</span>(szDataOut, strData.c_str(), length + <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//4. 进行AES的CBC模式解密</span></span><br><span class="line">	AES aes;</span><br><span class="line">    <span class="comment">//在这里传入密钥，和偏移量，以及指定密钥长度和iv长度，如果你的密钥长度不是16字节128bit，那么需要在这里传入相对应的参数。</span></span><br><span class="line">	aes.MakeKey(<span class="built_in">string</span>(AES_KEY).c_str(), <span class="built_in">string</span>(AES_IV).c_str(), <span class="number">16</span>, <span class="number">16</span>);</span><br><span class="line">    <span class="comment">//这里参数有传入指定加解密的模式，AES::CBC，如果你不是这个模式，需要传入相对应的模式，源码中都有注释说明</span></span><br><span class="line">	aes.Decrypt(szDataIn, szDataOut, length, AES::CBC);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//5.去PKCS5Padding填充:解密后需要将字符串中填充的去掉，根据填充规则进行去除，感兴趣可去搜索相关的填充规则</span></span><br><span class="line">	<span class="keyword">if</span> (<span class="number">0x00</span> &lt; szDataOut[length - <span class="number">1</span>] &lt;= <span class="number">0x16</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">int</span> tmp = szDataOut[length - <span class="number">1</span>];</span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">int</span> i = length - <span class="number">1</span>; i &gt;= length - tmp; i--)</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">if</span> (szDataOut[i] != tmp)</span><br><span class="line">			&#123;</span><br><span class="line">				<span class="built_in">memset</span>(szDataOut, <span class="number">0</span>, length);</span><br><span class="line">				<span class="keyword">break</span>;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">else</span></span><br><span class="line">				szDataOut[i] = <span class="number">0</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//6. 将二进制的明文串转成UTF-8格式的编码方式，输出</span></span><br><span class="line">	<span class="built_in">string</span> srcDest = UTF8_To_string(szDataOut);</span><br><span class="line">	<span class="keyword">delete</span>[] szDataIn;</span><br><span class="line">	<span class="keyword">delete</span>[] szDataOut;</span><br><span class="line">	<span class="keyword">return</span> srcDest;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 流程：UTF-8格式的明文字符串 -&gt; UTF-8解码成二进制串 -&gt; AES::PKCS5Padding 填充 -&gt; AES::CBC模式加密 -&gt; BASE64编码 -&gt; 密文字符串</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="built_in">string</span> EncryptDecryptUtils::doEncryptEncode(<span class="built_in">string</span> content)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="comment">//1. 先获取UTF-8解码后的二进制串</span></span><br><span class="line">	<span class="built_in">string</span> utf8Content = string_To_UTF8(content);</span><br><span class="line">	<span class="keyword">size_t</span> length = utf8Content.length();</span><br><span class="line">	<span class="keyword">int</span> block_num = length / BLOCK_SIZE + <span class="number">1</span>;</span><br><span class="line">	</span><br><span class="line">    <span class="comment">//2. new 些数组供加解密使用</span></span><br><span class="line">	<span class="keyword">char</span>* szDataIn = <span class="keyword">new</span> <span class="keyword">char</span>[block_num * BLOCK_SIZE + <span class="number">1</span>];</span><br><span class="line">	<span class="built_in">memset</span>(szDataIn, <span class="number">0x00</span>, block_num * BLOCK_SIZE + <span class="number">1</span>);</span><br><span class="line">	<span class="built_in">strcpy</span>(szDataIn, utf8Content.c_str());</span><br><span class="line"></span><br><span class="line">	<span class="comment">//3. 进行PKCS5Padding填充：进行CBC模式加密前，需要填充明文串，确保可以分组后各组都有相同的大小。</span></span><br><span class="line">	<span class="comment">// BLOCK_SIZE是在AES.h中定义的常量，PKCS5Padding 和 PKCS7Padding 的区别就是这个 BLOCK_SIZE 的大小，我用的PKCS5Padding，所以定义成 8。如果你是使用 PKCS7Padding，那么就根据你服务端具体大小是在 1-255中的哪个值修改即可。</span></span><br><span class="line">    <span class="keyword">int</span> k = length % BLOCK_SIZE;</span><br><span class="line">	<span class="keyword">int</span> j = length / BLOCK_SIZE;</span><br><span class="line">	<span class="keyword">int</span> padding = BLOCK_SIZE - k;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; padding; i++)</span><br><span class="line">	&#123;</span><br><span class="line">		szDataIn[j * BLOCK_SIZE + k + i] = padding;</span><br><span class="line">	&#125;</span><br><span class="line">	szDataIn[block_num * BLOCK_SIZE] = <span class="string">'\0'</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">char</span> *szDataOut = <span class="keyword">new</span> <span class="keyword">char</span>[block_num * BLOCK_SIZE + <span class="number">1</span>];</span><br><span class="line">	<span class="built_in">memset</span>(szDataOut, <span class="number">0</span>, block_num * BLOCK_SIZE + <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//4. 进行AES的CBC模式加密</span></span><br><span class="line">	AES aes;</span><br><span class="line">     <span class="comment">//在这里传入密钥，和偏移量，以及指定密钥长度和iv长度，如果你的密钥长度不是16字节128bit，那么需要在这里传入相对应的参数。</span></span><br><span class="line">	aes.MakeKey(<span class="built_in">string</span>(AES_KEY).c_str(), <span class="built_in">string</span>(AES_IV).c_str(), <span class="number">16</span>, <span class="number">16</span>);</span><br><span class="line">    <span class="comment">//这里参数有传入指定加解密的模式，AES::CBC，如果你不是这个模式，需要传入相对应的模式，源码中都有注释说明</span></span><br><span class="line">	aes.Encrypt(szDataIn, szDataOut, block_num * BLOCK_SIZE, AES::CBC);</span><br><span class="line">	</span><br><span class="line">    <span class="comment">//5. Base64编码</span></span><br><span class="line">	<span class="built_in">string</span> str = base64_encode((<span class="keyword">unsigned</span> <span class="keyword">char</span>*)szDataOut, block_num * BLOCK_SIZE);</span><br><span class="line">	<span class="keyword">delete</span>[] szDataIn;</span><br><span class="line">	<span class="keyword">delete</span>[] szDataOut;</span><br><span class="line">	<span class="keyword">return</span> str;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//去除字符串中的空格、换行符</span></span><br><span class="line"><span class="built_in">string</span> EncryptDecryptUtils::formatText(<span class="built_in">string</span> src)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">int</span> len = src.length();</span><br><span class="line">	<span class="keyword">char</span> *dst = <span class="keyword">new</span> <span class="keyword">char</span>[len + <span class="number">1</span>];</span><br><span class="line">	<span class="keyword">int</span> i = <span class="number">-1</span>, j = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">while</span> (src[++i])</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">switch</span> (src[i])</span><br><span class="line">		&#123;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">'\n'</span>:</span><br><span class="line">		<span class="keyword">case</span> <span class="string">'\t'</span>:</span><br><span class="line">		<span class="keyword">case</span> <span class="string">'\r'</span>:</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		dst[j++] = src[i];</span><br><span class="line">	&#125;</span><br><span class="line">	dst[j] = <span class="string">'\0'</span>;</span><br><span class="line">	<span class="built_in">string</span> rel = <span class="built_in">string</span>(dst);</span><br><span class="line">	<span class="keyword">delete</span> dst;</span><br><span class="line">	<span class="keyword">return</span> rel;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>再列个在线验证 AES 加解密结果的网站，方便调试：</p>
+<p><a href="http://www.seacha.com/tools/aes.html" target="_blank" rel="noopener">http://www.seacha.com/tools/aes.html</a></p>
+<p><strong>Java 实现那么方便，为什么还需要用 C++ 的呢？</strong>  </p>
+<p>想一想，密钥信息那么重要，你要放在哪？像我例子那样直接写在代码中？那只是个例子，别忘了，app 混淆的时候，字符串都是不会参与混淆的，随便反编译下你的 app，密钥就暴露给别人了。</p>
+<p>那么，有其他比较好的方式吗？我只能想到，AES 加解密相关的用 C++ 来写，生成个 so 库，提供个 jni 接口给 app 层调用，这样密钥信息就可以保存在 C++ 中了。</p>
+<p>也许你会觉得，哪有人那么闲去反编译 app，而且正在写的 app 又没有什么价值让别人反编译。</p>
+<p>emmm，说是这么说，但安全意识还是要有的，至少也要先知道有这么个防护的方法，以及该怎么做，万一哪天你写的 app 就火了呢？</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+      <div>
+        <div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center">
+    <img id="wechat_subscriber_qcode" src="/uploads/dasuAndroidTv2.png" alt="请叫我大苏 wechat" style="width: 200px; max-width: 100%;">
+    <div></div>
+</div>
+
+      </div>
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持将鼓励我继续创作！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/uploads/weixin.png" alt="请叫我大苏 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/uploads/alipay.jpg" alt="请叫我大苏 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/20/Android源码解析/带你了解源码中的-ThreadLocal/" rel="next" title="带你了解源码中的 ThreadLocal">
+                <i class="fa fa-chevron-left"></i> 带你了解源码中的 ThreadLocal
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/08/12/Android知识/讲讲断点续传那点儿事/" rel="prev" title="讲讲断点续传那点儿事">
+                讲讲断点续传那点儿事 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div id="gitalk-container"></div>
+
+  
+
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/uploads/img.jpg" alt="请叫我大苏">
+            
+              <p class="site-author-name" itemprop="name">请叫我大苏</p>
+              <p class="site-description motion-element" itemprop="description">微信公众号：dasuAndroidTv</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">91</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/woshidasusu" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:295207731@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                其他平台
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.jianshu.com/u/bb52a2918096" title="简书" target="_blank">简书</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.cnblogs.com/dasusu/" title="博客园" target="_blank">博客园</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#提问"><span class="nav-number">1.</span> <span class="nav-text">提问</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#理论"><span class="nav-number">2.</span> <span class="nav-text">理论</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#身份校验-–-MD5-算法"><span class="nav-number">2.0.1.</span> <span class="nav-text">身份校验 – MD5 算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#敏感数据加密-–-AES-BASE64"><span class="nav-number">2.0.2.</span> <span class="nav-text">敏感数据加密 – AES + BASE64</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#UTF-8-AES-BASE64"><span class="nav-number">2.0.2.1.</span> <span class="nav-text">UTF-8 + AES + BASE64</span></a></li></ol></li></ol></li></ol><li class="nav-item nav-level-1"><a class="nav-link" href="#代码"><span class="nav-number">3.</span> <span class="nav-text">代码</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Java"><span class="nav-number">3.0.1.</span> <span class="nav-text">Java</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C"><span class="nav-number">3.0.2.</span> <span class="nav-text">C++</span></a></li></ol></li></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">请叫我大苏</span><br>
+	
+  <div class="powered-by">
+    <i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+    本站访客数:<span id="busuanzi_value_site_uv"></span> | 
+    </span>
+  </div>
+
+  <div class="theme-info">
+    <div class="powered-by"></div>
+    <span class="post-count">博客全站共 349.1k 字</span>
+  </div>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+  <script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+   <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID: '',
+          clientSecret: '',
+          repo: 'woshidasusu.github.io',
+          owner: '',
+          admin: [''],
+          id: md5(window.location.pathname),
+          distractionFreeMode: 'true'
+        })
+        gitalk.render('gitalk-container')
+       </script>
+
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

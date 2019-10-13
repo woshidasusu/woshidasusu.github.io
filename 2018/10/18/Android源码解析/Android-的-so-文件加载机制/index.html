@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+      
+    
+    
+      
+    
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+  <link href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/favicon.ico?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本篇文章已授权微信公众号 guolin_blog （郭霖）独家发布    最近碰到一些 so 文件问题，顺便将相关知识点梳理一下。 提问本文的结论是跟着 System.loadlibrary() 一层层源码走进去，个人对其的理解所整理的，那么开始看源码之前，先来提几个问题： Q1：你知道 so 文件的加载流程吗？ Q2：设备存放 so 的路径有 system/lib，vendor/lib，sys">
+<meta name="keywords" content="dasu, blog, 大苏">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android 的 so 文件加载机制">
+<meta property="og:url" content="http://woshidasusu.github.io/2018/10/18/Android源码解析/Android-的-so-文件加载机制/index.html">
+<meta property="og:site_name" content="dasu&#39;s blog">
+<meta property="og:description" content="本篇文章已授权微信公众号 guolin_blog （郭霖）独家发布    最近碰到一些 so 文件问题，顺便将相关知识点梳理一下。 提问本文的结论是跟着 System.loadlibrary() 一层层源码走进去，个人对其的理解所整理的，那么开始看源码之前，先来提几个问题： Q1：你知道 so 文件的加载流程吗？ Q2：设备存放 so 的路径有 system/lib，vendor/lib，sys">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-10-13T12:03:41.467Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android 的 so 文件加载机制">
+<meta name="twitter:description" content="本篇文章已授权微信公众号 guolin_blog （郭霖）独家发布    最近碰到一些 so 文件问题，顺便将相关知识点梳理一下。 提问本文的结论是跟着 System.loadlibrary() 一层层源码走进去，个人对其的理解所整理的，那么开始看源码之前，先来提几个问题： Q1：你知道 so 文件的加载流程吗？ Q2：设备存放 so 的路径有 system/lib，vendor/lib，sys">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://woshidasusu.github.io/2018/10/18/Android源码解析/Android-的-so-文件加载机制/">
+
+
+
+
+
+  <title>Android 的 so 文件加载机制 | dasu's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">dasu's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">I am dasu, and i'm coding</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://woshidasusu.github.io/2018/10/18/Android源码解析/Android-的-so-文件加载机制/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="请叫我大苏">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/img.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="dasu's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android 的 so 文件加载机制</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-10-18T21:30:25+08:00">
+                2018-10-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android源码解析/" itemprop="url" rel="index">
+                    <span itemprop="name">Android源码解析</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                  <span class="post-meta-divider">|</span>
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  10.3k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  41 min
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p><strong>本篇文章已授权微信公众号 guolin_blog （郭霖）独家发布</strong>  </p>
+</blockquote>
+<p>最近碰到一些 so 文件问题，顺便将相关知识点梳理一下。</p>
+<h1 id="提问"><a href="#提问" class="headerlink" title="提问"></a>提问</h1><p>本文的结论是跟着 <code>System.loadlibrary()</code> 一层层源码走进去，个人对其的理解所整理的，那么开始看源码之前，先来提几个问题：</p>
+<p><strong>Q1：你知道 so 文件的加载流程吗？</strong></p>
+<p><strong>Q2：设备存放 so 的路径有 system/lib，vendor/lib，system/lib64，vendor/lib64，知道在哪里规定了这些路径吗？清楚哪些场景下系统会去哪个目录下寻找 so 文件吗？还是说，所有的目录都会去寻找？</strong></p>
+<p><strong>Q3：Zygote 进程是分 32 位和 64 位的，那么，系统是如何决定某个应用应该运行在 32 位上，还是 64 位上？</strong></p>
+<p><strong>Q4：如果程序跑在 64 位的 Zygote 进程上时，可以使用 32 位的 so 文件么，即应用的 primaryCpuAbi 为 arm64-v8a，那么是否可使用 armeabi-v7a 的 so 文件，兼容的吗？</strong></p>
+<p>Q2，Q3，Q4，这几个问题都是基于设备支持 64 位的前提下，在旧系统版本中，只支持 32 位，也就没这么多疑问需要处理了。</p>
+<h1 id="源码"><a href="#源码" class="headerlink" title="源码"></a>源码</h1><h3 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h3><p>由于这次的源码会涉及很多 framework 层的代码，包括 java 和 c++，直接在 AndroidStudio 跟进 SDK 的源码已不足够查看到相关的代码了。所以，此次是借助 Source Insight 软件，而源码来源如下：</p>
+<p><a href="https://android.googlesource.com/platform/" target="_blank" rel="noopener">https://android.googlesource.com/platform/</a>  </p>
+<p>我并没有将所有目录下载下来，只下载了如下目录的源码：</p>
+<ul>
+<li><a href="https://android.googlesource.com/platform/system/core/+archive/android-5.1.1_r24.tar.gz" target="_blank" rel="noopener">system/core</a></li>
+<li><a href="https://android.googlesource.com/platform/bionic/+archive/android-5.1.1_r24.tar.gz" target="_blank" rel="noopener">bionic</a></li>
+<li><a href="https://android.googlesource.com/platform/libcore/+archive/android-5.1.1_r24.tar.gz" target="_blank" rel="noopener">libcore</a></li>
+<li><a href="https://android.googlesource.com/platform/dalvik/+archive/android-5.1.1_r24.tar.gz" target="_blank" rel="noopener">dalvik</a></li>
+<li><a href="https://android.googlesource.com/platform/frameworks/base/+archive/android-5.1.1_r24.tar.gz" target="_blank" rel="noopener">frameworks/base</a></li>
+<li><a href="https://android.googlesource.com/platform/frameworks/native/+archive/android-5.1.1_r24.tar.gz" target="_blank" rel="noopener">frameworks/native</a></li>
+</ul>
+<p>我没有下载最新版本的代码，而是选择了 Tags 下的 More 按钮，然后选择 tag 为： <strong>android-5.1.1 r24</strong> 的代码下载。所以，此次分析的源码是基于这个版本，其余不同版本的代码可能会有所不一样，但大体流程应该都是一致的。</p>
+<h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><p>源码分析的过程很长很长，不想看过程的话，你也可以直接跳到末尾看结论，但就会错失很多细节的分析了。</p>
+<p>那么下面就开始来过下源码吧，分析的入口就是跟着 <code>System.loadlibrary()</code> 走 ：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//System#loadlibrary()</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">loadLibrary</span><span class="params">(String libName)</span> </span>&#123;</span><br><span class="line">    Runtime.getRuntime().loadLibrary(libName, VMStack.getCallingClassLoader());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//Runtime#loadLibrary()</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">loadLibrary</span><span class="params">(String libraryName, ClassLoader loader)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//1. 程序中通过 System.loadlibrary() 方式，这个 loader 就不会为空，流程走这边</span></span><br><span class="line">    <span class="keyword">if</span> (loader != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="comment">//2. loader.findLibrary() 这是个重点，这个方法用于寻找 so 文件是否存在</span></span><br><span class="line">        String filename = loader.findLibrary(libraryName);</span><br><span class="line">        <span class="keyword">if</span> (filename == <span class="keyword">null</span>) &#123;</span><br><span class="line">             <span class="keyword">throw</span> <span class="keyword">new</span> UnsatisfiedLinkError(loader + <span class="string">" couldn't find \""</span> + System.mapLibraryName(libraryName) + <span class="string">"\""</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//3. 如果 so 文件找到，那么加载它</span></span><br><span class="line">        String error = doLoad(filename, loader);</span><br><span class="line">        <span class="keyword">if</span> (error != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">//4. 如果加载失败，那么抛异常</span></span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> UnsatisfiedLinkError(error);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">	<span class="comment">//1.1 以下代码的运行场景我不清楚，但有几个方法可以蛮看一下</span></span><br><span class="line">    <span class="comment">//mapLibraryName 用于拼接 so 文件名的前缀:lib，和后缀.so</span></span><br><span class="line">    String filename = System.mapLibraryName(libraryName);</span><br><span class="line">    <span class="comment">//...省略</span></span><br><span class="line">    <span class="comment">//1.2 mLibPaths 存储着设备存放 so 文件的目录地址</span></span><br><span class="line">    <span class="keyword">for</span> (String directory: mLibPaths) &#123;</span><br><span class="line">        String candidate = directory + filename;</span><br><span class="line">        candidates.add(candidate);</span><br><span class="line">        <span class="keyword">if</span> (IoUtils.canOpenReadOnly(candidate)) </span><br><span class="line">            <span class="comment">// 1.3 调用 native 层方法加载 so 库</span></span><br><span class="line">            String error = doLoad(candidate, loader);</span><br><span class="line">            <span class="keyword">if</span> (error == <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span>; <span class="comment">// We successfully loaded the library. Job done.</span></span><br><span class="line">            &#125;</span><br><span class="line">            lastError = error;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">	<span class="comment">//...省略</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>所以，其实 System 的 <code>loadlibrary()</code> 是调用的 Runtime 的 <code>loadLibrary()</code>，不同系统版本，这些代码是有些许差别的，但不管怎样，重点都还是 <code>loadLibrary()</code> 中调用的一些方法，这些方法基本没变，改变的只是其他代码的优化写法。</p>
+<p>那么，要理清 so 文件的加载流程，或者说，要找出系统是去哪些地址加载 so 文件的，就需要梳理清这些方法：</p>
+<ul>
+<li><code>loader.findLibrary()</code> </li>
+<li><code>doLoad()</code></li>
+</ul>
+<p>第一个方法用于寻找 so 文件，所涉及的整个流程应该都在这个方法里，如果可以找到，会返回 so 文件的绝对路径，然后交由 <code>doLoad()</code> 去加载。</p>
+<h4 id="java-library-path"><a href="#java-library-path" class="headerlink" title="java.library.path"></a>java.library.path</h4><p>但在深入去探索之前，我想先探索另一条分支，loader 为空的场景。loader 什么时候为空，什么时候不为空，我并不清楚，只是看别人的文章分析时说，程序中通过 <code>System.loadlibrary()</code> 方式加载 so，那么 loader 就不会为空。那，我就信你了，不然我也不知道去哪分析为不为空的场景。</p>
+<p>既然程序不会走另一个分支，为什么我还要先来探索它呢？因为，第一个分支太不好探索了，先从另一个分支摸索点经验，而且还发现了一些感觉可以拿来讲讲的方法：</p>
+<ul>
+<li><code>System.mapLibraryName()</code> </li>
+</ul>
+<p>用于拼接 so 文件名的前缀 <code>lib</code>，和后缀 <code>.so</code>。</p>
+<ul>
+<li><code>mLibPaths</code> </li>
+</ul>
+<p>在其他版本的源码中，可能就没有这个变量了，直接就是调用一个方法，但作用都一样，我们看看这个变量的赋值：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Runtime.mLibPaths</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> String[] mLibPaths = initLibPaths();</span><br><span class="line"></span><br><span class="line"><span class="comment">//Runtime#initLibPaths()</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> String[] initLibPaths() &#123;</span><br><span class="line">    String javaLibraryPath = System.getProperty(<span class="string">"java.library.path"</span>);</span><br><span class="line">    <span class="comment">//...省略</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最后都是通过调用 System 的 <code>getProperty()</code> 方法，读取 <code>java.library.path</code> 的属性值。</p>
+<p>也就是说，通过读取 <code>java.library.path</code> 的系统属性值，是可以获取到设备存放 so 库的目录地址的，那么就来看看在哪里有设置这个属性值进去。</p>
+<p>System 内部有一个类型为 Properties 的静态变量，不同版本，这个变量名可能不一样，但作用也都一样，用来存储这些系统属性值，这样程序需要的时候，调用 <code>getProperty()</code> 读取属性值时其实是来这个静态变量中读取。而变量的初始化地方在类中的 static 代码块中：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//System</span></span><br><span class="line"><span class="keyword">static</span> &#123;</span><br><span class="line">    <span class="comment">//...省略</span></span><br><span class="line">    <span class="comment">//1.初始化一些不变的系统属性值</span></span><br><span class="line">    unchangeableSystemProperties = initUnchangeableSystemProperties();</span><br><span class="line">    <span class="comment">//2.将上述的属性值以及一些默认的系统属性值设置到静态变量中</span></span><br><span class="line">    systemProperties = createSystemProperties();</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//System#initUnchangeableSystemProperties()</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> Properties <span class="title">initUnchangeableSystemProperties</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">//...省略一些属性值设置</span></span><br><span class="line">    p.put(<span class="string">"java.vm.vendor"</span>, projectName);</span><br><span class="line">    p.put(<span class="string">"java.vm.version"</span>, runtime.vmVersion());</span><br><span class="line">    p.put(<span class="string">"file.separator"</span>, <span class="string">"/"</span>);</span><br><span class="line">    p.put(<span class="string">"line.separator"</span>, <span class="string">"\n"</span>);</span><br><span class="line">    p.put(<span class="string">"path.separator"</span>, <span class="string">":"</span>);</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">	</span><br><span class="line">    <span class="comment">//1.这里是重点</span></span><br><span class="line">    parsePropertyAssignments(p, specialProperties());</span><br><span class="line"></span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">return</span> p;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//System#createSystemProperties()</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> Properties <span class="title">createSystemProperties</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">//1.拷贝不可变的一些系统属性值</span></span><br><span class="line">    Properties p = <span class="keyword">new</span> PropertiesWithNonOverrideableDefaults(unchangeableSystemProperties);</span><br><span class="line">    <span class="comment">//2.设置一些默认的属性值</span></span><br><span class="line">    setDefaultChangeableProperties(p);</span><br><span class="line">    <span class="keyword">return</span> p;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//System#setDefaultChangeableProperties()</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">setDefaultChangeableProperties</span><span class="params">(Properties p)</span> </span>&#123;</span><br><span class="line">    p.put(<span class="string">"java.io.tmpdir"</span>, <span class="string">"/tmp"</span>);</span><br><span class="line">    p.put(<span class="string">"user.home"</span>, <span class="string">""</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>static 静态代码块中的代码其实就是在初始化系统属性值，分两个步骤，一个是先设置一些不可变的属性值，二是设置一些默认的属性值，然后将这些存储在静态变量中。</p>
+<p>但其实，不管在哪个方法中，都没找到有设置 <code>java.library.path</code> 属性值的代码，那这个属性值到底是在哪里设置的呢？</p>
+<p>关键点在于设置不可变的属性时，有调用了一个 native 层的方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//System</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* Returns an array of "key=value" strings containing information not otherwise</span></span><br><span class="line"><span class="comment">* easily available, such as #defined library versions.</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">native</span> String[] specialProperties();</span><br></pre></td></tr></table></figure>
+
+<p>这方法会返回 key=value 形式的字符串数组，然后 <code>parsePropertyAssignments()</code> 方法会去遍历这些数组，将这些属性值填充到存储系统属性值的静态变量中。</p>
+<p>也就是说，在 native 层还会设置一些属性值，而 <code>java.library.path</code> 有可能就是在 native 中设置的，那么就跟下去看看吧。</p>
+<p>System 连同包名的全名是：java.lang.System；那么，通常，所对应的 native 层的 cpp 文件名为：java_lang_System.cpp，到这里去看看：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//platform/libcore/luni/src/main/native/java_lang_System.cpp#System_specialProperties()</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> jobjectArray <span class="title">System_specialProperties</span><span class="params">(JNIEnv* env, jclass)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>&gt; properties;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">	</span><br><span class="line">    <span class="comment">//1. 获取 LD_LIBRARY_PATH 环境变量值</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span>* library_path = getenv(<span class="string">"LD_LIBRARY_PATH"</span>);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> defined(HAVE_ANDROID_OS)</span></span><br><span class="line">    <span class="keyword">if</span> (library_path == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="comment">//2.如果 1 步骤没获取到路径，那么通过该方法获取 so 库的目录路径</span></span><br><span class="line">        android_get_LD_LIBRARY_PATH(path, <span class="keyword">sizeof</span>(path));</span><br><span class="line">        library_path = path;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    <span class="keyword">if</span> (library_path == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        library_path = <span class="string">""</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//3.设置 java.library.path 属性值</span></span><br><span class="line">    properties.push_back(<span class="built_in">std</span>::<span class="built_in">string</span>(<span class="string">"java.library.path="</span>) + library_path);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> toStringArray(env, properties);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>没错吧，对应的 native 层的方法是上述这个，它干的事，其实也是设置一些属性值，我们想要的 <code>java.library.path</code> 就是在这里设置的。那么，这个属性值来源的逻辑是这样的：</p>
+<ol>
+<li>先读取 LD_LIBRARY_PATH 环境变量值，如果不为空，就以这个值为准。但我测试过，貌似，程序运行时读取的这个值一直是 null，在 Runtime 的 <code>doLoad()</code> 方法注释中，Google 有解释是说由于 Android 的进程都是通过 Zygote 进程 fork 过来，所以不能使用 LD_LIBRARY_PATH 。应该，大概，可能是这个意思吧，我英文不大好，你们可以自行去确认一下。</li>
+<li>也就是说，第一步读取的 LD_LIBRARY_PATH  值是为空，所以会进入第二步，调用 android_get_LD_LIBRARY_PATH 方法来读取属性值。（进入这个步骤有个条件是定义了 HAVE_ANDROID_OS 宏变量，我就不去找到底哪里在什么场景下会定义了，看命名我直接猜测 Android 系统就都有定义的了）</li>
+</ol>
+<p>那么，继续看看 android_get_LD_LIBRARY_PATH  这个方法做了些什么：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//platform/libcore/luni/src/main/native/java_lang_System.cpp</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> defined(HAVE_ANDROID_OS)</span></span><br><span class="line"><span class="keyword">extern</span> <span class="string">"C"</span> <span class="function"><span class="keyword">void</span> <span class="title">android_get_LD_LIBRARY_PATH</span><span class="params">(<span class="keyword">char</span>*, <span class="keyword">size_t</span>)</span></span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+
+<p>emmm，看不懂，头疼。那，直接全局搜索下这个方法名试试看吧，结果在另一个 cpp 中找到它的实现：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//platform/bionic/linker/dlfcn.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">android_get_LD_LIBRARY_PATH</span><span class="params">(<span class="keyword">char</span>* buffer, <span class="keyword">size_t</span> buffer_size)</span> </span>&#123;</span><br><span class="line">  <span class="function">ScopedPthreadMutexLocker <span class="title">locker</span><span class="params">(&amp;g_dl_mutex)</span></span>;</span><br><span class="line">  do_android_get_LD_LIBRARY_PATH(buffer, buffer_size);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第一行估计是加锁之类的意思吧，不管，第二行是调用另一个方法，继续跟下去看看：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//platform/bionic/linker/linker.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">do_android_get_LD_LIBRARY_PATH</span><span class="params">(<span class="keyword">char</span>* buffer, <span class="keyword">size_t</span> buffer_size)</span> </span>&#123;</span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">  <span class="keyword">char</span>* end = stpcpy(buffer, kDefaultLdPaths[<span class="number">0</span>]);</span><br><span class="line">  *end = <span class="string">':'</span>;</span><br><span class="line">  <span class="built_in">strcpy</span>(end + <span class="number">1</span>, kDefaultLdPaths[<span class="number">1</span>]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">char</span>* <span class="keyword">const</span> kDefaultLdPaths[] = &#123;</span><br><span class="line">#<span class="keyword">if</span> defined(__LP64__)</span><br><span class="line">  <span class="string">"/vendor/lib64"</span>,</span><br><span class="line">  <span class="string">"/system/lib64"</span>,</span><br><span class="line">#<span class="keyword">else</span></span><br><span class="line">  <span class="string">"/vendor/lib"</span>,</span><br><span class="line">  <span class="string">"/system/lib"</span>,</span><br><span class="line">#endif</span><br><span class="line">  <span class="literal">nullptr</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>还好 Source Insight 点击方法时有时可以支持直接跳转过去，调用的这个方法又是在另一个 cpp 文件中了。开头省略了一些大小空间校验的代码，然后直接复制了静态常量的值，而这个静态常量在这份文件顶部定义。</p>
+<p>终于跟到底了吧，也就是说，如果有定义了 <strong>__LP64__</strong> 这个宏变量，那么就将 <code>java.library.path</code> 属性值赋值为 “/vendor/lib64:/system/lib64”，否则，就赋值为 “/vendor/lib:/system/lib”。</p>
+<p>也就是说，so 文件的目录地址其实是在 native 层通过硬编码方式写死的，网上那些理所当然的说 so 文件的存放目录也就是这四个，是这么来的。那么，说白了，系统默认存放 so 文件的目录就两个，只是有两种场景。</p>
+<p>而至于到底什么场景下会有这个 __LP64__ 宏变量的定义，什么时候没有，我实在没能力继续跟踪下去了，网上搜索了一些资料后，仍旧不是很懂，如果有清楚的大佬，能够告知、指点下就最棒了。</p>
+<p>我自己看了些资料，以及，自己也做个测试：同一个 app，修改它的 primaryCpuAbi 值，调用 System 的 <code>getProperty()</code> 来读取 <code>java.library.path</code>，它返回的值是会不同的。</p>
+<p>所以，以我目前的能力以及所掌握的知识，我是这么猜测的，纯属个人猜测：</p>
+<p>__LP64__ 这个宏变量并不是由安卓系统代码来定义的，而是 Linux 系统层面所定义的。在 Linux 系统中，可执行文件，也可以说所运行的程序，如果是 32 位的，那么是没有定义这个宏变量的，如果是 64 位的，那么是有定义这个宏变量的。</p>
+<p>总之，通俗的联想解释，__LP64__ 这个宏变量表示着当前程序是 32 位还是 64 位的意思。（个人理解）</p>
+<p>有时间再继续研究吧，反正这里清楚了，系统默认存放 so 文件的目录只有两个，但有两种场景。vendor 较少用，就不每次都打出来了。也就是说，如果应用在 system/lib 目录中没有找到 so 文件，那么它是不会再自动去 system/lib64 中寻找的，两者它只会选其一。至于选择哪个，因为 Zygote 是有分 32 位还是 64 位进程的，那么刚好可以根据这个为依据。</p>
+<h4 id="findLibrary"><a href="#findLibrary" class="headerlink" title="findLibrary"></a>findLibrary</h4><p>该走回主线了，在支线中的探索已经摸索了些经验了。  </p>
+<p>大伙应该还记得吧，System 调用了 <code>loadlibrary()</code> 之后，内部其实是调用了 Runtime 的 <code>loadLibrary()</code> 方法，这个方法内部会去调用 ClassLoader 的 <code>findLibrary()</code> 方法，主要是去寻找这个 so 文件是否存在，如果存在，会返回 so 文件的绝对路径，接着交由 Runtime 的 <code>doLoad()</code> 方法去加载 so 文件。</p>
+<p>所以，我们想要梳理清楚 so 文件的加载流程，<code>findLibrary()</code> 是关键。那么，接下去，就来跟着 <code>findLibrary()</code> 走下去看看吧：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ClassLoader#findLibrary()</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> String <span class="title">findLibrary</span><span class="params">(String libName)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ClassLoader 只是一个基类，具体实现在其子类，那这里具体运行的是哪个子类呢？</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//System#loadlibrary()</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">loadLibrary</span><span class="params">(String libName)</span> </span>&#123;</span><br><span class="line">    Runtime.getRuntime().loadLibrary(libName, VMStack.getCallingClassLoader());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>所以这里是调用了 VMStack 的一个方法来获取 ClassLoader 对象，那么继续跟进看看：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">native</span> <span class="keyword">public</span> <span class="keyword">static</span> ClassLoader <span class="title">getCallingClassLoader</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>又是一个 native 的方法，我尝试过跟进去，没有看懂。那么，换个方向来找出这个基类的具体实现子类是哪个吧，很简单的一个方法，打 log 输出这个对象本身：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ClassLoader classLoader = getClassLoader();</span><br><span class="line">Log.v(TAG, <span class="string">"classLoader = "</span> + classLoader.toString());</span><br><span class="line"><span class="comment">//输出</span></span><br><span class="line"><span class="comment">// classLoader = dalvik.system.PathClassLoader[dexPath=/data/app/com.qrcode.qrcode-1.apk,libraryPath=/data/app-lib/com.qrcode.qrcode-1]</span></span><br></pre></td></tr></table></figure>
+
+<p>以上打 Log 代码是从 <a href="https://my.oschina.net/wolfcs/blog/129696" target="_blank" rel="noopener">Java中System.loadLibrary() 的执行过程</a> 这篇文章中截取出来的，使用这个方法的前提是你得清楚 VMStack 的 <code>getCallingClassLoader()</code> 含义其实是获取调用这个方法的类它的类加载器对象。</p>
+<p>或者，你对 Android 的类加载机制有所了解，知道当启动某个 app 时，经过层层工作后，会接着让 LoadedApk 去加载这个 app 的 apk，然后通过 ApplicationLoader 来加载相关代码文件，而这个类内部是实例化了一个 PathClassLoader 对象去进行 dex 的加载。</p>
+<p>不管哪种方式，总之清楚了这里实际上是调用了 PathClassLoader 的 <code>findLibrary()</code> 方法，但 PathClassLoader  内部并没有这个方法，它继承自 BaseDexClassLoader，所以实际上还是调用了父类的方法，跟进去看看：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//platform/libcore/dalvik/src/main/java/dalvik/system/BaseDexClassLoader.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">findLibrary</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> pathList.findLibrary(name);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> DexPathList pathList;</span><br></pre></td></tr></table></figure>
+
+<p>内部又调用了 DexPathList 的 <code>findLibrary()</code> 方法，继续跟进看看：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//platform/libcore/dalvik/src/main/java/dalvik/system/DexPathList.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">findLibrary</span><span class="params">(String libraryName)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//1. 拼接前缀：lib，和后缀：.so</span></span><br><span class="line">    String fileName = System.mapLibraryName(libraryName);</span><br><span class="line">    <span class="comment">//2. 遍历所有存放 so 文件的目录，确认指定文件是否存在以及是只读文件</span></span><br><span class="line">    <span class="keyword">for</span> (File directory: nativeLibraryDirectories) &#123;</span><br><span class="line">        String path = <span class="keyword">new</span> File(directory, fileName).getPath();</span><br><span class="line">        <span class="keyword">if</span> (IoUtils.canOpenReadOnly(path)) &#123;</span><br><span class="line">            <span class="keyword">return</span> path;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** List of native library directories. */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> File[] nativeLibraryDirectories;</span><br></pre></td></tr></table></figure>
+
+<p>到了这里，会先进行文件名补全操作，拼接上前缀：lib 和后缀：.so，然后遍历所有存放 so 文件的目录，当找到指定文件，且是只读属性，则返回该 so 文件的绝对路径。</p>
+<p>所以，重点就是 nativeLibraryDirectories 这个变量了，这里存放着 so 文件存储的目录路径，那么得看看它在哪里被赋值了：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//platform/libcore/dalvik/src/main/java/dalvik/system/DexPathList.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">DexPathList</span><span class="params">(ClassLoader definingContext, String dexPath, String libraryPath, File optimizedDirectory)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="comment">//1. 唯一赋值的地方，构造函数</span></span><br><span class="line">    <span class="keyword">this</span>.nativeLibraryDirectories = splitLibraryPath(libraryPath);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> File[] splitLibraryPath(String path) &#123;</span><br><span class="line">    <span class="comment">// Native libraries may exist in both the system and</span></span><br><span class="line">    <span class="comment">// application library paths, and we use this search order:</span></span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">    <span class="comment">//   1. this class loader's library path for application libraries</span></span><br><span class="line">    <span class="comment">//   2. the VM's library path from the system property for system libraries</span></span><br><span class="line">    <span class="comment">//   (翻译下，大体是说，so 文件的来源有两处：1是应用自身存放 so 文件的目录，2是系统指定的目录)</span></span><br><span class="line">    <span class="comment">// This order was reversed prior to Gingerbread; see http://b/2933456.</span></span><br><span class="line">    ArrayList &lt; File &gt; result = splitPaths(path, System.getProperty(<span class="string">"java.library.path"</span>), <span class="keyword">true</span>);</span><br><span class="line">    <span class="keyword">return</span> result.toArray(<span class="keyword">new</span> File[result.size()]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//将传入的两个参数的目录地址解析完都存放到集合中</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> ArrayList &lt; File &gt; splitPaths(String path1, String path2, <span class="keyword">boolean</span> wantDirectories) &#123;</span><br><span class="line">    ArrayList &lt; File &gt; result = <span class="keyword">new</span> ArrayList &lt; File &gt; ();</span><br><span class="line">	</span><br><span class="line">    splitAndAdd(path1, wantDirectories, result);</span><br><span class="line">    splitAndAdd(path2, wantDirectories, result);</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">splitAndAdd</span><span class="params">(String searchPath, <span class="keyword">boolean</span> directoriesOnly, ArrayList &lt; File &gt; resultList)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (searchPath == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//因为获取系统的 java.library.path 属性值返回的路径是通过 : 拼接的，所以先拆分，然后判断这些目录是否可用 </span></span><br><span class="line">    <span class="keyword">for</span> (String path: searchPath.split(<span class="string">":"</span>)) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            StructStat sb = Libcore.os.stat(path);</span><br><span class="line">            <span class="keyword">if</span> (!directoriesOnly || S_ISDIR(sb.st_mode)) &#123;</span><br><span class="line">                resultList.add(<span class="keyword">new</span> File(path));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span>(ErrnoException ignored) &#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>所以，nativeLibraryDirectories 这个变量是在构造函数中被赋值。代码不多，总结一下，构造函数会传入一个 libraryPath 参数，表示应用自身存放 so 文件的路径，然后内部会再去调用 System 的 <code>getProperty(&quot;java.library.path&quot;)</code> 方法获取系统指定的 so 文件目录地址。最后，将这些路径都添加到集合中。</p>
+<p>而且，看添加的顺序，是先添加应用自身的 so 文件目录，然后再添加系统指定的 so 文件目录，也就是说，当加载 so 文件时，是先去应用自身的 so 文件目录地址寻找，没有找到，才会去系统指定的目录。</p>
+<p>而系统指定的目录地址在 native 层的 linker.cpp 文件定义，分两种场景，取决于应用当前的进程是 32 位还是 64 位，32 位的话，则按顺序分别去 vendor/lib 和 system/lib 目录中寻找，64 位则是相对应的 lib64 目录中。</p>
+<p>虽然，so 文件加载流程大体清楚了，但还有两个疑问点：</p>
+<ul>
+<li>构造方法参数传入的表示应用自身存放 so 文件目录的 libraryPath 值是哪里来的；</li>
+<li>应用什么时候运行在 32 位或 64 位的进程上；</li>
+</ul>
+<h4 id="nativeLibraryDir"><a href="#nativeLibraryDir" class="headerlink" title="nativeLibraryDir"></a>nativeLibraryDir</h4><p>先看第一个疑问点，应用自身存放 so 文件目录的这个值，要追究的话，这是一个很漫长的故事。</p>
+<p>这个过程，我不打算全部都贴代码了，因为很多步骤，我自己也没有去看源码，也是看的别人的文章，我们以倒着追踪的方式来进行追溯吧。</p>
+<p>首先，这个 libraryPath  值是通过 DexPathList 的构造方法传入的，而 BaseDexClassLoader 内部的 DexPathList 对象实例化的地方也是在它自己的构造方法中，同样，它也接收一个 libraryPath 参数值，所以 BaseDexClassLoader 只是做转发，来源并不在它这里。</p>
+<p>那么，再往回走，就是 LoadedApk 实例化 PathClassLoader 对象的地方了，在它的 <code>getClassLoader()</code> 方法中：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//platform/frameworks/base/core/java/android/app/LoadedApk.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> ClassLoader <span class="title">getClassLoader</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span>(<span class="keyword">this</span>) &#123;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">        <span class="keyword">final</span> ArrayList &lt; String &gt; libPaths = <span class="keyword">new</span> ArrayList &lt; &gt;();</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">        libPaths.add(mLibDir);</span><br><span class="line">		<span class="comment">//...</span></span><br><span class="line">        <span class="keyword">final</span> String lib = TextUtils.join(File.pathSeparator, libPaths);</span><br><span class="line">		<span class="comment">//...</span></span><br><span class="line">        mClassLoader = ApplicationLoaders.getDefault().getClassLoader(zip, lib, mBaseClassLoader);</span><br><span class="line">		<span class="comment">//...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">LoadedApk</span><span class="params">(ActivityThread activityThread, ApplicationInfo aInfo, CompatibilityInfo compatInfo, ClassLoader baseLoader, <span class="keyword">boolean</span> securityViolation, <span class="keyword">boolean</span> includeCode, <span class="keyword">boolean</span> registerPackage)</span> </span>&#123;</span><br><span class="line">   <span class="comment">//...</span></span><br><span class="line">    mLibDir = aInfo.nativeLibraryDir;</span><br><span class="line">   <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>无关代码都省略掉了，也就是说，传给 DexPathList  的 libraryPath 值，其实是将要启动的这个 app 的 ApplicationInfo 中的 nativeLibraryDir 变量值。</p>
+<p>可以看看 ApplicationInfo 中这个变量的注释： </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ApplicationInfo </span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* Full path to the directory where native JNI libraries are stored.</span></span><br><span class="line"><span class="comment">* 存放 so 文件的绝对路径</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">public</span> String nativeLibraryDir;</span><br></pre></td></tr></table></figure>
+
+<p>通俗点解释也就是，存放应用自身 so 文件的目录的绝对路径。那么问题又来了，传给 LoadedApk 的这个 ApplicationInfo 对象哪里来的呢？</p>
+<p>这个就又涉及到应用的启动流程了，大概讲一下：</p>
+<p>我们知道，当要启动其他应用时，其实是通过发送一个 Intent 去启动这个 app 的 LAUNCHER 标志的 Activity。而当这个 Intent 发送出去后，是通过 Binder 通信方式通知了 ActivityManagerServer 去启动这个 Activity。</p>
+<p>AMS 在这个过程中会做很多事，但在所有事之前，它得先解析 Intent，知道要启动的是哪个 app 才能继续接下去的工作，这个工作在 ActivityStackSupervisor 的 <code>resolveActivity()</code>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ActivityStackSupervisor.java</span></span><br><span class="line"><span class="function">ActivityInfo <span class="title">resolveActivity</span><span class="params">(Intent intent, String resolvedType, <span class="keyword">int</span> startFlags, ProfilerInfo profilerInfo, <span class="keyword">int</span> userId)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// Collect information about the target of the Intent.</span></span><br><span class="line">    ActivityInfo aInfo;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        ResolveInfo rInfo = AppGlobals.getPackageManager().resolveIntent(intent, resolvedType, PackageManager.MATCH_DEFAULT_ONLY | ActivityManagerService.STOCK_PM_FLAGS, userId);</span><br><span class="line">        aInfo = rInfo != <span class="keyword">null</span> ? rInfo.activityInfo: <span class="keyword">null</span>;</span><br><span class="line">    &#125; <span class="keyword">catch</span>(RemoteException e) &#123;</span><br><span class="line">        aInfo = <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>不同版本，可能不是由这个类负责这个工作了，但可以跟着 ActivityManagerService 的 <code>startActivity()</code> 走下去看看，不用跟很深就能找到，因为这个工作是比较早进行的。</p>
+<p>所以，解析 Intent 获取 app 的相关信息就又交给 PackageManagerService 的 <code>resolveIntent()</code> 进行了，PKMS 的工作不贴了，我直接说了吧：</p>
+<p>PKMS 会根据 Intent 中目标组件的 packageName，通过一个只有包权限的类 Settings 来获取对应的 ApplicationInfo 信息，这个 Settings 类全名：com.android.server.pm.Settings，它的职责之一是存储所有 app 的基本信息，也就是在 data/system/packages.xml 中各 app 的信息都交由它维护缓存。</p>
+<p>所以，一个 app 的 ApplicationInfo 信息，包括 nativeLibraryDir 我们都可以在 data/system/packages.xml 这份文件中查看到。这份文件的角色我把它理解成类似 PC 端上的注册表，所有 app 的信息都注册在这里。</p>
+<p>那这份 packages.xml 文件的数据又是从哪里来的呢，这又得涉及到 apk 的安装机制过程了。</p>
+<p>简单说一下，一个 app 的安装过程，在解析 apk 包过程中，还会结合各种设备因素等等来决定这个 app 的各种属性，比如说 nativeLibraryDir 这个属性值的确认，就需要考虑这个 app 是三方应用还是系统应用，这个应用的 primaryCpuAbi 属性值是什么，apk 文件的地址等等因素后，最后才确定了应用存放 so 文件的目录地址是哪里。</p>
+<p>举个例子，对于系统应用来说，这个 nativeLibraryDir 值有可能最后是 /system/lib/xxx，也有可能是 system/app/xxx/lib 等等；而对于三方应用来说，这值有可能就是 data/app/xxx/lib；</p>
+<p>也就是说，当 app 安装完成时，这些属性值也就都解析到了，就都会保存到 Settings 中，同时会将这些信息写入到 data/system/packages.xml 中。</p>
+<p><strong>到这里，先来小结一下，梳理下前面的内容：</strong></p>
+<p>当一个 app 安装的时候，系统会经过各种因素考量，最后确认 app 的一个 nativeLibraryDir 属性值，这个属性值代表应用自身的 so 文件存放地址，这个值也可以在 data/system/packages.xml 中查看。</p>
+<p>当应用调用了 System 的 <code>loadlibrary()</code> 时，这个 so 文件的加载流程如下：</p>
+<ol>
+<li>先到 nativeLibraryDir 指向的目录地址中寻找这个 so 文件是否存在、可用；</li>
+<li>如果没找到，那么根据应用进程是 32 位或者 64 位来决定下去应该去哪个目录寻找 so 文件；</li>
+<li>如果是 32 位，则先去 vendor/lib 找，最后再去 system/lib 中寻找；</li>
+<li>如果是 64 位，则先去 vendor/lib64 找，最后再去 system/lib64 中寻找；</li>
+<li>系统默认的目录是在 native 层中的 linker.cpp 文件中指定，更严谨的说法，不是进程是不是 32 位或 64 位，而是是否有定义了 __LP64__ 这个宏变量。</li>
+</ol>
+<h4 id="primaryCpuAbi"><a href="#primaryCpuAbi" class="headerlink" title="primaryCpuAbi"></a>primaryCpuAbi</h4><p>我们已经清楚了，加载 so 文件的流程，其实就分两步，先去应用自身存放 so 文件的目录（nativeLibraryDir）寻找，找不到，再去系统指定的目录中寻找。</p>
+<p>而系统指定是目录分两种场景，应用进程是 32 位或者 64 位，那么，怎么知道应用是运行在 32 位还是 64 位的呢？又或者说，以什么为依据来决定一个应用是应该跑在 32 位上还是跑在 64 位上？</p>
+<p>这个就取决于一个重要的属性了 primaryCpuAbi，它代表着这个应用的 so 文件使用的是哪个 abi 架构。</p>
+<p>abi 常见的如：arm64-v8a，armeabi-v7a，armeabi，mips，x86_64 等等。</p>
+<p>我们在打包 apk 时，如果不指定，其实默认是会将所有 abi 对应的 so 文件都打包一份，而通常，为了减少 apk 包体积，我们在 build.gradle 脚本中会指定只打其中一两份。但不管 apk 包有多少种不同的 abi 的 so 文件，在 app 安装过程中，最终拷贝到 nativeLibraryDir 中的通常都只有一份，除非你手动指定了要多份。</p>
+<p>那么，app 在安装过程中，怎么知道，应该拷贝 apk 中的 lib 下的哪一份 so 文件呢？这就是由应用的 primaryCpuAbi 属性决定。</p>
+<p>而同样，这个属性一样是在 app 安装过程中确定的，这个过程更加复杂，末尾有给了篇链接，感兴趣可以去看看，大概来说，就是 apk 包中的 so 文件、系统应用、相同 UID 的应用、设备的 abilist 等都对这个属性值的确定过程有所影响。同样，这个属性值也可以在 data/system/packages.xml 中查看。</p>
+<p>那么，这个 primaryCpuAbi 属性值是如何影响应用进程是 32 位还是 64 位的呢？</p>
+<p>这就涉及到 Zygote 方面的知识了。</p>
+<p>在系统启动之后，系统会根据设备的 ro.zygote 属性值决定启动哪个 Zygote，可以通过执行 <code>getprop | grep ro.zygote</code> 来查看这个属性值，属性值与对应的 Zygote 进程关系如下：</p>
+<ul>
+<li>zygote32：只启动一个 32 位的 Zygote 进程</li>
+<li>zygote32_64：启动两个 Zygote 进程，分别为 32 位和 64 位，32 位的进程名为 zygote，表示以它为主，64 位进程名为  zygote_secondary ，表示它作为辅助</li>
+<li>zygote64：只启动一个 64 位的 Zygote 进程</li>
+<li>zygote64_32：启动两个 Zygote 进程，分别为 32 位和 64 位，64 位的进程名为 zygote，表示以它为主，32 位进程名为  zygote_secondary ，表示它作为辅助</li>
+</ul>
+<p>而 Zygote 进程启动之后，会打开一个 socket 端口，等待 AMS 发消息过来启动新的应用时 fork 当前 Zygote 进程，所以，如果 AMS 是发给 64 位的 Zygote，那么新的应用自然就是跑在 64 位的进程上；同理，如果发给了 32 位的 Zygote 进程，那么 fork 出来的进程自然也就是 32 位的。</p>
+<p>那么，可以跟随着 AMS 的 <code>startProcessLocked()</code> 方法，去看看是以什么为依据选择 32 位或 64 位的 Zygote：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ActivityManagerService</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">startProcessLocked</span><span class="params">(ProcessRecord app, String hostingType, String hostingNameStr, String abiOverride, String entryPoint, String[] entryPointArgs)</span> </span>&#123;</span><br><span class="line">	<span class="comment">//...省略</span></span><br><span class="line">    <span class="comment">//1. 获取要启动的 app 的 primaryCpuAbi 属性值，abiOverride 不知道是什么，可能是 Google 开发人员写测试用例用的吧，或者其他一些场景</span></span><br><span class="line">    String requiredAbi = (abiOverride != <span class="keyword">null</span>) ? abiOverride: app.info.primaryCpuAbi;</span><br><span class="line">    <span class="keyword">if</span> (requiredAbi == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="comment">//2. 如果为空，以设备支持的首个 abi 属性值，可执行 getprot ro.product.cpu.abilist 查看</span></span><br><span class="line">        requiredAbi = Build.SUPPORTED_ABIS[<span class="number">0</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">	</span><br><span class="line">    <span class="comment">//3. 调用Precess 的 start 方法，将 requiredAbi 传入</span></span><br><span class="line">    Process.ProcessStartResult startResult = Process.start(entryPoint, app.processName, uid, uid, gids, debugFlags, mountExternal, app.info.targetSdkVersion, app.info.seinfo, requiredAbi, instructionSet, app.info.dataDir, entryPointArgs);</span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>AMS 会先获取要启动的 app 的 primaryCpuAbi 属性值，至于这个 app 的相关信息怎么来的，跟上一小节一样，解析 Intent 时交由 PKMS 去它模块内部的 Settings 读取的。</p>
+<p>如果 primaryCpuAbi 为空，则以设备支持的首个 abi 属性值为主，设备支持的 abi 列表可以通过执行 <code>getprot ro.product.cpu.abilist</code> 查看，最后调用 Precess 的 <code>start()</code> 方法，将读取的 abi 值传入：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Process</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> ProcessStartResult <span class="title">start</span><span class="params">(<span class="keyword">final</span> String processClass, <span class="keyword">final</span> String niceName, <span class="keyword">int</span> uid, <span class="keyword">int</span> gid, <span class="keyword">int</span>[] gids, <span class="keyword">int</span> debugFlags, <span class="keyword">int</span> mountExternal, <span class="keyword">int</span> targetSdkVersion, String seInfo, String abi, String instructionSet, String appDataDir, String[] zygoteArgs)</span> </span>&#123;</span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">    <span class="keyword">return</span> startViaZygote(processClass, niceName, uid, gid, gids, debugFlags, mountExternal, targetSdkVersion, seInfo, abi, instructionSet, appDataDir, zygoteArgs);</span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> ProcessStartResult <span class="title">startViaZygote</span><span class="params">(<span class="keyword">final</span> String processClass, <span class="keyword">final</span> String niceName, <span class="keyword">final</span> <span class="keyword">int</span> uid, <span class="keyword">final</span> <span class="keyword">int</span> gid, <span class="keyword">final</span> <span class="keyword">int</span>[] gids, <span class="keyword">int</span> debugFlags, <span class="keyword">int</span> mountExternal, <span class="keyword">int</span> targetSdkVersion, String seInfo, String abi, String instructionSet, String appDataDir, String[] extraArgs)</span> <span class="keyword">throws</span> ZygoteStartFailedEx </span>&#123;</span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">    <span class="comment">//所以 abi 最终是调用 openZygoteSocketIfNeeded() 方法，传入给它使用</span></span><br><span class="line">    <span class="keyword">return</span> zygoteSendArgsAndGetResult(openZygoteSocketIfNeeded(abi), argsForZygote);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>abi 值又是一层传一层，最终交到了 Process 的 <code>openZygoteSocketIfNeeded()</code> 方法中使用，跟进看看：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Process</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> ZygoteState <span class="title">openZygoteSocketIfNeeded</span><span class="params">(String abi)</span> <span class="keyword">throws</span> ZygoteStartFailedEx </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (primaryZygoteState == <span class="keyword">null</span> || primaryZygoteState.isClosed()) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//ZYGOTE_SOCKET值为 zygote,</span></span><br><span class="line">            <span class="comment">//通过 ZygoteState 的 connect 方法，连接进程名为 zygote 的 Zygote 进程</span></span><br><span class="line">            primaryZygoteState = ZygoteState.connect(ZYGOTE_SOCKET);</span><br><span class="line">        &#125; <span class="keyword">catch</span>(IOException ioe) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> ZygoteStartFailedEx(<span class="string">"Error connecting to primary zygote"</span>, ioe);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">	<span class="comment">//在进程名为 zygote 的 Zygote 进程支持的 abi 列表中，查看是否支持要启动的 app 的需要的 abi</span></span><br><span class="line">    <span class="keyword">if</span> (primaryZygoteState.matches(abi)) &#123;</span><br><span class="line">        <span class="keyword">return</span> primaryZygoteState;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// The primary zygote didn't match. Try the secondary.</span></span><br><span class="line">    <span class="keyword">if</span> (secondaryZygoteState == <span class="keyword">null</span> || secondaryZygoteState.isClosed()) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">             <span class="comment">//SECONDARY_ZYGOTE_SOCKET 的值为 zygote_secondary,</span></span><br><span class="line">            <span class="comment">//通过 ZygoteState 的 connect 方法，连接进程名为 zygote_secondary 的 Zygote 进程</span></span><br><span class="line">            secondaryZygoteState = ZygoteState.connect(SECONDARY_ZYGOTE_SOCKET);</span><br><span class="line">        &#125; <span class="keyword">catch</span>(IOException ioe) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> ZygoteStartFailedEx(<span class="string">"Error connecting to secondary zygote"</span>, ioe);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">	<span class="comment">//在进程名为 zygote_secondary 的 Zygote 进程支持的 abi 列表中，查看是否支持要启动的 app 的需要的 abi</span></span><br><span class="line">    <span class="keyword">if</span> (secondaryZygoteState.matches(abi)) &#123;</span><br><span class="line">        <span class="keyword">return</span> secondaryZygoteState;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> ZygoteStartFailedEx(<span class="string">"Unsupported zygote ABI: "</span> + abi);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> ZygoteState primaryZygoteState;</span><br><span class="line"><span class="keyword">static</span> ZygoteState secondaryZygoteState;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String ZYGOTE_SOCKET = <span class="string">"zygote"</span>;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String SECONDARY_ZYGOTE_SOCKET = <span class="string">"zygote_secondary"</span>;</span><br></pre></td></tr></table></figure>
+
+<p>到了这里，是先获取进程名 zygote 的 Zygote 进程，查看它支持的 abi 列表中是否满足要启动的 app 所需的 abi，如果满足，则使用这个 Zygote 来 fork 新进程，否则，获取另一个进程名为 zygote_secondary 的 Zygote 进程，同样查看它支持的 abi 列表中是否满足 app 所需的 abi，如果都不满足，抛异常。</p>
+<p>那么，名为 zygote 和 zygote_secondary 分别对应的是哪个 Zygote 进程呢？哪个对应 32 位，哪个对应 64 位？</p>
+<p>还记得上述说过的，系统启动后，会去根据设备的 ro.zygote 属性决定启动哪个 Zygote 进程吗？对应关系就是这个属性值决定的，举个例子，可以看看 zygote64_32 对应的 Zygote 启动配置文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">//platform/system/core/rootdir/init.zygote64_32.rc</span><br><span class="line">service zygote /system/bin/app_process64 -Xzygote /system/bin --zygote --start-system-server --socket-name=zygote</span><br><span class="line">    class main</span><br><span class="line">    socket zygote stream 660 root system</span><br><span class="line">    onrestart write /sys/android_power/request_state wake</span><br><span class="line">    onrestart write /sys/power/state on</span><br><span class="line">    onrestart restart media</span><br><span class="line">    onrestart restart netd</span><br><span class="line"></span><br><span class="line">service zygote_secondary /system/bin/app_process32 -Xzygote /system/bin --zygote --socket-name=zygote_secondary</span><br><span class="line">    class main</span><br><span class="line">    socket zygote_secondary stream 660 root system</span><br><span class="line">    onrestart restart zygote</span><br></pre></td></tr></table></figure>
+
+<p>这份代码前半段的意思就表示，让 Linux 启动一个 service，进程名为 zygote，可执行文件位于 /system/bin/app_process64，后面是参数以及其他命令。</p>
+<p>所以，名为 zygote 和 zygote_secondary 分别对应的是哪个 Zygote 进程，就取决于设备的 ro.zygote 属性。</p>
+<p>而，获取 Zygote 支持的 abi 列表是通过 ZygoteState 的 <code>connect()</code> 方法，我们继续跟进看看：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Process$ZygoteState</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ZygoteState <span class="title">connect</span><span class="params">(String socketAddress)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line"></span><br><span class="line">    String abiListString = getAbiList(zygoteWriter, zygoteInputStream);</span><br><span class="line">    Log.i(<span class="string">"Zygote"</span>, <span class="string">"Process: zygote socket opened, supported ABIS: "</span> + abiListString);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> ZygoteState(zygoteSocket, zygoteInputStream, zygoteWriter, Arrays.asList(abiListString.split(<span class="string">","</span>)));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>发现没有，源码内部将 Zygote 支持的 abi 列表输出日志了，你们可以自己尝试下，过滤下 TAG 为 Zygote，然后重启下设备，因为如果本来就连着 Zygote，那么是不会走到这里的了，最后看一下相关日志，如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">01-01 08:00:13.509 2818-2818/? D/AndroidRuntime: &gt;&gt;&gt;&gt;&gt;&gt; START com.android.internal.os.ZygoteInit uid 0 &lt;&lt;&lt;&lt;&lt;&lt;</span><br><span class="line">01-01 08:00:15.068 2818-2818/? D/Zygote: begin preload</span><br><span class="line">01-01 08:00:15.081 2818-3096/? I/Zygote: Preloading classes...</span><br><span class="line">01-01 08:00:15.409 2818-3097/? I/Zygote: Preloading resources...</span><br><span class="line">01-01 08:00:16.637 2818-3097/? I/Zygote: ...preloaded 343 resources in 1228ms.</span><br><span class="line">01-01 08:00:16.669 2818-3097/? I/Zygote: ...preloaded 41 resources in 33ms.</span><br><span class="line">01-01 08:00:17.242 2818-3096/? I/Zygote: ...preloaded 3005 classes in 2161ms.</span><br><span class="line">01-01 08:00:17.373 2818-2818/? I/Zygote: Preloading shared libraries...</span><br><span class="line">01-01 08:00:17.389 2818-2818/? D/Zygote: end preload</span><br><span class="line">01-01 08:00:17.492 2818-2818/? I/Zygote: System server process 3102 has been created</span><br><span class="line">01-01 08:00:17.495 2818-2818/? I/Zygote: Accepting command socket connections</span><br><span class="line">01-01 08:00:32.789 3102-3121/? I/Zygote: Process: zygote socket opened, supported ABIS: armeabi-v7a,armeabi</span><br></pre></td></tr></table></figure>
+
+<p>系统启动后，Zygote 工作的相关内容基本都打日志出来了。</p>
+<p>最后，再来稍微理一理：</p>
+<p>app 安装过程，会确定 app 的一个属性值：primaryCpuAbi，它代表着这个应用的 so 文件使用的是哪个 abi 架构，而且它的确定过程很复杂，apk 包中的 so 文件、系统应用、相同 UID 的应用、设备的 abilist 等都对这个属性值的确定过程有所影响。安装成功后，可以在 data/system/packages.xml 中查看这个属性值。</p>
+<p>每启动一个新的应用，都是运行在新的进程中，而新的进程是从 Zygote 进程 fork 过来的，系统在启动时，会根据设备的 ro.zygote 属性值决定启动哪几个 Zygote 进程，然后打开 socket，等待 AMS 发送消息来 fork 新进程。</p>
+<p>当系统要启动一个新的应用时，AMS 在负责这个工作进行到 Process 类的工作时，会先尝试在进程名为 zygote 的 Zygote 进程中，查看它所支持的 abi 列表中是否满足要启动的 app 所需的 abi，如果满足，则以这个 Zygote 为主，fork 新进程，运行在 32 位还是 64 位就跟这个 Zygote 进程一致，而 Zygote 运行在几位上取决于 ro.zygote 对应的文件，如值为 zygote64_32 时，对应着 init.zygote64_32.rc 这份文件，那么此时名为 zygote 的 Zygote 就是运行在 64 位上的。</p>
+<p>而当上述所找的 Zygote 支持的 abi 列表不满足 app 所需的 abi 时，那么再去名为 zygote_secondary 的 Zygote 进程中看看，它所支持的 abi 列表是否满足。</p>
+<p>另外，Zygote 的相关工作流程，包括支持的 abi 列表，系统都有打印相关日志，可过滤 Zygote 查看，如没发现，可重启设备查看。</p>
+<h4 id="abi-兼容"><a href="#abi-兼容" class="headerlink" title="abi 兼容"></a>abi 兼容</h4><p>so 文件加载的流程，及应用运行在 32 位或 64 位的依据我们都梳理完了，以上内容足够掌握什么场景下，该去哪些目录下加载 so 文件的判断能力了。</p>
+<p>那么，还有个问题，如果应用运行在 64 位上，那么此时，它是否能够使用 armeabi-v7a 的 so 文件？</p>
+<p>首先，先来罗列一下常见的 abi ：</p>
+<ul>
+<li>arm64-v8a，armeabi-v7a，armeabi，mips，mips64，x86，x86_64</li>
+</ul>
+<p>其中，运行在 64 位的 Zygote 进程上的是：</p>
+<ul>
+<li>arm64-v8a，mips64，x86_64</li>
+</ul>
+<p>同样，运行在 32 位的 Zygote 进程上的是：</p>
+<ul>
+<li>armeabi-v7a，armeabi，mips，x86</li>
+</ul>
+<p>你们如果去网上搜索如下关键字：so 文件，abi 兼容等，你们会发现，蛮多文章里都会说：arm64-v8a 的设备能够向下兼容，支持运行 32 位的 so 文件，如 armeabi-v7a。</p>
+<p>这句话没错，64 位的设备能够兼容运行 32 位的 so 文件，但别只看到这句话啊，良心一些的文章里还有另一句话：<strong>不同 cpu 架构的 so 文件不能够混合使用</strong>，例如，程序运行期间，要么全部使用 arm64-v8a 的 so 文件，要么全部使用 armeabi-v7a 的 so 文件，你不能跑在 64 位进程上，却使用着 32 位的 so 文件。</p>
+<p>我所理解的兼容，并不是说，64 位的设备，支持你运行在 64 位的 Zygote 进程上时仍旧可以使用 32 位的 so 文件。有些文章里也说了，如果在 64 位的设备上，你选择使用 32 位的 so 文件，那么此时，你就丢失了专门为 64 位优化过的性能（ART，webview，media等等 ）。这个意思就是说，程序启动时是从 32 位的 Zygote 进程 fork 过来的，等于你在 64 位的设备上，但却只运行在 32 位的进程上。</p>
+<p>至于程序如何决定运行在 32 位还是 64 位，上面的章节中也分析过了，以 app 的 primaryCpuAbi 属性值为主，而这个属性值的确定因素之一就是含有的 so 文件所属的 abi。</p>
+<p>如果，你还想自己验证，那么可以跟着 Runtime 的 <code>doLoad()</code> 方法跟到 native 层去看看，由于我下载的源码版本可能有些问题，我没找到 Runtime 对应的 cpp 文件，但我找到这么段代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//platform/bionic/linker/linker_phdr.cpp</span></span><br><span class="line"><span class="keyword">bool</span> ElfReader::VerifyElfHeader() &#123;</span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">  <span class="comment">//1.读取 elf 文件的 header 的 class 信息</span></span><br><span class="line">  <span class="keyword">int</span> elf_class = header_.e_ident[EI_CLASS];</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> defined(__LP64__)</span></span><br><span class="line">  <span class="comment">//2. 如果当前进程是64位的，而 elf 文件属于 32 位的，则报错</span></span><br><span class="line">  <span class="keyword">if</span> (elf_class != ELFCLASS64) &#123;</span><br><span class="line">    <span class="keyword">if</span> (elf_class == ELFCLASS32) &#123;</span><br><span class="line">      DL_ERR(<span class="string">"\"%s\" is 32-bit instead of 64-bit"</span>, name_);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      DL_ERR(<span class="string">"\"%s\" has unknown ELF class: %d"</span>, name_, elf_class);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">    <span class="comment">//3. 如果当前进程是32位的，而 elf 文件属于 64 位的，则报错</span></span><br><span class="line">  <span class="keyword">if</span> (elf_class != ELFCLASS32) &#123;</span><br><span class="line">    <span class="keyword">if</span> (elf_class == ELFCLASS64) &#123;</span><br><span class="line">      DL_ERR(<span class="string">"\"%s\" is 64-bit instead of 32-bit"</span>, name_);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      DL_ERR(<span class="string">"\"%s\" has unknown ELF class: %d"</span>, name_, elf_class);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+
+<p>加载 so 文件，最终还是交由 native 层去加载，在 Linux 中，so 文件其实就是一个 elf 文件，elf 文件有个 header 头部信息，里面记录着这份文件的一些信息，如所属的是 32 位还是 64 位，abi 的信息等等。</p>
+<p>而 native 层在加载 so 文件之前，会去解析这个 header 信息，当发现，如果当前进程运行在 64 位时，但要加载的 so 文件却是 32 位的，就会报 <code>xxx is 32-bit instead of 64-bit</code> 异常，同样，如果当前进程是运行在 32 位的，但 so 文件却是 64 位的，此时报 <code>xxx is 64-bit instead of 32-bit</code> 异常。</p>
+<p>这个异常应该也有碰见过吧：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java.lang.UnsatisfiedLinkError: dlopen failed: &quot;libimagepipeline.so&quot; is 32-bit instead of 64-bit</span><br></pre></td></tr></table></figure>
+
+<p>所以说，64 位设备的兼容，并不是说，允许你运行在 64 位的进程上时，仍旧可以使用 32 位的 so 文件。它的兼容是说，允许你在 64 位的设备上运行 32 位的进程。</p>
+<p>其实，想想也能明白，这就是为什么三方应用安装的时候，并不会将 apk 包中所有 abi 目录下的 so 文件都解压出来，只会解压一种，因为应用在安装过程中，系统已经确定你这个应用是应该运行在 64 位还是 32 位的进程上了，并将这个结果保存在 app 的 primaryCpuAbi 属性值中。</p>
+<p>既然系统已经明确你的应用所运行的进程是 32 位还是 64 位，那么只需拷贝对应的一份 so 文件即可，毕竟 64 位的 so 文件和 32 位的又不能混合使用。</p>
+<p>以上，是我的理解，如果有误，欢迎指点下。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>整篇梳理下来，虽然梳理 so 的加载流程不难，但要掌握知其所以然的程度，就需要多花费一点心思了。</p>
+<p>毕竟都涉及到应用的安装机制，应用启动流程，系统启动机制，Zygote 相关的知识点了。如果你是开发系统应用的，建议还是花时间整篇看一下，毕竟系统应用的集成不像三方应用那样在 apk 安装期间自动将相关 so 文件解压到 nativeLibraryDirectories 路径下了。三方应用很少需要了解 so 的加载流程，但开发系统应用还是清楚点比较好。</p>
+<p>不管怎么说，有时间，可以稍微跟着过一下整篇，相信多少是会有些收获的，如果发现哪里有误，也欢迎指点。没时间的话，那就看看总结吧。</p>
+<ul>
+<li>一个应用在安装过程中，系统会经过一系列复杂的逻辑确定两个跟 so 文件加载相关的 app 属性值：nativeLibraryDirectories ，primaryCpuAbi ；</li>
+<li>nativeLibraryDirectories 表示应用自身存放 so 文件的目录地址，影响着 so 文件的加载流程；</li>
+<li>primaryCpuAbi 表示应用应该运行在哪种 abi 上，如（armeabi-v7a），它影响着应用是运行在 32 位还是 64 位的进程上，进而影响到寻找系统指定的 so 文件目录的流程；</li>
+<li>以上两个属性，在应用安装结束后，可在 data/system/packages.xml 中查看；</li>
+<li>当调用 System 的 <code>loadLibrary()</code> 加载 so 文件时，流程如下：</li>
+<li>先到 nativeLibraryDirectories 指向的目录中寻找，是否存在且可用的 so 文件，有则直接加载这里的 so 文件；</li>
+<li>上一步没找到的话，则根据当前进程如果是 32 位的，那么依次去 vendor/lib 和 system/lib 目录中寻找；</li>
+<li>同样，如果当前进程是 64 位的，那么依次去 vendor/lib64 和 system/lib64 目录中寻找；</li>
+<li>当前应用是运行在 32 位还是 64 位的进程上，取决于系统的 ro.zygote 属性和应用的 primaryCpuAbi 属性值，系统的 ro.zygote 可通过执行 getprop 命令查看；</li>
+<li>如果 ro.zygote 属性为 zygote64_32，那么应用启动时，会先在 ro.product.cpu.abilist64 列表中寻找是否支持 primaryCpuAbi 属性，有，则该应用运行在 64 位的进程上；</li>
+<li>如果上一步不支持，那么会在 ro.product.cpu.abilist32 列表中寻找是否支持 primaryCpuAbi 属性，有，则该应用运行在 32 位的进程上；</li>
+<li>如果 ro.zygote 属性为 zygote32_64，则上述两个步骤互换；</li>
+<li>如果应用的 primaryCpuAbi 属性为空，那么以 ro.product.cpu.abilist 列表中第一个 abi 值作为应用的 primaryCpuAbi；</li>
+<li>运行在 64 位的 abi 有：arm64-v8a，mips64，x86_64</li>
+<li>运行在 32 位的 abi 有：armeabi-v7a，armeabi，mips，x86</li>
+<li>通常支持 arm64-v8a 的 64 位设备，都会向下兼容支持 32 位的 abi 运行；</li>
+<li>但应用运行期间，不能混合着使用不同 abi 的 so 文件；</li>
+<li>比如，当应用运行在 64 位进程中时，无法使用 32 位 abi 的 so 文件，同样，应用运行在 32 位进程中时，也无法使用 64 位 abi 的 so 文件；</li>
+</ul>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><p><a href="https://blog.csdn.net/csdn_of_coder/article/details/52892266" target="_blank" rel="noopener">1.Android – 系统进程Zygote的启动分析</a> </p>
+<p><a href="https://blog.csdn.net/itachi85/article/details/64123035" target="_blank" rel="noopener">2.Android应用程序进程启动过程（前篇）</a></p>
+<p><a href="https://blog.csdn.net/hp910315/article/details/51733410" target="_blank" rel="noopener">3.如何查找native方法</a></p>
+<p><a href="https://blog.csdn.net/weixin_40107510/article/details/78138874" target="_blank" rel="noopener">4.Android中app进程ABI确定过程</a>  </p>
+<p><a href="https://blog.csdn.net/canney_chen/article/details/50633982" target="_blank" rel="noopener">5.Android 64 bit SO加载机制</a>  </p>
+
+      
+    </div>
+    
+    
+    
+
+    
+      <div>
+        <div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center">
+    <img id="wechat_subscriber_qcode" src="/uploads/dasuAndroidTv2.png" alt="请叫我大苏 wechat" style="width: 200px; max-width: 100%;">
+    <div></div>
+</div>
+
+      </div>
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持将鼓励我继续创作！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/uploads/weixin.png" alt="请叫我大苏 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/uploads/alipay.jpg" alt="请叫我大苏 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/10/14/Android知识/Android中一张图片占据的内存大小是如何计算/" rel="next" title="Android中一张图片占据的内存大小是如何计算">
+                <i class="fa fa-chevron-left"></i> Android中一张图片占据的内存大小是如何计算
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/10/19/Android组件/借鉴Glide思想二次封装Fresco/" rel="prev" title="借鉴Glide思想二次封装Fresco">
+                借鉴Glide思想二次封装Fresco <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div id="gitalk-container"></div>
+
+  
+
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/uploads/img.jpg" alt="请叫我大苏">
+            
+              <p class="site-author-name" itemprop="name">请叫我大苏</p>
+              <p class="site-description motion-element" itemprop="description">微信公众号：dasuAndroidTv</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">91</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/woshidasusu" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:295207731@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                其他平台
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.jianshu.com/u/bb52a2918096" title="简书" target="_blank">简书</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.cnblogs.com/dasusu/" title="博客园" target="_blank">博客园</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#提问"><span class="nav-number">1.</span> <span class="nav-text">提问</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#源码"><span class="nav-number">2.</span> <span class="nav-text">源码</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#准备工作"><span class="nav-number">2.0.1.</span> <span class="nav-text">准备工作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分析"><span class="nav-number">2.0.2.</span> <span class="nav-text">分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#java-library-path"><span class="nav-number">2.0.2.1.</span> <span class="nav-text">java.library.path</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#findLibrary"><span class="nav-number">2.0.2.2.</span> <span class="nav-text">findLibrary</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#nativeLibraryDir"><span class="nav-number">2.0.2.3.</span> <span class="nav-text">nativeLibraryDir</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#primaryCpuAbi"><span class="nav-number">2.0.2.4.</span> <span class="nav-text">primaryCpuAbi</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#abi-兼容"><span class="nav-number">2.0.2.5.</span> <span class="nav-text">abi 兼容</span></a></li></ol></li></ol></li></ol><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考资料"><span class="nav-number">4.</span> <span class="nav-text">参考资料</span></a></li></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">请叫我大苏</span><br>
+	
+  <div class="powered-by">
+    <i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+    本站访客数:<span id="busuanzi_value_site_uv"></span> | 
+    </span>
+  </div>
+
+  <div class="theme-info">
+    <div class="powered-by"></div>
+    <span class="post-count">博客全站共 349.1k 字</span>
+  </div>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+  <script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+   <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID: '',
+          clientSecret: '',
+          repo: 'woshidasusu.github.io',
+          owner: '',
+          admin: [''],
+          id: md5(window.location.pathname),
+          distractionFreeMode: 'true'
+        })
+        gitalk.render('gitalk-container')
+       </script>
+
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

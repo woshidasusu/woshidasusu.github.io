@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+      
+    
+    
+      
+    
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+  <link href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/favicon.ico?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本篇文章已授权微信公众号 安卓巴士Android开发者门户 独家发布    #效果   老规矩，先来看看效果    ANDROID和福利两个Fragment是设置的Fragment可见时加载数据，也就是懒加载。圆形的旋转加载图标只有一个，所以，如果当前Fragment正处于加载状态，在离开该Fragment时需要隐藏加载动画，因为另一个Fragment并不一定处于加载状态，当返回Fragment">
+<meta name="keywords" content="dasu, blog, 大苏">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【Android】Fragment懒加载和ViewPager的坑">
+<meta property="og:url" content="http://woshidasusu.github.io/2016/10/02/Android知识/【Android】Fragment懒加载和ViewPager的坑/index.html">
+<meta property="og:site_name" content="dasu&#39;s blog">
+<meta property="og:description" content="本篇文章已授权微信公众号 安卓巴士Android开发者门户 独家发布    #效果   老规矩，先来看看效果    ANDROID和福利两个Fragment是设置的Fragment可见时加载数据，也就是懒加载。圆形的旋转加载图标只有一个，所以，如果当前Fragment正处于加载状态，在离开该Fragment时需要隐藏加载动画，因为另一个Fragment并不一定处于加载状态，当返回Fragment">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1924341-f63733e001d0dd6b.gif?imageMogr2/auto-orient/strip">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1924341-121926ffcf7c58f2.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1924341-45b4060da633517d.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1924341-a3fa159face2d9a1.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1924341-231a7fe2289090ac.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2019-10-13T12:15:39.717Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【Android】Fragment懒加载和ViewPager的坑">
+<meta name="twitter:description" content="本篇文章已授权微信公众号 安卓巴士Android开发者门户 独家发布    #效果   老规矩，先来看看效果    ANDROID和福利两个Fragment是设置的Fragment可见时加载数据，也就是懒加载。圆形的旋转加载图标只有一个，所以，如果当前Fragment正处于加载状态，在离开该Fragment时需要隐藏加载动画，因为另一个Fragment并不一定处于加载状态，当返回Fragment">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/1924341-f63733e001d0dd6b.gif?imageMogr2/auto-orient/strip">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://woshidasusu.github.io/2016/10/02/Android知识/【Android】Fragment懒加载和ViewPager的坑/">
+
+
+
+
+
+  <title>【Android】Fragment懒加载和ViewPager的坑 | dasu's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">dasu's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">I am dasu, and i'm coding</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://woshidasusu.github.io/2016/10/02/Android知识/【Android】Fragment懒加载和ViewPager的坑/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="请叫我大苏">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/img.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="dasu's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">【Android】Fragment懒加载和ViewPager的坑</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-10-02T21:30:25+08:00">
+                2016-10-02
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android知识/" itemprop="url" rel="index">
+                    <span itemprop="name">Android知识</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                  <span class="post-meta-divider">|</span>
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2.4k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  9 min
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p><strong>本篇文章已授权微信公众号 安卓巴士Android开发者门户 独家发布</strong>  </p>
+</blockquote>
+<p>#效果  </p>
+<p>老规矩，先来看看效果  </p>
+<p><img src="http://upload-images.jianshu.io/upload_images/1924341-f63733e001d0dd6b.gif?imageMogr2/auto-orient/strip" alt="效果图"></p>
+<p>ANDROID和福利两个Fragment是设置的Fragment可见时加载数据，也就是懒加载。圆形的旋转加载图标只有一个，所以，如果当前Fragment正处于加载状态，在离开该Fragment时需要隐藏加载动画，因为另一个Fragment并不一定处于加载状态，当返回Fragment时，如果还是处于加载状态，则要可以实现自动显示加载动画，如果数据已经加载完毕则不需要再显示出来。  </p>
+<p>以上效果就是今天要介绍和分享的，那么开始往下看吧。  </p>
+<p>#懒加载<br>懒加载意思也就是当需要的时候才会去加载  </p>
+<p>那么，为什么Fragment需要懒加载呢，一般我们都会在<strong>onCreate()</strong>或者<strong>onCreateView()</strong>里去启动一些数据加载操作，比如从本地加载或者从服务器加载。大部分情况下，这样并不会出现什么问题，但是当你使用<strong>ViewPager + Fragment</strong>的时候，问题就来了，这时就应该考虑是否需要实现懒加载了。  </p>
+<p>#ViewPager + Fragment 的坑  </p>
+<p>ViewPager为了让滑动的时候可以有很好的用户的体验，也就是防止出现卡顿现象，因此它有一个缓存机制。默认情况下，ViewPager会提前创建好当前Fragment旁的两个Fragment，举个例子说也就是如果你当前显示的是编号3的Fragment，那么其实编号2和4的Fragment也已经创建好了，也就是说这<strong>3个Fragment</strong>都已经执行完 <strong>onAttach() -&gt; onResume()</strong> 这之间的生命周期函数了。  </p>
+<p><img src="http://upload-images.jianshu.io/upload_images/1924341-121926ffcf7c58f2.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="日志图1"></p>
+<p><img src="http://upload-images.jianshu.io/upload_images/1924341-45b4060da633517d.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt></p>
+<p>本来Fragment的 <strong>onResume()</strong>表示的是当前Fragment处于可见且可交互状态，但由于ViewPager的缓存机制，它已经失去了意义，也就是说我们只是打开了“福利”这个Fragment，但其实“休息视频”和“拓展资源”这两个Fragment的数据也都已经加载好了。  </p>
+<p>如果加载数据的操作都比较耗时或者都是类似图片的占用大量内存，这时就应该考虑想想是否该实现懒加载。也就是，当我打开哪个Fragment的时候，它才会去加载数据。  </p>
+<p>#懒加载实现？  </p>
+<p>##setUserVisibleHint(boolean isVisibleToUser) 可以？  </p>
+<p>当你去网上查找相关资料时，你会发现很多人推荐说把加载数据的操作放在这个函数里，<strong>isVisibleToUser</strong>表示当前Fragment是否可见。那么，是否真的可以就这样做呢？先来看个日志：  </p>
+<p><img src="http://upload-images.jianshu.io/upload_images/1924341-a3fa159face2d9a1.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="日志图2"></p>
+<p>题主是从 <strong>DayDataFragment</strong> 跳转到 <strong>MeiziDataFragment</strong> 的，所以可以看到日志里面：<strong>DayDataFragment</strong>打出了<strong>false</strong>，表示它不可见了。而<strong>MeiziDataFragment</strong>却先打出了<strong>false</strong>，然后才打出<strong>true</strong>，这是因为<strong>setUserVisibleHint()</strong>在Fragment实例化时会先调用一次，并且默认值是false，当选中当前显示的Fragment时还会再调用一次。  </p>
+<p>所以，看上面的日志，除了<strong>DayDataFragment</strong>外，其他三个Fragment均没有实例化，所以当打开<strong>MeiziDataFragment</strong>时，因为ViewPager的缓存机制，会同时创建三个Fragment的实例，所以打印了三条<strong>isVisibleToUeser: false</strong>的日志，因为选中的是<strong>MeiziDataFragment</strong>，所以它还会触发一次<strong>setUserVisibleHint()</strong>，并且打印出true。  </p>
+<p>那么，是否可以在<strong>setUserVisibleHint(boolean isVisibleToUser)</strong>里进行数据加载操作来实现懒加载呢？  </p>
+<p>可以是可以，如果你只是需要数据的懒加载的话，但如果你还有以下的需求，那么这种方式就不行了：  </p>
+<p>#####1、如果你在Fragment可见时需要进行一些控件的操作，比如显示加载控件<br>#####2、如果你还需要在Fragment从 “可见 -&gt; 不可见” 时进行一些操作的话，比如取消加载控件显示  </p>
+<p>这边再提一下，<strong>setUserVisibleHint()</strong>可能会在Fragment的生命周期之外被调用，也就是可能在view创建前就被调用，也可能在destroyView后被调用，所以如果涉及到一些控件的操作的话，可能会报 null 异常，因为控件还没初始化，或者已经摧毁了。  </p>
+<p>#进一步封装  </p>
+<p>题主稍微进行了一些封装，自定义了一个新的回调函数  <strong>onFragmentVisibleChange(boolean isVisible)</strong>  ，可以实现的效果有：  </p>
+<p>#####1、只有两种情况会触发该函数<br>#####2、一种是Fragment从“不可见 -&gt; 可见” 时触发，并传入 isVisible = true<br>#####3、一种是Fragment从“可见   -&gt; 不可见” 时触发，并传入 isVisible = false<br>#####4、可以在该函数内进行控件的操作，不会报null异常    </p>
+<p><img src="http://upload-images.jianshu.io/upload_images/1924341-231a7fe2289090ac.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="日志图3"></p>
+<p>题主这次仍旧是从<strong>DayDataFragment</strong> 跳转到 <strong>MeiziDataFragment</strong>， 但跟上上面的日志图片不同，这里只打印了两条日志，也就是说即使有三个Fragment被实例化了，但只有显示的那个Fragment和离开的那个Fragment才会触发回调函数，这样就可以支持我们在可见状态变化时进行一些操作，因为不会有多余的false触发。  </p>
+<p>另外，因为ViewPager缓存机制，所以题主进行了view的复用，防止<strong>onCreateView()</strong>重复的创建view，其实也就是将view设置为成员变量，创建view时先判断是否为null。因为ViewPager里对Fragment的回收和创建时，如果Fragment已经创建过了，那么只会调用 <strong>onCreateView() -&gt; onDestroyView()</strong> 生命函数，<strong>onCreate()和onDestroy</strong>并不会触发，所以关于变量的初始化和赋值操作可以在<strong>onCreate()</strong>里进行，这样就可以避免重复的操作。  </p>
+<p>#代码    </p>
+<hr>
+<p>2016-04-21 更新：该博客封装的懒加载实现有些不足，比如不支持数据只有第一次打开Fragment时才进行加载的应用场景，因此重新写了篇博客，可以移步至此观看：<a href="http://www.jianshu.com/p/254dc5ddffea" target="_blank" rel="noopener">再来一篇Fragment的懒加载（只加载一次哦）</a>  </p>
+<hr>
+<p>最后附上代码，另外注意一下，题主是从项目里抽出代码，进行一些修改，让它尽量可以直接复制粘贴使用，但并没有进行过测试，所以如果不行的话可以留言，题主会查看。或者你直接到我原项目里去查看，<a href="https://github.com/woshidasusu/Meizi/blob/master/app/src/main/java/coder/dasu/meizi/view/fragment/GankDataFragment.java" target="_blank" rel="noopener">代码已托管至Github上</a>，因为项目是针对具体需求的，所以类里面会增加很多其他无关的代码。再或者，你可以尝试自己进行封装下，代码很少，不到50行，理解思路就行了。  </p>
+<pre><code>
+/**
+ * Created by dasu on 2016/9/27.
+ * https://github.com/woshidasusu/Meizi
+ *
+ * Viewpager + Fragment情况下，fragment的生命周期因Viewpager的缓存机制而失去了具体意义
+ * 该抽象类自定义一个新的回调方法，当fragment可见状态改变时会触发的回调方法，介绍看下面
+ *
+ * @see #onFragmentVisibleChange(boolean)
+ */
+public abstract class ViewPagerFragment extends Fragment {
+
+    /**
+     * rootView是否初始化标志，防止回调函数在rootView为空的时候触发
+     */
+    private boolean hasCreateView;
+
+    /**
+     * 当前Fragment是否处于可见状态标志，防止因ViewPager的缓存机制而导致回调函数的触发
+     */
+    private boolean isFragmentVisible;
+
+    /**
+     * onCreateView()里返回的view，修饰为protected,所以子类继承该类时，在onCreateView里必须对该变量进行初始化
+     */
+    protected View rootView;
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        Log.d(getTAG(), &quot;setUserVisibleHint() -&gt; isVisibleToUser: &quot; + isVisibleToUser);
+        if (rootView == null) {
+            return;
+        }
+        hasCreateView = true;
+        if (isVisibleToUser) {
+            onFragmentVisibleChange(true);
+            isFragmentVisible = true;
+            return;
+        }
+        if (isFragmentVisible) {
+            onFragmentVisibleChange(false);
+            isFragmentVisible = false;
+        }
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        initVariable();
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        if (!hasCreateView &amp;&amp; getUserVisibleHint()) {
+            onFragmentVisibleChange(true);
+            isFragmentVisible = true;
+        }
+    }
+
+    private void initVariable() {
+        hasCreateView = false;
+        isFragmentVisible = false;
+    }
+
+    /**************************************************************
+     *  自定义的回调方法，子类可根据需求重写
+     *************************************************************/
+
+    /**
+     * 当前fragment可见状态发生变化时会回调该方法
+     * 如果当前fragment是第一次加载，等待onCreateView后才会回调该方法，其它情况回调时机跟 {@link #setUserVisibleHint(boolean)}一致
+     * 在该回调方法中你可以做一些加载数据操作，甚至是控件的操作，因为配合fragment的view复用机制，你不用担心在对控件操作中会报 null 异常
+     *
+     * @param isVisible true  不可见 -&gt; 可见
+     *                  false 可见  -&gt; 不可见
+     */
+    protected void onFragmentVisibleChange(boolean isVisible) {
+        Log.w(getTAG(), &quot;onFragmentVisibleChange -&gt; isVisible: &quot; + isVisible);
+    }
+}
+
+</code></pre><p>#用法  </p>
+<p>  新建类ViewPagerFragment，将上面代码复制粘贴进去，添加需要的import语句 -&gt; 新建你需要的Fragment类，继承ViewPagerFragment，在onCreateView()里对rootView进行初始化 -&gt; 重写onFragmentVisibleChange()，在这里进行你需要的操作，比如数据加载，控制显示等。  </p>
+<pre><code>public class MyFragment extends ViewPagerFragment{
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        if (rootView == null) {
+            rootView = inflater.inflate(R.layout.fragment_android, container, false);
+
+        }
+        return rootView;
+    } 
+
+    @Override
+    protected void onFragmentVisibleChange(boolean isVisible) {
+        super.onFragmentVisibleChange(isVisible);
+        if (isVisible) {
+        //   do things when fragment is visible    
+        //    if (ListUtils.isEmpty(mDataList) &amp;&amp; !isRefreshing()) {
+        //        setRefresh(true);
+        //        loadServiceData(false);
+            } else {
+        //        setRefresh(false);
+            }
+        }
+    }
+}
+</code></pre><p>##<a href="https://github.com/woshidasusu/Meizi" target="_blank" rel="noopener">项目Github 地址</a>  </p>
+<hr>
+<p>##PS  </p>
+<p>  以上就是这次的内容了，最近题主想利用 <strong>Gank</strong>公开的api，做一个类似于Meizi的应用出来，虽然这个App已经有无数人都做过了，但确实是一个很值得学习的项目，题主仍然是小白一个，所以还是好好学习下。drakeet的Meizi项目用到了很多高级技术，比如Rxjava之类的，题主看不懂，其他Github上一些比较出名的Meizi App要么是MVP架构，要么还是用到了目前小白的我看不懂的技术，所以这次就决定自己用最基础的MVC，一些简单常用的第三方库来做这个App，毕竟路要一步一步走，如果这个完成了，收获和体验应该会很多（这不就收获了这篇随笔了吗O(∩_∩)O），所以，如果有兴趣的话，欢迎Start，欢迎指点，欢迎拍砖，大家一起学习进步。  </p>
+
+      
+    </div>
+    
+    
+    
+
+    
+      <div>
+        <div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center">
+    <img id="wechat_subscriber_qcode" src="/uploads/dasuAndroidTv2.png" alt="请叫我大苏 wechat" style="width: 200px; max-width: 100%;">
+    <div></div>
+</div>
+
+      </div>
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持将鼓励我继续创作！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/uploads/weixin.png" alt="请叫我大苏 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/uploads/alipay.jpg" alt="请叫我大苏 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/09/12/Android-Tv/【Android】你应该知道的调试神器--adb/" rel="next" title="【Android】你应该知道的调试神器--adb">
+                <i class="fa fa-chevron-left"></i> 【Android】你应该知道的调试神器--adb
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/03/21/Android知识/【Android】TextView的跑马灯效果/" rel="prev" title="【Android】TextView的跑马灯效果">
+                【Android】TextView的跑马灯效果 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div id="gitalk-container"></div>
+
+  
+
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/uploads/img.jpg" alt="请叫我大苏">
+            
+              <p class="site-author-name" itemprop="name">请叫我大苏</p>
+              <p class="site-description motion-element" itemprop="description">微信公众号：dasuAndroidTv</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">91</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/woshidasusu" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:295207731@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                其他平台
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.jianshu.com/u/bb52a2918096" title="简书" target="_blank">简书</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.cnblogs.com/dasusu/" title="博客园" target="_blank">博客园</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">请叫我大苏</span><br>
+	
+  <div class="powered-by">
+    <i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+    本站访客数:<span id="busuanzi_value_site_uv"></span> | 
+    </span>
+  </div>
+
+  <div class="theme-info">
+    <div class="powered-by"></div>
+    <span class="post-count">博客全站共 349.1k 字</span>
+  </div>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+  <script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+   <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID: '',
+          clientSecret: '',
+          repo: 'woshidasusu.github.io',
+          owner: '',
+          admin: [''],
+          id: md5(window.location.pathname),
+          distractionFreeMode: 'true'
+        })
+        gitalk.render('gitalk-container')
+       </script>
+
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+      
+    
+    
+      
+    
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+  <link href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/favicon.ico?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本篇文章已授权微信公众号 guolin_blog （郭霖）独家发布      这次想来梳理一下 View 动画也就是补间动画（ScaleAnimation, AlphaAnimation, TranslationAnimation…）这些动画运行的流程解析。内容并不会去分析动画的呈现原理是什么，诸如 Matrix 这类的原理是什么，因为我也还没搞懂。本篇主要是分析当调用了 View.startA">
+<meta name="keywords" content="dasu, blog, 大苏">
+<meta property="og:type" content="article">
+<meta property="og:title" content="View 动画 Animation 运行原理解析">
+<meta property="og:url" content="http://woshidasusu.github.io/2018/01/15/Android源码解析/View-动画-Animation-运行原理解析/index.html">
+<meta property="og:site_name" content="dasu&#39;s blog">
+<meta property="og:description" content="本篇文章已授权微信公众号 guolin_blog （郭霖）独家发布      这次想来梳理一下 View 动画也就是补间动画（ScaleAnimation, AlphaAnimation, TranslationAnimation…）这些动画运行的流程解析。内容并不会去分析动画的呈现原理是什么，诸如 Matrix 这类的原理是什么，因为我也还没搞懂。本篇主要是分析当调用了 View.startA">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1924341-e091160e76fc0dbe.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1924341-a7eb5c890369b9e2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1924341-f76027d2d8dd7dd2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1924341-a1e70bed1abe03cb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1924341-6fcdf86b4c23c394.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1924341-36bad2b2af631d4d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1924341-9d9ff79ecc0c65ee.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1924341-f11518c9374559f6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1924341-7a4d7507243abe08.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1924341-db15b7fa2f3f1bae.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1924341-baa80bd0e507de89.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1924341-217259d19a8d1306.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1924341-c31cb5ac728f99d8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1924341-2631bf390e2f9f71.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1924341-311da86ca28772ca.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1924341-cfc210a6ec0ad79b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1924341-0e6225350c2ca14c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1924341-6a1206a8e4c1084b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2019-10-13T12:05:21.463Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="View 动画 Animation 运行原理解析">
+<meta name="twitter:description" content="本篇文章已授权微信公众号 guolin_blog （郭霖）独家发布      这次想来梳理一下 View 动画也就是补间动画（ScaleAnimation, AlphaAnimation, TranslationAnimation…）这些动画运行的流程解析。内容并不会去分析动画的呈现原理是什么，诸如 Matrix 这类的原理是什么，因为我也还没搞懂。本篇主要是分析当调用了 View.startA">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/1924341-e091160e76fc0dbe.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://woshidasusu.github.io/2018/01/15/Android源码解析/View-动画-Animation-运行原理解析/">
+
+
+
+
+
+  <title>View 动画 Animation 运行原理解析 | dasu's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">dasu's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">I am dasu, and i'm coding</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://woshidasusu.github.io/2018/01/15/Android源码解析/View-动画-Animation-运行原理解析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="请叫我大苏">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/img.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="dasu's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">View 动画 Animation 运行原理解析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-15T21:30:25+08:00">
+                2018-01-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android源码解析/" itemprop="url" rel="index">
+                    <span itemprop="name">Android源码解析</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                  <span class="post-meta-divider">|</span>
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  4.3k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  15 min
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p><strong>本篇文章已授权微信公众号 guolin_blog （郭霖）独家发布</strong>    </p>
+</blockquote>
+<p>这次想来梳理一下 View 动画也就是补间动画（ScaleAnimation, AlphaAnimation, TranslationAnimation…）这些动画运行的流程解析。内容并不会去分析动画的呈现原理是什么，诸如 Matrix 这类的原理是什么，因为我也还没搞懂。本篇主要是分析当调用了 <code>View.startAnimation()</code> 之后，动画从开始到结束的一个运行流程是什么？    </p>
+<h1 id="提问环节"><a href="#提问环节" class="headerlink" title="提问环节"></a>提问环节</h1><p>看源码最好是带着问题去，这样比较有目的性和针对性，可以防止阅读源码时走偏和钻牛角，所以我们就先来提几个问题。  </p>
+<p>Animation 动画的扩展性很高，系统只是简单的为我们封装了几个基本的动画：平移、旋转、透明度、缩放等等，感兴趣的可以去看看这几个动画的源码，它们都是继承自 Animation 类，然后实现了 <strong>applyTransformation()</strong> 方法，在这个方法里通过 Transformation 和 Matrix 实现各种各样炫酷的动画，所以，如果想要做出炫酷的动画效果，这些还是需要去搞懂的。  </p>
+<p>目前我也还没搞懂，能力有限，所以优先分析动画的一个运行流程。  </p>
+<p>首先看看 Animation 动画的基本用法：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-e091160e76fc0dbe.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="基本用法"></p>
+<p>我们要使用一个 View 动画时，一般都是先 new 一个动画，然后配置各种参数，最后调用动画要作用到的那个 View 的 startAnimation()， 将动画实例作为参数传进去，接下去就可以看到动画运行的效果了。   </p>
+<p>那么，问题来了：  </p>
+<p><strong>Q1：不知道大伙想过没有，当调用了 View.startAnimation() 之后，动画是马上就执行了么？</strong>  </p>
+<p><strong>Q2：假如动画持续时间 300ms，当调用了 View.startAniamtion() 之后，又发起了一次界面刷新的操作，那么界面的刷新是在 300ms 之后也就是动画执行完毕之后才执行的，还是在动画执行过程中界面刷新操作就执行了呢？</strong>  </p>
+<p>我们都知道，<strong>applyTransformation()</strong> 这个方法是动画生效的地方，这个方法被回调时参数会传进来当前动画的进度（0.0 ——— 1.0）。就像数学上的画曲线，当给的点越多时画的曲线越光滑，同样当这个方法被回调越多次时，动画的效果越流畅。  </p>
+<p>比如一个从 0 放大到 1280 的 View 放大动画，如果这过程该方法只回调 3 次的话，那么每次的跨度就会很大，比如 0 —— 600 —— 1280，那么这个动画效果看起来就会很突兀；相反，如果这过程该方法回调了几十次的话，那么每次跨度可能就只有 100，这样一来动画效果看起来就会很流畅。  </p>
+<p>相信大伙也都有过在 <strong>applyTransformation()</strong> 里打日志来查看当前的动画进度，有时打出的日志有十几条，有时却又有几十条。  </p>
+<p>那么我们的问题就来了：  </p>
+<p><strong>Q3：applyTransformation() 这个方法的回调次数是根据什么来决定的？</strong>  </p>
+<p>好了，本篇就是主要讲解这三个问题，这三个问题搞明白的话，以后碰到动画卡顿的时候就懂得如何去分析、定位丢帧的地方了，找到丢帧的问题所在后离解决问题也就不远了。  </p>
+<h1 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h1><p>ps:本篇分析的源码全都基于 android-25 版本。以下源码均采用截图方式，每张图最上面是类名+方法名，大伙想自己过一遍的时候，如果不清楚方法属于哪个类的可以在每张图最上面查看。</p>
+<h2 id="View-startAnimation"><a href="#View-startAnimation" class="headerlink" title="View.startAnimation()"></a>View.startAnimation()</h2><p>刚开始接触源码分析可能不清楚该从哪入手，建议可以从我们使用它的地方来 <code>startAnimation()</code>：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-a7eb5c890369b9e2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="startAnimation.png"></p>
+<p>代码不多，调用了四个方法，那么一个个跟进去看看，先是 <code>setStartTime()</code> ：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-f76027d2d8dd7dd2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="setStartTime.png"></p>
+<p>所以这里只是对一些变量进行赋值，并没有运行动画的逻辑，继续看看 <code>setAnimation()</code>：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-a1e70bed1abe03cb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="setAnimation.png"></p>
+<p>View 里面有一个 Animation 类型的成员变量，所以这个方法其实是将我们 new 的 ScaleAnimation 动画跟 View 绑定起来而已，也没有运行动画的逻辑，继续往下看看 <code>invalidateParentCached()</code>：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-6fcdf86b4c23c394.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="invalidateParentCached.png"></p>
+<p><code>invalidateParentCaches()</code> 这方法更简单，给 mPrivateFlags 添加了一个标志位，虽然还不清楚干嘛的，但可以先留个心眼，因为 mPrivateFlags 这个变量在阅读跟 View 相关的源码时经常碰到，那么可以的话能搞明白就搞明白，但目前跟我们想要找出动画到底什么时候开始执行的关系好像不大，先略过，继续跟进 <code>invalidate()</code>：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-36bad2b2af631d4d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="invalidateInternal.png"></p>
+<p>所以 <code>invalidate()</code> 内部其实是调用了 ViewGroup 的 <code>invalidateChild()</code>，再跟进看看：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-9d9ff79ecc0c65ee.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="invalidateChild.png"></p>
+<p>这里有一个 do{}while() 的循环操作，第一次循环的时候 parent 是 this，即 ViewGroup 本身，所以接下去就是调用 ViewGroup 本身的 <code>invalidateChildInParent()</code> 方法，然后循环终止条件是 patent == null，所以可以猜测这个方法返回的应该是 ViewGroup 的 parent，跟进看看：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-f11518c9374559f6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="invalidateChildInparent.png"></p>
+<p>所以关键是 PFLAG_DRAWN 和 PFLAG_DRAWING_CACHE_VALID 这两个是什么时候赋值给 mPrivateFlags，因为只要有两个标志中的一个时，该方法就会返回 mParent，具体赋值的地方还不大清楚，但能确定的是动画执行时，它是满足 if 条件的，也就是这个方法会返回 mParent。</p>
+<p>一个具体的 View 的 mParent 是 ViewGroup，ViewGroup 的 mParent 也是 ViewGoup，所以在 do{}while() 循环里会一直不断的寻找 mParent，而一颗 View 树最顶端的 mParent 是 ViewRootImpl，所以最终是会走到了 ViewRootImpl 的 <code>invalidateChildInParent()</code> 里去了。</p>
+<p>至于一个界面的 View 树最顶端为什么是 ViewRootImpl，这个就跟 Activity 启动过程有关了。我们都清楚，<strong>在 onCreate 里 setContentView() 的时候，是将我们自己写的布局文件添加到以 DecorView 为根布局的一个 ViewGroup 里，也就是说 DevorView 才是 View 树的根布局，那为什么又说 View 树最顶端其实是 ViewRootImpl 呢？</strong>  </p>
+<p>这是因为在 <code>onResume()</code> 执行完后，WindowManager 将会执行 <code>addView()</code>，然后在这里面会去创建一个 ViewRootImpl 对象，接着将 DecorView 跟 ViewRootImpl 对象绑定起来，并且将 DecorView 的 mParent 设置成 ViewRootImpl，而 ViewRootImpl 是实现了 ViewParent 接口的，所以虽然 ViewRootImpl 没有继承 View 或 ViewGroup，但它确实是 DecorView 的 parent。这部分内容应该属于 Activity 的启动过程相关原理的，所以本篇只给出结论，不深入分析了，感兴趣的可以自行搜索一下。  </p>
+<p>那么我们继续返回到寻找动画执行的地方，我们跟到了 ViewRootImpl 的 <code>invalidateChildInParent()</code> 里去了，看看它做了些什么：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-7a4d7507243abe08.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="ViewRootImpl#invalidateChildInParent.png"></p>
+<p>首先第一点，它的所有返回值都是 null，所以之前那个 do{}while() 循环最终就是执行到这里后肯定就会停止了。然后参数 dirty 是在最初 View 的 <code>invalidateInternal()</code> 里层层传递过来的，可以肯定的是它不为空，也不是 isEmpty，所以继续跟到 <code>invalidateRectOnScreen()</code> 方法里看看：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-db15b7fa2f3f1bae.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="invalidateRectOnScreen.png"></p>
+<p>跟到这里就可以了，<code>scheduleTraversals()</code> 作用是将 <code>performTraversals()</code> 封装到一个 Runnable 里面，然后扔到 Choreographer 的待执行队列里，这些待执行的 Runnable 将会在最近的一个 16.6 ms 屏幕刷新信号到来的时候被执行。而 <code>performTraversals()</code> 是 View 的三大操作：测量、布局、绘制的发起者。</p>
+<p><strong>View 树里面不管哪个 View 发起了布局请求、绘制请求，统统最终都会走到 ViewRootImpl 里的 scheduleTraversals()，然后在最近的一个屏幕刷新信号到了的时候再通过 ViewRootImpl 的 performTraversals() 从根布局 DecorView 开始依次遍历 View 树去执行测量、布局、绘制三大操作。这也是为什么一直要求页面布局层次不能太深，因为每一次的页面刷新都会先走到 ViewRootImpl 里，然后再层层遍历到具体发生改变的 View 里去执行相应的布局或绘制操作。</strong>  </p>
+<p>这些内容应该是属于 Android 屏幕刷新机制的，这里就先只给出结论，具体分析我会在几天后再发一篇博客出来。  </p>
+<p>所以，我们从 <code>View.startAnimation()</code> 开始跟进源码分析的这一过程中，也可以看出，执行动画，其实内部会调用 View 的重绘请求操作 <code>invalidate()</code> ，所以最终会走到 ViewRootImpl 的 <code>scheduleTraversals()</code>，然后在下一个屏幕刷新信号到的时候去遍历 View 树刷新屏幕。</p>
+<p>所以，到这里可以得到的结论是：</p>
+<p><strong>当调用了 View.startAniamtion() 之后，动画并没有马上就被执行，这个方法只是做了一些变量初始化操作，接着将 View 和 Animation 绑定起来，然后调用重绘请求操作，内部层层寻找 mParent，最终走到 ViewRootImpl 的 scheduleTraversals 里发起一个遍历 View 树的请求，这个请求会在最近的一个屏幕刷新信号到来的时候被执行，调用 performTraversals 从根布局 DecorView 开始遍历 View 树。</strong>  </p>
+<h2 id="动画真正执行的地方"><a href="#动画真正执行的地方" class="headerlink" title="动画真正执行的地方"></a>动画真正执行的地方</h2><p>那么，到这里，我们可以猜测，动画其实真正执行的地方应该是在 ViewRootImpl 发起的遍历 View 树的这个过程中。测量、布局、绘制，View 显示到屏幕上的三个基本操作都是由 ViewRootImpl 的 <code>performTraversals()</code> 来控制，而作为 View 树最顶端的 parent，要控制这颗 Veiw 树的三个基本操作，只能通过层层遍历。所以，测量、布局、绘制三个基本操作的执行都会是一次遍历操作。  </p>
+<p>我在跟着这三个流程走的时候，最后发现，在跟着绘制流程走的时候，看到了跟动画相关的代码，所以我们就跳过其他两个流程，直接看绘制流程：  </p>
+<p><img src="http://upload-images.jianshu.io/upload_images/1924341-baa80bd0e507de89.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="绘制流程.png"></p>
+<p>这张图不是我画的，在网上找的，绘制流程的开始是由 ViewRootImpl 发起的，然后从 DecorView 开始遍历 View 树。而遍历的实现，是在 View#draw() 方法里的。我们可以看看这个方法的注释：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-217259d19a8d1306.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="draw.png"></p>
+<p>这个方法里主要做了上述六件事，大体上就是如果当前 View 需要绘制，就会去调用自己的 <code>onDraw()</code>，然后如果有子 View，就会调用<code>dispatchDraw()</code> 将绘制事件通知给子 View。ViewGroup 重写了 <code>dispatchDraw()</code>，调用了 <code>drawChild()</code>，而 <code>drawChild()</code> 调用了子 View 的 <code>draw(Canvas, ViewGroup, long)</code>，而这个方法又会去调用到 <code>draw(Canvas)</code> 方法，所以这样就达到了遍历的效果。整个流程就像上上图中画的那样。   </p>
+<p>在这个流程中，当跟到 <code>draw(Canvas, ViewGroup, long)</code> 里时，发现了跟动画相关的代码：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-c31cb5ac728f99d8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="draw2.png"></p>
+<p>还记得我们调用 <code>View.startAnimation(Animation)</code> 时将传进来的 Animation 赋值给 mCurrentAnimation 了么。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-2631bf390e2f9f71.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="getAnimation.png"></p>
+<p>所以当时传进来的 Animation ，现在拿出来用了，那么动画真正执行的地方应该也就是在 <code>applyLegacyAnimation()</code> 方法里了（该方法在 android-22 版本及之前的命名是 drawAnimation）<br><img src="http://upload-images.jianshu.io/upload_images/1924341-311da86ca28772ca.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="applyLegacyAnimation.png"></p>
+<p>这下确定动画真正开始执行是在什么地方了吧，都看到 <code>onAnimationStart()</code> 了，也看到了对动画进行初始化，以及调用了 Animation 的  <code>getTransformation</code>，这个方法是动画的核心，再跟进去看看：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-cfc210a6ec0ad79b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="getTransformation.png"></p>
+<p>这个方法里做了几件事：</p>
+<ol>
+<li>记录动画第一帧的时间  </li>
+<li>根据当前时间到动画第一帧的时间这之间的时长和动画应持续的时长来计算动画的进度  </li>
+<li>把动画进度控制在 0-1 之间，超过 1 的表示动画已经结束，重新赋值为 1 即可  </li>
+<li>根据插值器来计算动画的实际进度  </li>
+<li>调用 applyTransformation() 应用动画效果  </li>
+</ol>
+<p>所以，到这里我们已经能确定 <code>applyTransformation()</code> 是什么时候回调的，动画是什么时候才真正开始执行的。那么 Q1 总算是搞定了，Q2 也基本能理清了。因为我们清楚， <code>applyTransformation()</code> 最终是在绘制流程中的 <code>draw()</code> 过程中执行到的，那么显然在每一帧的屏幕刷新信号来的时候，遍历 View 树是为了重新计算屏幕数据，也就是所谓的 View 的刷新，而动画只是在这个过程中顺便执行的。  </p>
+<p>接下去就是 Q3 了，我们知道 <code>applyTransformation()</code> 是动画生效的地方，这个方法不断的被回调时，参数会传进来动画的进度，所以呈现效果就是动画根据进度在运行中。</p>
+<p><strong>但是，我们从头分析下来，找到了动画真正执行的地方，找到了 applyTransformation() 被调用的地方，但这些地方都没有看到任何一个 for 或者 while 循环啊，也就是一次 View 树的遍历绘制操作，动画也就只会执行一次而已啊？那么它是怎么被回调那么多次的？</strong>  </p>
+<p>我们知道 <code>applyTransformation()</code> 是在 <code>getTransformation()</code> 里被调用的，而这个方法是有一个 boolean 返回值的，我们看看它的返回逻辑是什么：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-0e6225350c2ca14c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="getTransformation2.png"></p>
+<p>也就是说 <code>getTransformation()</code> 的返回值代表的是动画是否完成，还记得是哪里调用的 <code>getTransformation()</code> 吧，去 <code>applyLegacyAnimation()</code> 里看看取到这个返回值后又做了什么：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-6a1206a8e4c1084b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="applyLegacyAnimation2.png"></p>
+<p>当动画如果还没执行完，就会再调用 <code>invalidate()</code> 方法，层层通知到 ViewRootImpl 再次发起一次遍历请求，当下一帧屏幕刷新信号来的时候，再通过 <code>performTraversals()</code> 遍历 View 树绘制时，该 View 的 draw 收到通知被调用时，会再次去调用 <code>applyLegacyAnimation()</code> 方法去执行动画相关操作，包括调用 <code>getTransformation()</code> 计算动画进度，调用 <code>applyTransformation()</code> 应用动画。</p>
+<p>也就是说，动画很流畅的情况下，其实是每隔 16.6ms 即每一帧到来的时候，执行一次 <code>applyTransformation()</code>，直到动画完成。所以这个 <code>applyTransformation()</code> 被回调多次是这么来的，而且这个回调次数并没有办法人为进行设定。</p>
+<p>这就是为什么当动画持续时长越长时，这个方法打出的日志越多次的原因。</p>
+<p>还记得 <code>getTransformation()</code> 方法在计算动画进度时是根据参数传进来的 currentTime 的么，而这个 currentTime 可以理解成是发起遍历操作这个时刻的系统时间（实际 currentTime 是在 Choreographer 的 doFrame() 里经过校验调整之后的一个时间，但离发起遍历操作这个时刻的系统时间相差很小，所以不深究的话，可以像上面那样理解，比较容易明白）。  </p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>综上，我们稍微整理一下：</p>
+<ol>
+<li><p><strong>首先，当调用了 View.startAnimation() 时动画并没有马上就执行，而是通过 invalidate() 层层通知到 ViewRootImpl 发起一次遍历 View 树的请求，而这次请求会等到接收到最近一帧到了的信号时才去发起遍历 View 树绘制操作。</strong>  </p>
+</li>
+<li><p><strong>从 DecorView 开始遍历，绘制流程在遍历时会调用到 View 的 draw() 方法，当该方法被调用时，如果 View 有绑定动画，那么会去调用applyLegacyAnimation()，这个方法是专门用来处理动画相关逻辑的。</strong>  </p>
+</li>
+<li><p><strong>在 applyLegacyAnimation() 这个方法里，如果动画还没有执行过初始化，先调用动画的初始化方法 initialized()，同时调用 onAnimationStart() 通知动画开始了，然后调用 getTransformation() 来根据当前时间计算动画进度，紧接着调用 applyTransformation() 并传入动画进度来应用动画。</strong>  </p>
+</li>
+<li><p><strong>getTransformation() 这个方法有返回值，如果动画还没结束会返回 true，动画已经结束或者被取消了返回 false。所以 applyLegacyAnimation() 会根据 getTransformation() 的返回值来决定是否通知 ViewRootImpl 再发起一次遍历请求，返回值是 true 表示动画没结束，那么就去通知 ViewRootImpl 再次发起一次遍历请求。然后当下一帧到来时，再从 DecorView 开始遍历 View 树绘制，重复上面的步骤，这样直到动画结束。</strong>  </p>
+</li>
+<li><p><strong>有一点需要注意，动画是在每一帧的绘制流程里被执行，所以动画并不是单独执行的，也就是说，如果这一帧里有一些 View 需要重绘，那么这些工作同样是在这一帧里的这次遍历 View 树的过程中完成的。每一帧只会发起一次 perfromTraversals() 操作。</strong>  </p>
+</li>
+</ol>
+<p>以上，就是本篇所有的内容，将 View 动画 Animation 的运行流程原理梳理清楚，但要搞清楚为什么动画会出现卡顿现象的话，还需要理解 Android 屏幕的刷新机制以及消息驱动机制；这些内容将在最近几天内整理成博客分享出来。  </p>
+<h1 id="遗留问题"><a href="#遗留问题" class="headerlink" title="遗留问题"></a>遗留问题</h1><p>最后仍然遗留一些尚未解决的问题，等待继续探索：  </p>
+<p>Q1：大伙都清楚，View 动画区别于属性动画的就是 View 动画并不会对这个 View 的属性值做修改，比如平移动画，平移之后 View 还是在原来的位置上，实际位置并不会随动画的执行而移动，那么这点的原理是什么？  </p>
+<p>Q2：既然 View 动画不会改变 View 的属性值，那么如果是缩放动画时，View 需要重新执行测量操作么？    </p>
+
+      
+    </div>
+    
+    
+    
+
+    
+      <div>
+        <div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center">
+    <img id="wechat_subscriber_qcode" src="/uploads/dasuAndroidTv2.png" alt="请叫我大苏 wechat" style="width: 200px; max-width: 100%;">
+    <div></div>
+</div>
+
+      </div>
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持将鼓励我继续创作！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/uploads/weixin.png" alt="请叫我大苏 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/uploads/alipay.jpg" alt="请叫我大苏 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/01/01/瞎扯扯/我的2017年总结/" rel="next" title="我的2017年总结">
+                <i class="fa fa-chevron-left"></i> 我的2017年总结
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/01/18/Android源码解析/Android-屏幕刷新机制/" rel="prev" title="Android 屏幕刷新机制">
+                Android 屏幕刷新机制 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div id="gitalk-container"></div>
+
+  
+
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/uploads/img.jpg" alt="请叫我大苏">
+            
+              <p class="site-author-name" itemprop="name">请叫我大苏</p>
+              <p class="site-description motion-element" itemprop="description">微信公众号：dasuAndroidTv</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">91</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/woshidasusu" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:295207731@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                其他平台
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.jianshu.com/u/bb52a2918096" title="简书" target="_blank">简书</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.cnblogs.com/dasusu/" title="博客园" target="_blank">博客园</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#提问环节"><span class="nav-number">1.</span> <span class="nav-text">提问环节</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#源码分析"><span class="nav-number">2.</span> <span class="nav-text">源码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#View-startAnimation"><span class="nav-number">2.1.</span> <span class="nav-text">View.startAnimation()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#动画真正执行的地方"><span class="nav-number">2.2.</span> <span class="nav-text">动画真正执行的地方</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小结"><span class="nav-number">2.3.</span> <span class="nav-text">小结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#遗留问题"><span class="nav-number">3.</span> <span class="nav-text">遗留问题</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">请叫我大苏</span><br>
+	
+  <div class="powered-by">
+    <i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+    本站访客数:<span id="busuanzi_value_site_uv"></span> | 
+    </span>
+  </div>
+
+  <div class="theme-info">
+    <div class="powered-by"></div>
+    <span class="post-count">博客全站共 349.1k 字</span>
+  </div>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+  <script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+   <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID: '',
+          clientSecret: '',
+          repo: 'woshidasusu.github.io',
+          owner: '',
+          admin: [''],
+          id: md5(window.location.pathname),
+          distractionFreeMode: 'true'
+        })
+        gitalk.render('gitalk-container')
+       </script>
+
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
