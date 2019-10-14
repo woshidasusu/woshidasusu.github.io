@@ -8188,6 +8188,15 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
+    <title>Android技能树</title>
+    <url>/2018/05/27/%E6%8A%80%E8%83%BD%E6%A0%91/Android%E6%8A%80%E8%83%BD%E6%A0%91/</url>
+    <content><![CDATA[<p><img src="https://upload-images.jianshu.io/upload_images/1924341-d23f4ef9f50304cc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Android技能树.png"></p>
+]]></content>
+      <categories>
+        <category>技能树</category>
+      </categories>
+  </entry>
+  <entry>
     <title>Gradle 系列博客梳理</title>
     <url>/2018/05/27/Gradle/Gradle-%E7%B3%BB%E5%88%97%E5%8D%9A%E5%AE%A2%E6%A2%B3%E7%90%86/</url>
     <content><![CDATA[<blockquote>
@@ -8259,15 +8268,6 @@ b.y; <span class="comment">//1</span>
 ]]></content>
       <categories>
         <category>Gradle</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>Android技能树</title>
-    <url>/2018/05/27/%E6%8A%80%E8%83%BD%E6%A0%91/Android%E6%8A%80%E8%83%BD%E6%A0%91/</url>
-    <content><![CDATA[<p><img src="https://upload-images.jianshu.io/upload_images/1924341-d23f4ef9f50304cc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Android技能树.png"></p>
-]]></content>
-      <categories>
-        <category>技能树</category>
       </categories>
   </entry>
   <entry>
@@ -9226,30 +9226,6 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
-    <title>如何用Android Studio查看build.gradle源码</title>
-    <url>/2018/03/31/Gradle/%E5%A6%82%E4%BD%95%E7%94%A8Android-Studio%E6%9F%A5%E7%9C%8Bbuild-gradle%E6%BA%90%E7%A0%81/</url>
-    <content><![CDATA[<blockquote>
-<p><strong>本篇文章已授权微信公众号 dasu_Android（大苏）独家发布</strong>  </p>
-</blockquote>
-<p><strong>2019-7-30 更新：</strong><br>感谢评论区指出，gradle源码下载地址：<a href="http://services.gradle.org/distributions/" target="_blank" rel="noopener">http://services.gradle.org/distributions/</a></p>
-<hr>
-<p>上一篇博客里讲过 build.gradle 里的每一行代码基本都是在调用一个方法，既然是这样，我们就可以用 android studio(下面简称as) 去查看它源码的方法注释说明，这样就可以理解每个方法是做什么的了，就算是在大神的 build.gradle 遇见一些没看懂的代码，也可以点进去看方法介绍来理解。就像我们在查看 SDK 里的各种方法一样。    </p>
-<p>但是有个问题，应该也有小伙伴跟我一样吧，每次在大神的 build.gradle 看到一堆不懂的代码时，按住 <code>Ctrl</code> 键后，鼠标移到代码上时有个跳转的手势时总是很开心，总是心想原来可以看源码啊，那就点进去看看介绍，看这个是干嘛的吧。可是每次一点进去，打开的却是 class 代码文件，顶多就只有方法名，一点注释都没有，而且方法参数命名还混淆过，也猜不出来是干嘛的。又不懂怎么去官方文档里查找，只能去网上用关键字查找，找出来的又跟自己碰到的问题不一样，越找越气干脆不找了，放一边去，以后再说。  </p>
-<p>是吧，如果可以直接通过 as 看源码的注释该多好。好了，废话到这，下面开始正文。    </p>
-<hr>
-<h1 id="系列索引"><a href="#系列索引" class="headerlink" title="系列索引"></a>系列索引</h1><p>build.gradle系列一：<a href="http://www.jianshu.com/p/a3805905a5c7" target="_blank" rel="noopener">看不懂的build.gradle代码</a><br>build.gradle系列二：<a href="http://www.jianshu.com/p/501726c979b1" target="_blank" rel="noopener">学点Groovy来理解build.gradle代码</a><br>build.gradle系列三：<a href>如何用Adnroid Studio查看build.gradle源码</a><br>…  </p>
-<hr>
-<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>我们来举个例子，就像系列一的博客里介绍的 build.gradle 里有这样一段代码：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-d46a0d67f548a7aa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="build.gradle"><br>咦！这代码是第一次在 build.gradle 里看见过，是什么意思呢？不怕，我有绝招：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-5d5db8368916117f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Ctrl + 左键"><br>Android Studio大法—看源码，还有什么是不能通过看源码注释解决的么<br><img src="http://upload-images.jianshu.io/upload_images/1924341-4b6cd41069f7fa21.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.class"><br>是跳到源码了，可是为什么没有方法的注释说明呢，这方法是什么鬼谁知道啊。再仔细看看 as 的提示，原来打开的是个 class 文件啊。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-c55417ff2530580f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="as提示"><br>as 的提示那里应该会有个下载和选择源码位置的按钮的啊，搞不懂为什么不出现。  </p>
-<p>另外，我们知道，as 一般会默认先打开 xxx-sources.jar 也就是 xxx 的 java 文件源码，如果没有源码文件，才会打开 xxx.jar 的 class 代码。我们看一下，打开的是什么文件。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-9692f8b22bf2eda3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle-2.3.0.jar"><br>没错，as 打开的是 gradle-2.3.0.jar，说明 as 没有找到 gradle-2.3.0-sources.jar 源码文件，我们看一下到底是不是这样<br><img src="http://upload-images.jianshu.io/upload_images/1924341-53c68923912bf799.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="as标题栏"><br>as 标题栏会显示你当前打开的文件的具体位置，好了，知道了 gradle-2.3.0.jar 在电脑里的位置了，我们到那个目录下看看<br><img src="http://upload-images.jianshu.io/upload_images/1924341-f9da8ad2908b540e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle-2.3.0.jar本地路径"><br>只有一个 gradle-2.3.0.jar 文件和一个 pom 文件，正常的话应该还要有个 xxx-sources.jar 文件才对，就像下面这样<br><img src="http://upload-images.jianshu.io/upload_images/1924341-f7700195cd081102.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="三个文件"><br>因为这里没有 gradle-2.3.0-sources.jar 文件，所以 as 没办法打开带有方法注释的源码文件了。既然知道问题，那么就好解决了，as 的提示条也没有下载的按钮，那我们就自己去下载好了<br><img src="http://upload-images.jianshu.io/upload_images/1924341-ac54a39b3846d1d4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="seach.maven.org"><br>打开 maven 网站，在这里可以下载 gradle 插件。在搜索框中输入 <code>com.android.tools.build</code>，为什么输入这个，你打开 project 下的 build.gradle 文件看看就知道了<br><img src="http://upload-images.jianshu.io/upload_images/1924341-4796f2199f748565.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="com.android.tools.build"><br><img src="http://upload-images.jianshu.io/upload_images/1924341-374001fbc95ace5c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="search result"><br>这些就是 gradle 插件，我们在根目录下的 build.gradle 配置的 gradle 版本其实就是来这里下载的，应该是吧。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-b9b6f2c35d82ede4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="下载的文件"><br>下载后得到的就是这些文件了，接下去就是找到相应文件的位置，复制一份过去<br><img src="http://upload-images.jianshu.io/upload_images/1924341-139f310de6d6dfc5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle的本地路径"><br>打开相应的插件文件夹，选择相应的版本，最后将下载的 xxx-sources.jar 复制一份进去，最后的样子如下<br><img src="http://upload-images.jianshu.io/upload_images/1924341-9dbac486701a27fa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="三个文件"><br>好了，大功告成，我们再打开 as，记得 ReBuild 一下，然后再试试查看 build.gradle 源码会是什么样子<br><img src="http://upload-images.jianshu.io/upload_images/1924341-327042d04c7edab6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.java"><br><img src="http://upload-images.jianshu.io/upload_images/1924341-5723f731293b39a7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="LintOptions.java"><br>翻译一下英文大概就是说， lintOptions.abortOnError = false 是设置即使 lint 检查时发现错误也不停止构建程序的运行。  </p>
-<p>这种方法比去官方的 api 文档里查阅方便多了吧。再来看看几个效果。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-19e3e3f8353694db.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.java"><br>这里就可以看到源码里介绍 Plugin 的值都有哪些，分别对应哪个类，该去哪个类看它的作用是什么，干什么的。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-3024eb6a6819fd42.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="AndroidConfig.java"><br>借助 as，我们甚至可以很容易的查到 <code>android{...}</code> 这个括号里能使用的方法都有哪些，如果要看各自的作用是干什么的，再继续点进去查看注释就行了。是不是发现，我们在 build.gradle 里的 <code>android{...}</code> 使用过的标签名原来都在这里的啊。  </p>
-<p>以后就算是再碰到大神的 build.gradle 文件里各种没看见过的标签名，不用再担心看不懂了。不懂就看源码注释嘛，so easy!  </p>
-<p>当然，大神的 build.gradle 文件里还是会出现一些 groovy 代码或者是 task 之类的，这些就不是 gradle 源码里能够查到的了，需要稍微了解一下 groovy 和 gradle 语言的基础，有兴趣的可以继续阅读下我写的这个系列里的相关博客，当然能力不够，如果你希望更好的学习，网上资料也很多。   </p>
-]]></content>
-      <categories>
-        <category>Gradle</category>
-      </categories>
-  </entry>
-  <entry>
     <title>分享两个提高效率的AndroidStudio小技巧</title>
     <url>/2018/03/31/%E6%95%99%E7%A8%8B%E7%B1%BB/%E5%88%86%E4%BA%AB%E4%B8%A4%E4%B8%AA%E6%8F%90%E9%AB%98%E6%95%88%E7%8E%87%E7%9A%84AndroidStudio%E5%B0%8F%E6%8A%80%E5%B7%A7/</url>
     <content><![CDATA[<blockquote>
@@ -9342,6 +9318,30 @@ b.y; <span class="comment">//1</span>
 ]]></content>
       <categories>
         <category>教程类</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>如何用Android Studio查看build.gradle源码</title>
+    <url>/2018/03/31/Gradle/%E5%A6%82%E4%BD%95%E7%94%A8Android-Studio%E6%9F%A5%E7%9C%8Bbuild-gradle%E6%BA%90%E7%A0%81/</url>
+    <content><![CDATA[<blockquote>
+<p><strong>本篇文章已授权微信公众号 dasu_Android（大苏）独家发布</strong>  </p>
+</blockquote>
+<p><strong>2019-7-30 更新：</strong><br>感谢评论区指出，gradle源码下载地址：<a href="http://services.gradle.org/distributions/" target="_blank" rel="noopener">http://services.gradle.org/distributions/</a></p>
+<hr>
+<p>上一篇博客里讲过 build.gradle 里的每一行代码基本都是在调用一个方法，既然是这样，我们就可以用 android studio(下面简称as) 去查看它源码的方法注释说明，这样就可以理解每个方法是做什么的了，就算是在大神的 build.gradle 遇见一些没看懂的代码，也可以点进去看方法介绍来理解。就像我们在查看 SDK 里的各种方法一样。    </p>
+<p>但是有个问题，应该也有小伙伴跟我一样吧，每次在大神的 build.gradle 看到一堆不懂的代码时，按住 <code>Ctrl</code> 键后，鼠标移到代码上时有个跳转的手势时总是很开心，总是心想原来可以看源码啊，那就点进去看看介绍，看这个是干嘛的吧。可是每次一点进去，打开的却是 class 代码文件，顶多就只有方法名，一点注释都没有，而且方法参数命名还混淆过，也猜不出来是干嘛的。又不懂怎么去官方文档里查找，只能去网上用关键字查找，找出来的又跟自己碰到的问题不一样，越找越气干脆不找了，放一边去，以后再说。  </p>
+<p>是吧，如果可以直接通过 as 看源码的注释该多好。好了，废话到这，下面开始正文。    </p>
+<hr>
+<h1 id="系列索引"><a href="#系列索引" class="headerlink" title="系列索引"></a>系列索引</h1><p>build.gradle系列一：<a href="http://www.jianshu.com/p/a3805905a5c7" target="_blank" rel="noopener">看不懂的build.gradle代码</a><br>build.gradle系列二：<a href="http://www.jianshu.com/p/501726c979b1" target="_blank" rel="noopener">学点Groovy来理解build.gradle代码</a><br>build.gradle系列三：<a href>如何用Adnroid Studio查看build.gradle源码</a><br>…  </p>
+<hr>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>我们来举个例子，就像系列一的博客里介绍的 build.gradle 里有这样一段代码：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-d46a0d67f548a7aa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="build.gradle"><br>咦！这代码是第一次在 build.gradle 里看见过，是什么意思呢？不怕，我有绝招：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-5d5db8368916117f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Ctrl + 左键"><br>Android Studio大法—看源码，还有什么是不能通过看源码注释解决的么<br><img src="http://upload-images.jianshu.io/upload_images/1924341-4b6cd41069f7fa21.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.class"><br>是跳到源码了，可是为什么没有方法的注释说明呢，这方法是什么鬼谁知道啊。再仔细看看 as 的提示，原来打开的是个 class 文件啊。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-c55417ff2530580f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="as提示"><br>as 的提示那里应该会有个下载和选择源码位置的按钮的啊，搞不懂为什么不出现。  </p>
+<p>另外，我们知道，as 一般会默认先打开 xxx-sources.jar 也就是 xxx 的 java 文件源码，如果没有源码文件，才会打开 xxx.jar 的 class 代码。我们看一下，打开的是什么文件。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-9692f8b22bf2eda3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle-2.3.0.jar"><br>没错，as 打开的是 gradle-2.3.0.jar，说明 as 没有找到 gradle-2.3.0-sources.jar 源码文件，我们看一下到底是不是这样<br><img src="http://upload-images.jianshu.io/upload_images/1924341-53c68923912bf799.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="as标题栏"><br>as 标题栏会显示你当前打开的文件的具体位置，好了，知道了 gradle-2.3.0.jar 在电脑里的位置了，我们到那个目录下看看<br><img src="http://upload-images.jianshu.io/upload_images/1924341-f9da8ad2908b540e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle-2.3.0.jar本地路径"><br>只有一个 gradle-2.3.0.jar 文件和一个 pom 文件，正常的话应该还要有个 xxx-sources.jar 文件才对，就像下面这样<br><img src="http://upload-images.jianshu.io/upload_images/1924341-f7700195cd081102.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="三个文件"><br>因为这里没有 gradle-2.3.0-sources.jar 文件，所以 as 没办法打开带有方法注释的源码文件了。既然知道问题，那么就好解决了，as 的提示条也没有下载的按钮，那我们就自己去下载好了<br><img src="http://upload-images.jianshu.io/upload_images/1924341-ac54a39b3846d1d4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="seach.maven.org"><br>打开 maven 网站，在这里可以下载 gradle 插件。在搜索框中输入 <code>com.android.tools.build</code>，为什么输入这个，你打开 project 下的 build.gradle 文件看看就知道了<br><img src="http://upload-images.jianshu.io/upload_images/1924341-4796f2199f748565.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="com.android.tools.build"><br><img src="http://upload-images.jianshu.io/upload_images/1924341-374001fbc95ace5c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="search result"><br>这些就是 gradle 插件，我们在根目录下的 build.gradle 配置的 gradle 版本其实就是来这里下载的，应该是吧。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-b9b6f2c35d82ede4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="下载的文件"><br>下载后得到的就是这些文件了，接下去就是找到相应文件的位置，复制一份过去<br><img src="http://upload-images.jianshu.io/upload_images/1924341-139f310de6d6dfc5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle的本地路径"><br>打开相应的插件文件夹，选择相应的版本，最后将下载的 xxx-sources.jar 复制一份进去，最后的样子如下<br><img src="http://upload-images.jianshu.io/upload_images/1924341-9dbac486701a27fa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="三个文件"><br>好了，大功告成，我们再打开 as，记得 ReBuild 一下，然后再试试查看 build.gradle 源码会是什么样子<br><img src="http://upload-images.jianshu.io/upload_images/1924341-327042d04c7edab6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.java"><br><img src="http://upload-images.jianshu.io/upload_images/1924341-5723f731293b39a7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="LintOptions.java"><br>翻译一下英文大概就是说， lintOptions.abortOnError = false 是设置即使 lint 检查时发现错误也不停止构建程序的运行。  </p>
+<p>这种方法比去官方的 api 文档里查阅方便多了吧。再来看看几个效果。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-19e3e3f8353694db.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.java"><br>这里就可以看到源码里介绍 Plugin 的值都有哪些，分别对应哪个类，该去哪个类看它的作用是什么，干什么的。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-3024eb6a6819fd42.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="AndroidConfig.java"><br>借助 as，我们甚至可以很容易的查到 <code>android{...}</code> 这个括号里能使用的方法都有哪些，如果要看各自的作用是干什么的，再继续点进去查看注释就行了。是不是发现，我们在 build.gradle 里的 <code>android{...}</code> 使用过的标签名原来都在这里的啊。  </p>
+<p>以后就算是再碰到大神的 build.gradle 文件里各种没看见过的标签名，不用再担心看不懂了。不懂就看源码注释嘛，so easy!  </p>
+<p>当然，大神的 build.gradle 文件里还是会出现一些 groovy 代码或者是 task 之类的，这些就不是 gradle 源码里能够查到的了，需要稍微了解一下 groovy 和 gradle 语言的基础，有兴趣的可以继续阅读下我写的这个系列里的相关博客，当然能力不够，如果你希望更好的学习，网上资料也很多。   </p>
+]]></content>
+      <categories>
+        <category>Gradle</category>
       </categories>
   </entry>
   <entry>
@@ -11924,6 +11924,44 @@ public abstract class ViewPagerFragment extends Fragment {
       </categories>
   </entry>
   <entry>
+    <title>小码农的故事05</title>
+    <url>/2016/09/08/%E7%9E%8E%E6%89%AF%E6%89%AF/%E5%B0%8F%E7%A0%81%E5%86%9C%E7%9A%84%E6%95%85%E4%BA%8B05/</url>
+    <content><![CDATA[<hr>
+<p>前言：这应该是最后一章了，故事虽然到这就结束了，但现实里还要继续下去，希望在很久的以后来回顾时，能因自己学生时代有这样的经历而欣慰。<br>说明：故事中的人物均是化名，故事情节经过些许加工，故事情节并没有针对任何人，仅以此纪念自己的成长。<br>回顾上一章：<a href="http://www.jianshu.com/p/59273956629f" target="_blank" rel="noopener">详情请猛戳</a></p>
+<hr>
+<p>##第四章：Beta收官</p>
+<hr>
+<p>　　三个多周的Alpha冲刺，一个周左右的休息调整时间。紧接着也就是Beta阶段的冲刺了。</p>
+<p>　　在Alpha版本中，虽然你们预期的功能基本都实现了，但仍然有很多不足。比如界面太丑，代码模块化太烂等等。瓜哥跟你在那一周的休息调整时间里都表示过，要在Beta阶段大干一场，好好的将这些问题都解决掉。然而，现实总是残酷了，当然，这是后话，暂且不提。</p>
+<p>　　在Alpha结束后，你写了篇总结。也就是总结了下在Alpha阶段的一些感想，里面你提到了你们的项目因准备不足而陷入各种难题，提到了队友因意见不合而不断争吵的问题。总之，这三周过来，或多或少都学到了很多。</p>
+<p>　　在Alpha刚开始的编程时，你记得懂哥说项目要学会使用在框架的基础上进行开发，而不是所有代码都自己来书写。带着这种观念，你在写界面的时候引入了一大堆第三方库。需要一个点击效果，好，引入。需要一个弹窗效果，好，引入。然而你并没有真正的深入去学习你所引入的第三方库，导致很多库之间其实已经有冗余的功能了。</p>
+<p>　　更糟糕的是，队友因为你引入这么多库，从而导致在编译项目时花费了大量时间。因此，你打算在Beta阶段时将多余的库都删除掉。</p>
+<p>　　另一个项目的问题是，当初因为没认真考虑，而引入了一个不熟悉的数据库框架。到后面进行开发时，才发现你们需要的很多功能那个框架都实现不了，但已经有很多基础的数据库功能是基于那个框架上面编写的，如果要换掉那个框架，将是一个工作量巨大的任务。但如果不换掉，想要的功能又没办法实现。</p>
+<p>　　为了解决这个问题，你查了各种资料，做了各种尝试，熬到了半夜两三点。最后用一种特别暴力的方法去暂时的解决掉，搞定后你特别想去睡一觉，这种活简直了！日后需要怎么做再留给瓜哥去头疼吧。</p>
+<p>　　Beta期间也有两三周的时间，但懂哥只要求进行七次会议记录而已。瓜哥为了能让项目保持一种稳定，平均的进展，安排了每过两三四天开一次会议。但计划总是赶不上变化。</p>
+<p>　　第一周还好，因为大家第一周里面都没有什么考试，进展也还算顺利，一些Alpha遗留的问题也渐渐的解决了。但到了第二周时，有的队员有考试，而且是接连两三场考试，基于此，瓜哥最后表示，这周就先把项目放一边，大家好好复习，准备考试，等最后一周再来继续项目。</p>
+<p>　　本来以为，放一周的时间去调整，不做项目可以让大家到最后一周时能更有干劲。但事实却是，一周没碰过项目，导致大家对于项目的热情大大的降低了。不仅如此，对于项目很多地方都渐渐的感到陌生了，更可怕的是，你居然忘记了某块有合作的代码当初到底是不是你编写的。</p>
+<p>　　日后瓜哥也提过，当初因为放了一周，导致他也对于项目的进展掌握出现了很多问题。当然，这是后话，暂且不提。第二周的Beta过去了，大家都在忙着复习，确确实实都把项目扔一边去了。等到了第三周时，第一次会议上，大家甚至都不知道要说什么话。</p>
+<p>　　离最后的时间也就只剩下一周左右了，你突然觉得来不及了。自己无聊时不断地手工测试你们的软件，你发现似乎还存在一大堆问题，但就是不知道怎么把这个问题描述出来。你觉得队友应该也会自己去手工测试，然后发现相同的问题，但事实上队友基本没提过你发现的问题。</p>
+<p>　　在一次会议上，你直接表示出了厌烦，你表示说这样下去项目根本做不出来，现在仍然存在很多问题。瓜哥要你说出具体有哪些问题，但你又说不出来，你说自己跑一遍就会发现一堆问题了，但瓜哥却表示，你说有问题却又不把问题说清楚。这样，在Alpha阶段发生的一次冲突到现在又出现了一次。只是这次你没有继续接话下去，因为你突然很不想说话了。</p>
+<p>　　甚至，你出现了厌工。你总觉得，软件只有你一个人在测试，在找Bug，但事实上很多Bug都被你因为自己的心情烦躁而放大了。你不知道这是不是因为情绪不好，还是因为时间快临近截止，还是因为缺少跟队友的沟通，从而导致了你对于项目厌工的心情。</p>
+<p>　　你甚至出现过，你不做了的想法，放一边去，反正等最后验收时没办法完成作品那责任也不是你自己去担。</p>
+<p>　　然而，就在你自己胡思乱想，乱发脾气时。瓜哥又对总仓库进行了一次提交，你去看了下瓜哥的提交代码。你发现，瓜哥居然把你一直很苦恼的一些BUG解决了。瞬间，你冷静下来了。每个人都在为这个项目不断的熬夜，不断的努力。在别人埋头修BUG的时候，你却在抱怨，却在厌工。</p>
+<p>　　那天你没敲什么代码，就只是早早结束熬夜，提前上床。你想平静下自己，想让自己恢复到Alpha阶段时的状态。你觉得如果你继续以这种情绪下去的话，特别对不起瓜哥。当初是你把瓜哥拉进队伍里来的，瓜哥对于项目也一直很负责，你不能只是因为自己的情绪不好就厌工。这对项目，对瓜哥，对队员都很不公平。</p>
+<p>　　调整了状态后，你继续做项目下去。每次的会议上，你也很少再带有情绪，而是静静的听着瓜哥的安排。然后根据瓜哥安排的任务，尽可能的保证在规定时间内完成。</p>
+<p>　　Beta阶段的主要任务是实现跟网页端小组的项目的互联互通。使用同一个数据库，对数据库中表的设计，字段的设计，瓜哥都去找网页端的负责人讨论，然后再把结果告诉你们。但实现的过程中仍然碰到很多问题，为了解决这些问题，基本都把时间放在上面。</p>
+<p>　　导致了你们一开始计划在Beta阶段对界面进行大修改，对项目进行大重构的安排完全被丢到一边去了。</p>
+<p>　　在Beta的演示验收上面，又出现了各种问题，更奇葩的是这问题竟不带重复的。Alpha阶段演示验收时你们就碰上了无网络，服务器崩了，数据线连接没反应等问题导致被迫下台，先让下一组演示。而这一次的演示上，居然碰上了服务器连接不上，重启不了，演示时漏掉演示某部分功能~~</p>
+<p>　　Beta的演示验收是由各小组互评加懂哥点评结合完成的。其他小组对于你们的项目看法基本都是功能太单一了，太简单了！好吧，其实是没演示。</p>
+<p>　　演示验收完毕，这学期的软工实践算是告一段落了。也是时候再写篇总结了。</p>
+<p>　　不同于以往的数据库实践之类的课程，这门课确实让你经历了很多。见客户、每日会议、分工开发、Github团队合作、争吵讨论、编码规范、写文档等等。懂哥说过，他最大的希望就是通过这门课程，可以让他的学生能有能力接私活。你突然很期待起来，好想自己接一次私活看看。那么，就再继续充实自己吧，让自己可以拥有接私活的能力。加油吧。</p>
+<p>　　<strong>（完结。再次向懂哥，范老师表示致敬）</strong></p>
+]]></content>
+      <categories>
+        <category>谈人生</category>
+      </categories>
+  </entry>
+  <entry>
     <title>【Android】属性动画的使用理解</title>
     <url>/2016/09/08/Android%E7%9F%A5%E8%AF%86/%E3%80%90Android%E3%80%91%E5%B1%9E%E6%80%A7%E5%8A%A8%E7%94%BB%E7%9A%84%E4%BD%BF%E7%94%A8%E7%90%86%E8%A7%A3/</url>
     <content><![CDATA[<blockquote>
@@ -12021,44 +12059,6 @@ animator.start();
 ]]></content>
       <categories>
         <category>Android知识</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>小码农的故事05</title>
-    <url>/2016/09/08/%E7%9E%8E%E6%89%AF%E6%89%AF/%E5%B0%8F%E7%A0%81%E5%86%9C%E7%9A%84%E6%95%85%E4%BA%8B05/</url>
-    <content><![CDATA[<hr>
-<p>前言：这应该是最后一章了，故事虽然到这就结束了，但现实里还要继续下去，希望在很久的以后来回顾时，能因自己学生时代有这样的经历而欣慰。<br>说明：故事中的人物均是化名，故事情节经过些许加工，故事情节并没有针对任何人，仅以此纪念自己的成长。<br>回顾上一章：<a href="http://www.jianshu.com/p/59273956629f" target="_blank" rel="noopener">详情请猛戳</a></p>
-<hr>
-<p>##第四章：Beta收官</p>
-<hr>
-<p>　　三个多周的Alpha冲刺，一个周左右的休息调整时间。紧接着也就是Beta阶段的冲刺了。</p>
-<p>　　在Alpha版本中，虽然你们预期的功能基本都实现了，但仍然有很多不足。比如界面太丑，代码模块化太烂等等。瓜哥跟你在那一周的休息调整时间里都表示过，要在Beta阶段大干一场，好好的将这些问题都解决掉。然而，现实总是残酷了，当然，这是后话，暂且不提。</p>
-<p>　　在Alpha结束后，你写了篇总结。也就是总结了下在Alpha阶段的一些感想，里面你提到了你们的项目因准备不足而陷入各种难题，提到了队友因意见不合而不断争吵的问题。总之，这三周过来，或多或少都学到了很多。</p>
-<p>　　在Alpha刚开始的编程时，你记得懂哥说项目要学会使用在框架的基础上进行开发，而不是所有代码都自己来书写。带着这种观念，你在写界面的时候引入了一大堆第三方库。需要一个点击效果，好，引入。需要一个弹窗效果，好，引入。然而你并没有真正的深入去学习你所引入的第三方库，导致很多库之间其实已经有冗余的功能了。</p>
-<p>　　更糟糕的是，队友因为你引入这么多库，从而导致在编译项目时花费了大量时间。因此，你打算在Beta阶段时将多余的库都删除掉。</p>
-<p>　　另一个项目的问题是，当初因为没认真考虑，而引入了一个不熟悉的数据库框架。到后面进行开发时，才发现你们需要的很多功能那个框架都实现不了，但已经有很多基础的数据库功能是基于那个框架上面编写的，如果要换掉那个框架，将是一个工作量巨大的任务。但如果不换掉，想要的功能又没办法实现。</p>
-<p>　　为了解决这个问题，你查了各种资料，做了各种尝试，熬到了半夜两三点。最后用一种特别暴力的方法去暂时的解决掉，搞定后你特别想去睡一觉，这种活简直了！日后需要怎么做再留给瓜哥去头疼吧。</p>
-<p>　　Beta期间也有两三周的时间，但懂哥只要求进行七次会议记录而已。瓜哥为了能让项目保持一种稳定，平均的进展，安排了每过两三四天开一次会议。但计划总是赶不上变化。</p>
-<p>　　第一周还好，因为大家第一周里面都没有什么考试，进展也还算顺利，一些Alpha遗留的问题也渐渐的解决了。但到了第二周时，有的队员有考试，而且是接连两三场考试，基于此，瓜哥最后表示，这周就先把项目放一边，大家好好复习，准备考试，等最后一周再来继续项目。</p>
-<p>　　本来以为，放一周的时间去调整，不做项目可以让大家到最后一周时能更有干劲。但事实却是，一周没碰过项目，导致大家对于项目的热情大大的降低了。不仅如此，对于项目很多地方都渐渐的感到陌生了，更可怕的是，你居然忘记了某块有合作的代码当初到底是不是你编写的。</p>
-<p>　　日后瓜哥也提过，当初因为放了一周，导致他也对于项目的进展掌握出现了很多问题。当然，这是后话，暂且不提。第二周的Beta过去了，大家都在忙着复习，确确实实都把项目扔一边去了。等到了第三周时，第一次会议上，大家甚至都不知道要说什么话。</p>
-<p>　　离最后的时间也就只剩下一周左右了，你突然觉得来不及了。自己无聊时不断地手工测试你们的软件，你发现似乎还存在一大堆问题，但就是不知道怎么把这个问题描述出来。你觉得队友应该也会自己去手工测试，然后发现相同的问题，但事实上队友基本没提过你发现的问题。</p>
-<p>　　在一次会议上，你直接表示出了厌烦，你表示说这样下去项目根本做不出来，现在仍然存在很多问题。瓜哥要你说出具体有哪些问题，但你又说不出来，你说自己跑一遍就会发现一堆问题了，但瓜哥却表示，你说有问题却又不把问题说清楚。这样，在Alpha阶段发生的一次冲突到现在又出现了一次。只是这次你没有继续接话下去，因为你突然很不想说话了。</p>
-<p>　　甚至，你出现了厌工。你总觉得，软件只有你一个人在测试，在找Bug，但事实上很多Bug都被你因为自己的心情烦躁而放大了。你不知道这是不是因为情绪不好，还是因为时间快临近截止，还是因为缺少跟队友的沟通，从而导致了你对于项目厌工的心情。</p>
-<p>　　你甚至出现过，你不做了的想法，放一边去，反正等最后验收时没办法完成作品那责任也不是你自己去担。</p>
-<p>　　然而，就在你自己胡思乱想，乱发脾气时。瓜哥又对总仓库进行了一次提交，你去看了下瓜哥的提交代码。你发现，瓜哥居然把你一直很苦恼的一些BUG解决了。瞬间，你冷静下来了。每个人都在为这个项目不断的熬夜，不断的努力。在别人埋头修BUG的时候，你却在抱怨，却在厌工。</p>
-<p>　　那天你没敲什么代码，就只是早早结束熬夜，提前上床。你想平静下自己，想让自己恢复到Alpha阶段时的状态。你觉得如果你继续以这种情绪下去的话，特别对不起瓜哥。当初是你把瓜哥拉进队伍里来的，瓜哥对于项目也一直很负责，你不能只是因为自己的情绪不好就厌工。这对项目，对瓜哥，对队员都很不公平。</p>
-<p>　　调整了状态后，你继续做项目下去。每次的会议上，你也很少再带有情绪，而是静静的听着瓜哥的安排。然后根据瓜哥安排的任务，尽可能的保证在规定时间内完成。</p>
-<p>　　Beta阶段的主要任务是实现跟网页端小组的项目的互联互通。使用同一个数据库，对数据库中表的设计，字段的设计，瓜哥都去找网页端的负责人讨论，然后再把结果告诉你们。但实现的过程中仍然碰到很多问题，为了解决这些问题，基本都把时间放在上面。</p>
-<p>　　导致了你们一开始计划在Beta阶段对界面进行大修改，对项目进行大重构的安排完全被丢到一边去了。</p>
-<p>　　在Beta的演示验收上面，又出现了各种问题，更奇葩的是这问题竟不带重复的。Alpha阶段演示验收时你们就碰上了无网络，服务器崩了，数据线连接没反应等问题导致被迫下台，先让下一组演示。而这一次的演示上，居然碰上了服务器连接不上，重启不了，演示时漏掉演示某部分功能~~</p>
-<p>　　Beta的演示验收是由各小组互评加懂哥点评结合完成的。其他小组对于你们的项目看法基本都是功能太单一了，太简单了！好吧，其实是没演示。</p>
-<p>　　演示验收完毕，这学期的软工实践算是告一段落了。也是时候再写篇总结了。</p>
-<p>　　不同于以往的数据库实践之类的课程，这门课确实让你经历了很多。见客户、每日会议、分工开发、Github团队合作、争吵讨论、编码规范、写文档等等。懂哥说过，他最大的希望就是通过这门课程，可以让他的学生能有能力接私活。你突然很期待起来，好想自己接一次私活看看。那么，就再继续充实自己吧，让自己可以拥有接私活的能力。加油吧。</p>
-<p>　　<strong>（完结。再次向懂哥，范老师表示致敬）</strong></p>
-]]></content>
-      <categories>
-        <category>谈人生</category>
       </categories>
   </entry>
   <entry>
