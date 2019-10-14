@@ -2374,6 +2374,68 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
+    <title>前端16-JavaScript执行上下文EC和变量对象VO（进阶）</title>
+    <url>/2018/11/02/%E5%89%8D%E7%AB%AF/%E8%BF%9B%E9%98%B6/%E5%89%8D%E7%AB%AF%E5%85%A5%E9%97%A816-JavaScript%E8%BF%9B%E9%98%B6%E4%B9%8BEC%E5%92%8CVO/</url>
+    <content><![CDATA[<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本系列文章内容全部梳理自以下几个来源：</p>
+<ul>
+<li>《JavaScript权威指南》</li>
+<li><a href="https://developer.mozilla.org/zh-CN/docs/Web" target="_blank" rel="noopener">MDN web docs</a></li>
+<li><a href="https://github.com/smyhvae/Web" target="_blank" rel="noopener">Github:smyhvae/web</a></li>
+<li><a href="https://github.com/goddyZhao/Translation/tree/master/JavaScript" target="_blank" rel="noopener">Github:goddyZhao/Translation/JavaScript</a></li>
+</ul>
+<p>作为一个前端小白，入门跟着这几个来源学习，感谢作者的分享，在其基础上，通过自己的理解，梳理出的知识点，或许有遗漏，或许有些理解是错误的，如有发现，欢迎指点下。</p>
+<p>PS：梳理的内容以《JavaScript权威指南》这本书中的内容为主，因此接下去跟 JavaScript 语法相关的系列文章基本只介绍 ES5 标准规范的内容、ES6 等这系列梳理完再单独来讲讲。</p>
+<h1 id="正文-执行上下文EC和变量对象VO"><a href="#正文-执行上下文EC和变量对象VO" class="headerlink" title="正文-执行上下文EC和变量对象VO"></a>正文-执行上下文EC和变量对象VO</h1><p>EC：Execution Context，中文翻译执行上下文，也有翻译成执行环境的。</p>
+<p>VO：Variable object，中文翻译变量对象。</p>
+<p>这两个概念很重要，涉及到作用域以及作用域链的原理。</p>
+<h3 id="执行上下文-EC"><a href="#执行上下文-EC" class="headerlink" title="执行上下文 EC"></a>执行上下文 EC</h3><p>先说说Android中的上下文： </p>
+<ul>
+<li>Android</li>
+</ul>
+<p>Android 中也有上下文：Context，四大组件都是上下文，还有一个全局的 Application上下文。在 Android 中基本是以四大组件为界限，每创建一个四大组件，都会产生一个上下文，比如每个 Activity 都是独立的上下文。</p>
+<p>在 Android 中，上下文 Context 的作用大体上用于标识各种资源的所属，要加载一张图片、创建一个 View、弹一个 Dialog 等等，你需要告诉系统，这些是谁发出的指令，要挂载到哪个上下文，这些资源依赖于上下文的生命周期。</p>
+<p>所以才会出现，有时弹 Dialog 或者更新某个 View 时抛异常说 Context 已销毁，因为它需要挂载的上下文已经销毁了，那么就没有上下文来统筹管理这些资源了，自然会抛异常。</p>
+<ul>
+<li>JavaScript</li>
+</ul>
+<p>在 JavaScript 中，上下文是指执行上下文，通俗点理解，代码执行的上下文，所以也有翻译成执行环境，可以通俗的把它理解成一个对象，对象名 EC，表示代码的执行上下文。</p>
+<p>既然理解成一个对象，那么就有它创建的时机，在 JavaScript 中，每当要执行不同类型的代码时，就会创建一个执行上下文 EC。</p>
+<p>而代码的类型分三种：</p>
+<ul>
+<li>全局代码</li>
+<li>函数代码</li>
+<li>eval()执行的代码</li>
+</ul>
+<p>最后一种不讨论，全局代码就是指写在函数外的代码，在前端里，当 HTML 加载一个 js 文件时，全局代码就会被执行，那么在全局代码执行前就会先创建一个全局的执行上下文 EC，之后每调用一次函数，要执行函数内的代码时，会再创建一个函数执行上下文 EC。</p>
+<p>也就是说，不讨论 eval 的话，那么在 JavaScript 有两种执行上下文，一种是全局执行上下文，一种是函数执行上下文。</p>
+<p>而每次创建一个执行上下文时，都会将其放入一个栈结构，这个栈就称为执行上下文栈（ECS），也有翻译成执行环境栈。</p>
+<p>所以执行 js 文件代码期间，这个栈底一直是全局执行上下文，直到 js 文件代码执行结束。全局代码执行过程中，每调用一次函数，新创建一个函数执行上下文，就放入栈内。</p>
+<p>因此，栈顶就表示当前执行的代码，如果栈顶是全局执行上下文，表示正在执行全局代码；如果栈顶是函数执行上下文，表示正在执行函数内的代码。当函数执行结束时，这个函数执行上下文就从栈中移出。</p>
+<p>那么执行上下文（EC）有什么用呢？</p>
+<p>用途可多了，跟 Android 不一样，Android 里由于是各种资源的组合使用，但在 JavaScript 中更多的是嵌套函数的变量使用。所以，用途之一就是保存各个变量。</p>
+<p>将 EC 理解成一个对象的话，它有两个属性，一个是变量对象（VO），另一个是作用域链（Scope Chain）。对于全局执行上下文，当 HTML 加载一个 js 文件时，就会创建一个全局 EC，此时会创建它的两个属性：变量对象和作用域链。之后，每调用一次函数，创建这次函数执行的上下文，函数内部的变量的使用就依赖于这个函数执行上下文中的变量对象和作用域链。</p>
+<p>也就是说，内部函数之所以可以使用外部函数内的变量，之所以可以使用全局变量，都是依赖于当前这个内部函数的执行上下文。</p>
+<p>而且，变量之所以会提前声明也是因为执行上下文的因素。这些当讲解了执行上下文 EC 的创建过程就清楚了。</p>
+<h3 id="变量对象-VO"><a href="#变量对象-VO" class="headerlink" title="变量对象 VO"></a>变量对象 VO</h3><p>变量对象只是一个抽象的概念，可以通俗的理解成保存当前上下文所有变量的对象。</p>
+<p>在不同的执行上下文中，它有不同的具体表现。</p>
+<p>在全局执行上下文中，变量对象 VO 的具体表现就是全局对象，因为所有的全局变量其实都是全局对象的属性，而变量对象 VO 的作用是要保存当前上下文中的所有变量，所以此时的变量对象 VO 实际上是指向的全局对象。</p>
+<p>尤其在前端中，全局对象就是 window，所以全局执行上下文的变量对象 VO = window。</p>
+<p>在函数执行上下文中，因为变量对象 VO 是要保存当前上下文中所有的变量，一个函数内的变量包括：形参变量、局部变量、自身函数对象引用变量、arguments、this。</p>
+<p>针对函数执行上下文，为了保存这些变量，特意创建了一个对象，称它为活动对象 AO，函数内所需的变量就都保存在 AO 中，所以在函数执行上下文中，变量对象 VO 的具体表现也就是 AO。</p>
+<p>小结：变量对象 VO 是一个抽象概念，用于保存当前执行上下文中所有的变量。所以在全局执行上下文中，因为全局对象已经保存着当前上下文所有的变量，所以 VO 在这里的具体实现就是全局对象。在函数执行上下文中，由于要保存函数形参、局部变量、自身函数对象引用变量、arguments、this，所以新创建了一个叫活动对象 AO 来保存，此时 VO 的具体实现就是 AO。</p>
+<h3 id="作用域链"><a href="#作用域链" class="headerlink" title="作用域链"></a>作用域链</h3><p>每次函数调用时，都会创建一个函数执行上下文 EC，但其中的变量对象 VO 只保存着当前上下文中的变量而已，那么函数内如果需要使用到外部函数的变量，甚至是使用全局的变量时，此时就需要依赖于执行上下文的另一个属性：作用域链。</p>
+<p>作用域链本质上，其实是将有嵌套层次关系的执行上下文的 VO 拼接起来。</p>
+<p>所以大部分场景作用域链只有两个节点：当前函数执行上下文的 VO –&gt; 全局执行上下文的 VO。所以函数内才可以根据作用域链访问全局内的变量。</p>
+<p>当出现函数内再嵌套函数时，此时作用域链就会比较长：</p>
+<p>内层函数执行上下文的 VO –&gt; 外层函数执行上下文的 VO –&gt; 全局执行上下文 VO。</p>
+<p>至于作用域链是如何将有嵌套层次的执行上下文的 VO 拼接起来，需要借助函数对象的内部属性 [[Scope]]，[[]]表示执行引擎为对象创建的内部属性，我们访问不了，也操作不了。具体原理在作用域链一节中讲解。  </p>
+]]></content>
+      <categories>
+        <category>前端</category>
+        <category>进阶</category>
+      </categories>
+  </entry>
+  <entry>
     <title>前端15-JavaScript原型链（进阶）</title>
     <url>/2018/11/02/%E5%89%8D%E7%AB%AF/%E8%BF%9B%E9%98%B6/%E5%89%8D%E7%AB%AF%E5%85%A5%E9%97%A815-JavaScript%E8%BF%9B%E9%98%B6%E4%B9%8B%E5%8E%9F%E5%9E%8B%E9%93%BE/</url>
     <content><![CDATA[<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本系列文章内容全部梳理自以下几个来源：</p>
@@ -2481,68 +2543,6 @@ b.y; <span class="comment">//1</span>
 <p>而且，建议看这张图时，每次都将某条原型链跟踪到底，再去看另一条，这过程不要过多关注在分支上，否则很容易混乱。</p>
 <p>对于新手，如果能够对这张稍作备注，而不是直接将这张图放出来，我觉得会更好，如下：</p>
 <p><img src="https://upload-images.jianshu.io/upload_images/1924341-ed3572ea96c33df5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt>  </p>
-]]></content>
-      <categories>
-        <category>前端</category>
-        <category>进阶</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>前端16-JavaScript执行上下文EC和变量对象VO（进阶）</title>
-    <url>/2018/11/02/%E5%89%8D%E7%AB%AF/%E8%BF%9B%E9%98%B6/%E5%89%8D%E7%AB%AF%E5%85%A5%E9%97%A816-JavaScript%E8%BF%9B%E9%98%B6%E4%B9%8BEC%E5%92%8CVO/</url>
-    <content><![CDATA[<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本系列文章内容全部梳理自以下几个来源：</p>
-<ul>
-<li>《JavaScript权威指南》</li>
-<li><a href="https://developer.mozilla.org/zh-CN/docs/Web" target="_blank" rel="noopener">MDN web docs</a></li>
-<li><a href="https://github.com/smyhvae/Web" target="_blank" rel="noopener">Github:smyhvae/web</a></li>
-<li><a href="https://github.com/goddyZhao/Translation/tree/master/JavaScript" target="_blank" rel="noopener">Github:goddyZhao/Translation/JavaScript</a></li>
-</ul>
-<p>作为一个前端小白，入门跟着这几个来源学习，感谢作者的分享，在其基础上，通过自己的理解，梳理出的知识点，或许有遗漏，或许有些理解是错误的，如有发现，欢迎指点下。</p>
-<p>PS：梳理的内容以《JavaScript权威指南》这本书中的内容为主，因此接下去跟 JavaScript 语法相关的系列文章基本只介绍 ES5 标准规范的内容、ES6 等这系列梳理完再单独来讲讲。</p>
-<h1 id="正文-执行上下文EC和变量对象VO"><a href="#正文-执行上下文EC和变量对象VO" class="headerlink" title="正文-执行上下文EC和变量对象VO"></a>正文-执行上下文EC和变量对象VO</h1><p>EC：Execution Context，中文翻译执行上下文，也有翻译成执行环境的。</p>
-<p>VO：Variable object，中文翻译变量对象。</p>
-<p>这两个概念很重要，涉及到作用域以及作用域链的原理。</p>
-<h3 id="执行上下文-EC"><a href="#执行上下文-EC" class="headerlink" title="执行上下文 EC"></a>执行上下文 EC</h3><p>先说说Android中的上下文： </p>
-<ul>
-<li>Android</li>
-</ul>
-<p>Android 中也有上下文：Context，四大组件都是上下文，还有一个全局的 Application上下文。在 Android 中基本是以四大组件为界限，每创建一个四大组件，都会产生一个上下文，比如每个 Activity 都是独立的上下文。</p>
-<p>在 Android 中，上下文 Context 的作用大体上用于标识各种资源的所属，要加载一张图片、创建一个 View、弹一个 Dialog 等等，你需要告诉系统，这些是谁发出的指令，要挂载到哪个上下文，这些资源依赖于上下文的生命周期。</p>
-<p>所以才会出现，有时弹 Dialog 或者更新某个 View 时抛异常说 Context 已销毁，因为它需要挂载的上下文已经销毁了，那么就没有上下文来统筹管理这些资源了，自然会抛异常。</p>
-<ul>
-<li>JavaScript</li>
-</ul>
-<p>在 JavaScript 中，上下文是指执行上下文，通俗点理解，代码执行的上下文，所以也有翻译成执行环境，可以通俗的把它理解成一个对象，对象名 EC，表示代码的执行上下文。</p>
-<p>既然理解成一个对象，那么就有它创建的时机，在 JavaScript 中，每当要执行不同类型的代码时，就会创建一个执行上下文 EC。</p>
-<p>而代码的类型分三种：</p>
-<ul>
-<li>全局代码</li>
-<li>函数代码</li>
-<li>eval()执行的代码</li>
-</ul>
-<p>最后一种不讨论，全局代码就是指写在函数外的代码，在前端里，当 HTML 加载一个 js 文件时，全局代码就会被执行，那么在全局代码执行前就会先创建一个全局的执行上下文 EC，之后每调用一次函数，要执行函数内的代码时，会再创建一个函数执行上下文 EC。</p>
-<p>也就是说，不讨论 eval 的话，那么在 JavaScript 有两种执行上下文，一种是全局执行上下文，一种是函数执行上下文。</p>
-<p>而每次创建一个执行上下文时，都会将其放入一个栈结构，这个栈就称为执行上下文栈（ECS），也有翻译成执行环境栈。</p>
-<p>所以执行 js 文件代码期间，这个栈底一直是全局执行上下文，直到 js 文件代码执行结束。全局代码执行过程中，每调用一次函数，新创建一个函数执行上下文，就放入栈内。</p>
-<p>因此，栈顶就表示当前执行的代码，如果栈顶是全局执行上下文，表示正在执行全局代码；如果栈顶是函数执行上下文，表示正在执行函数内的代码。当函数执行结束时，这个函数执行上下文就从栈中移出。</p>
-<p>那么执行上下文（EC）有什么用呢？</p>
-<p>用途可多了，跟 Android 不一样，Android 里由于是各种资源的组合使用，但在 JavaScript 中更多的是嵌套函数的变量使用。所以，用途之一就是保存各个变量。</p>
-<p>将 EC 理解成一个对象的话，它有两个属性，一个是变量对象（VO），另一个是作用域链（Scope Chain）。对于全局执行上下文，当 HTML 加载一个 js 文件时，就会创建一个全局 EC，此时会创建它的两个属性：变量对象和作用域链。之后，每调用一次函数，创建这次函数执行的上下文，函数内部的变量的使用就依赖于这个函数执行上下文中的变量对象和作用域链。</p>
-<p>也就是说，内部函数之所以可以使用外部函数内的变量，之所以可以使用全局变量，都是依赖于当前这个内部函数的执行上下文。</p>
-<p>而且，变量之所以会提前声明也是因为执行上下文的因素。这些当讲解了执行上下文 EC 的创建过程就清楚了。</p>
-<h3 id="变量对象-VO"><a href="#变量对象-VO" class="headerlink" title="变量对象 VO"></a>变量对象 VO</h3><p>变量对象只是一个抽象的概念，可以通俗的理解成保存当前上下文所有变量的对象。</p>
-<p>在不同的执行上下文中，它有不同的具体表现。</p>
-<p>在全局执行上下文中，变量对象 VO 的具体表现就是全局对象，因为所有的全局变量其实都是全局对象的属性，而变量对象 VO 的作用是要保存当前上下文中的所有变量，所以此时的变量对象 VO 实际上是指向的全局对象。</p>
-<p>尤其在前端中，全局对象就是 window，所以全局执行上下文的变量对象 VO = window。</p>
-<p>在函数执行上下文中，因为变量对象 VO 是要保存当前上下文中所有的变量，一个函数内的变量包括：形参变量、局部变量、自身函数对象引用变量、arguments、this。</p>
-<p>针对函数执行上下文，为了保存这些变量，特意创建了一个对象，称它为活动对象 AO，函数内所需的变量就都保存在 AO 中，所以在函数执行上下文中，变量对象 VO 的具体表现也就是 AO。</p>
-<p>小结：变量对象 VO 是一个抽象概念，用于保存当前执行上下文中所有的变量。所以在全局执行上下文中，因为全局对象已经保存着当前上下文所有的变量，所以 VO 在这里的具体实现就是全局对象。在函数执行上下文中，由于要保存函数形参、局部变量、自身函数对象引用变量、arguments、this，所以新创建了一个叫活动对象 AO 来保存，此时 VO 的具体实现就是 AO。</p>
-<h3 id="作用域链"><a href="#作用域链" class="headerlink" title="作用域链"></a>作用域链</h3><p>每次函数调用时，都会创建一个函数执行上下文 EC，但其中的变量对象 VO 只保存着当前上下文中的变量而已，那么函数内如果需要使用到外部函数的变量，甚至是使用全局的变量时，此时就需要依赖于执行上下文的另一个属性：作用域链。</p>
-<p>作用域链本质上，其实是将有嵌套层次关系的执行上下文的 VO 拼接起来。</p>
-<p>所以大部分场景作用域链只有两个节点：当前函数执行上下文的 VO –&gt; 全局执行上下文的 VO。所以函数内才可以根据作用域链访问全局内的变量。</p>
-<p>当出现函数内再嵌套函数时，此时作用域链就会比较长：</p>
-<p>内层函数执行上下文的 VO –&gt; 外层函数执行上下文的 VO –&gt; 全局执行上下文 VO。</p>
-<p>至于作用域链是如何将有嵌套层次的执行上下文的 VO 拼接起来，需要借助函数对象的内部属性 [[Scope]]，[[]]表示执行引擎为对象创建的内部属性，我们访问不了，也操作不了。具体原理在作用域链一节中讲解。  </p>
 ]]></content>
       <categories>
         <category>前端</category>
@@ -5037,7 +5037,7 @@ b.y; <span class="comment">//1</span>
 </ul>
 <p>在 HTML 中的  &lt;head&gt; 内使用  &lt;style&gt; 标签，在某些情况下很有用，比如当你不能直接修改 CSS 文件时。</p>
 <p>示例：</p>
-<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span></span><br><span class="line">    a &#123;</span><br><span class="line">        background: gray;</span><br><span class="line"><span class="css">        <span class="selector-tag">color</span>: <span class="selector-id">#6a90d9</span>;</span></span><br><span class="line">    &#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span></span><br><span class="line">    a &#123;</span><br><span class="line">        background: gray;</span><br><span class="line">        color: #6a90d9;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br></pre></td></tr></table></figure>
 
 <ul>
 <li><strong>外部样式表</strong></li>
@@ -6351,6 +6351,189 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
+    <title>封装个-Android-的高斯模糊组件</title>
+    <url>/2018/10/14/Android%E7%BB%84%E4%BB%B6/%E5%B0%81%E8%A3%85%E4%B8%AA-Android-%E7%9A%84%E9%AB%98%E6%96%AF%E6%A8%A1%E7%B3%8A%E7%BB%84%E4%BB%B6/</url>
+    <content><![CDATA[<blockquote>
+<p><strong>本篇文章已授权微信公众号 hongyangAndroid （鸿洋）独家发布</strong>  </p>
+</blockquote>
+<p>最近基于 <a href="https://github.com/kikoso/android-stackblur" target="_blank" rel="noopener">Android StackBlur</a> 开源库，根据自己碰到的需求场景，封装了个高斯模糊组件，顺便记录一下。  </p>
+<p><strong>为什么要自己重复造轮子？</strong>  </p>
+<p>其实也谈不上重头自己造轮子，毕竟是基于大神的开源库，做了二次封装。封装的目的在于，方便外部使用。毕竟有着自己的编程习惯，大神的开源库也只是提供了基础的功能，现实编程中，产品的需求是各种各样的。</p>
+<p>导致每次使用时，都蛮麻烦的，需要额外自己处理蛮多东西。而一旦新的项目又需要接入高斯模糊了，又得重新写一些代码，复制粘贴也麻烦，经常由于各种业务耦合报错。</p>
+<p>既然如此，干脆花时间抽个基础、公用的高斯模糊组件，需要时直接依赖即可。</p>
+<h1 id="基础理论"><a href="#基础理论" class="headerlink" title="基础理论"></a>基础理论</h1><h3 id="高斯模糊"><a href="#高斯模糊" class="headerlink" title="高斯模糊"></a>高斯模糊</h3><p>高斯模糊的原理和算法就不介绍了，我也不懂，没深入，这里就大概讲讲我的粗坯理解：</p>
+<p>我们知道，一张图片，本质上其实是一个个像素点构成的，虽然经过计算机处理后，呈现在我们眼前的是具体的图像。但在计算机中，其实就是一堆数组数据。</p>
+<p>数组中每个单位就是一个个像素点，那么每个像素点是存储什么内容呢，其实也就是 RGB 或者 ARGB 之类格式的数据。</p>
+<p>高斯模糊，大体上就是对这张图片中的每个像素点都重新进行计算，每个像素点的新值等于以它为中心，半径为 r 的周围区域内所有像素点各自按照不同权重相加之和的平均值。</p>
+<p>可以粗坯的理解为，<strong>本来这个像素点是要呈现它自己本身的内容，但经过高斯模糊计算后，掺杂进它周围区域像素点的内容了。就像加水稀释类似的道理，既然都掺杂进周围的内容了，那么它呈现的内容相比最初，肯定就不那么清晰了</strong>。</p>
+<p>而如果掺杂的半径越大，混合进的内容也就越多，那么它本身的内容就越淡了，是不是这个理。所以，这就是为什么每个开源的高斯模糊组件库，使用时基本都需要我们传入一个 radius 半径的参数。而且，半径越大，越模糊。</p>
+<p>这么一粗坯的解释，就理解多了，是吧。</p>
+<p>为什么需要大概掌握这个理论基础呢？</p>
+<p>想想，高斯模糊是遍历所有像素点，对每个像素点都重新计算。那么，这自然是一个耗时的工作，掌握了理论基础，我们要优化时也才有方向去优化。</p>
+<h3 id="性能对比"><a href="#性能对比" class="headerlink" title="性能对比"></a>性能对比</h3><p>大神的开源库中提供了三种高斯模糊方式，而我在 <a href="https://github.com/Blankj/AndroidUtilCode" target="_blank" rel="noopener">Blankj 的 AndroidUtilCode</a> 开源库中发现了另外一种，所以我将他们都整合起来，一共有四种：</p>
+<ul>
+<li>Google 官方提供的 RenderScript 方式 （RSBlur）</li>
+<li>C 编写的高斯算法 blur.c 方式 （NativeBlur）</li>
+<li>Java 编写的高斯算法方式1（JavaBlur）</li>
+<li>Java 编写的高斯算法方式2（StackBlur）</li>
+</ul>
+<p>其实，大体上就三种：Google 官方提供的，大神用 C 写的高斯模糊算法，大神用 Java 写的高斯模糊算法。至于后面两种，看了下，算法的代码不一样，我就把它们当做是两种不同的算法实现了。也许是一样，但我没深入去看，反正代码不一样，我就这么认为了。</p>
+<p>下面我们来做个实验，在如下相同条件下，不同高斯模糊方案的耗时比较：</p>
+<ul>
+<li>radius=10, scale=1, bitmap=200*200(11.69KB)</li>
+</ul>
+<p>ps: radius 表示高斯算法计算过程中的半径取值，scale=1表示对 bitmap 原图进行高斯模糊。这些前提条件需要了解一下，不然你在看网上其他类似性能比对的文章时，发现它们动不动就优化到几 ms 级别的，然而你自己尝试却始终达不到。这是因为也许所使用的这些前提都不一致，不一致的前提下，耗时根本无从比较。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">testBlur</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="keyword">int</span> sum = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">		<span class="keyword">long</span> time = SystemClock.uptimeMillis();</span><br><span class="line">		DBlur.source(<span class="keyword">this</span>, R.drawable.image).modeRs().radius(<span class="number">10</span>).sampling(<span class="number">1</span>).build().doBlurSync();</span><br><span class="line">		<span class="keyword">long</span> end = SystemClock.uptimeMillis();</span><br><span class="line">		sum += (end - time);</span><br><span class="line">	&#125;</span><br><span class="line">    Log.e(<span class="string">"DBlur"</span>, <span class="string">"RSBlur cast "</span> + (sum/<span class="number">100</span>) + <span class="string">"ms"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>代码模板如上，分别运行 100 次后取平均值，四种不同方式的耗时如下表：</p>
+<table>
+<thead>
+<tr>
+<th align="center">前提条件</th>
+<th align="center">RSBlur</th>
+<th align="center">NativeBlur</th>
+<th align="center">JavaBlur</th>
+<th align="center">StackBlur</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">radius=<strong>10</strong>, scale=1, bitmap=200*200</td>
+<td align="center">51ms</td>
+<td align="center">13ms</td>
+<td align="center">162ms</td>
+<td align="center">384ms</td>
+</tr>
+<tr>
+<td align="center">radius=<strong>20</strong>, scale=1, bitmap=200*200</td>
+<td align="center">56ms</td>
+<td align="center">12ms</td>
+<td align="center">164ms</td>
+<td align="center">435ms</td>
+</tr>
+<tr>
+<td align="center">radius=10, scale=<strong>2</strong>, bitmap=200*200</td>
+<td align="center">48ms</td>
+<td align="center">11ms</td>
+<td align="center">75ms</td>
+<td align="center">110ms</td>
+</tr>
+<tr>
+<td align="center">radius=10, scale=<strong>8</strong>, bitmap=200*200</td>
+<td align="center">45ms</td>
+<td align="center">7ms</td>
+<td align="center">14ms</td>
+<td align="center">19ms</td>
+</tr>
+<tr>
+<td align="center">radius=10, scale=8, bitmap=<strong>1920*1180</strong></td>
+<td align="center">183ms</td>
+<td align="center">143ms</td>
+<td align="center">346ms</td>
+<td align="center">460ms</td>
+</tr>
+<tr>
+<td align="center">radius=<strong>20</strong>, scale=8, bitmap=1920*1180</td>
+<td align="center">204ms</td>
+<td align="center">145ms</td>
+<td align="center">353ms</td>
+<td align="center">510ms</td>
+</tr>
+<tr>
+<td align="center">radius=20, scale=<strong>1</strong>, bitmap=1920*1180</td>
+<td align="center">474ms</td>
+<td align="center">444ms</td>
+<td align="center">8663ms</td>
+<td align="center">内存溢出</td>
+</tr>
+</tbody></table>
+<p>100 次样本可能不多，但大体上我们也能比较出不同类型的高斯模糊之前的区别，及其适用场景：</p>
+<ul>
+<li>总体上，NativeBlur 和 RSBlur 的耗时会少于 JavaBlur 和 StackBlur</li>
+<li>JavaBlur 和 StackBlur 方式，如果先对 Bitmap 进行缩小，再高斯模糊，最后再放大，耗时会大大缩短</li>
+<li>radius 增大会增加耗时，但影响不大，但视图呈现效果会越模糊</li>
+<li>scale 对原图缩小倍数越多，耗时越短，但视图呈现效果同样会越模糊</li>
+<li>分辨率越高的图片，高斯模糊的就越耗时</li>
+<li>对于大图而言，如果要使用 JavaBlur 或 StackBlur，最好设置 scale 先缩小再模糊，否则将非常耗时且容易内存溢出</li>
+<li>如果已经通过 scale 方式进行优化，那么最好 radius 值可以相对小一点，否则两者的值都大会对图片的模糊效果特别强烈，也许会过了头</li>
+</ul>
+<h3 id="性能优化"><a href="#性能优化" class="headerlink" title="性能优化"></a>性能优化</h3><p>高斯模糊的优化考虑点，其实就三个：</p>
+<ul>
+<li>选择不同的高斯模糊方式</li>
+<li>通过 scale 对原图先缩小，再模糊，最后再放大方式</li>
+<li>优化高斯模糊算法</li>
+</ul>
+<p>最后一点就不考虑了，毕竟难度太大。那么，其实就剩下两种，要么是从高斯模糊的方案上选择，要么从待模糊的图片上做手脚。</p>
+<p>虽然有四种高斯模糊方案，但每种都有各自优缺点：</p>
+<ul>
+<li>RSBlur 在低端机上可能无法兼容</li>
+<li>NativeBlur 需要生成对应 CPU 架构的 so 文件支持</li>
+<li>JavaBlur 和 StackBlur 耗时会较长</li>
+</ul>
+<p>优化的考虑点大体上这几种：</p>
+<ul>
+<li>大体上，使用 NativeBlur 或者 RSBlur 即可，如果出现一些问题，那么此时可考虑切到 JavaBlur 或 StackBlur 方案，但记得结合 scale 方式优化处理。</li>
+<li>如果高斯模糊的图片有实时性要求，要求模糊得同步进行处理，主线程后续的工作需要等待高斯模糊后才能够处理的话，那么尽量选择 scale 方式进行优化，减少耗时。</li>
+<li>如果对实时性没要求，但对图片模糊程度有要求，那其实，只要后台异步去进行高斯模糊即可，此时 scale 可不用缩小太多，而利用 radius 来控制模糊效果，以达到理想的要求。</li>
+<li>如果两者都有要求，那就自行尝试寻找折中点吧。</li>
+</ul>
+<p>最后说一点，因为已经封装成组件库了，RSBlur 也是引入的 support 包，so 文件也打包好了，那么使用这两种方案足够满足绝大部分场景了，所以，没有特意指定，组件默认的方案为 RSBlur。</p>
+<h1 id="二次封装"><a href="#二次封装" class="headerlink" title="二次封装"></a>二次封装</h1><h3 id="需求场景"><a href="#需求场景" class="headerlink" title="需求场景"></a>需求场景</h3><p>为什么要二次封装？那肯定是因为有自己的各种需求场景的，我的需求如下：</p>
+<ul>
+<li>要能够对当前页面（Activity）截图后，进行模糊</li>
+<li>要能够对 drawable 资源图片进行模糊、或者对指定 View 的视图进行模糊</li>
+<li>模糊完成后，要能够自动以淡入的动画方式显示在指定的控件上</li>
+<li>存在这种需求场景：对当前界面截图、并且模糊，模糊后的图片展示的时机可能在其他界面，因此需要支持缓存功能，可以根据指定 cacheKey 值获取缓存</li>
+<li>当然，可以根据各种配置使用高斯模糊，当不指定配置时，有默认配置</li>
+</ul>
+<p>总结一下，其实封装要做的事也就是要实现：</p>
+<ul>
+<li>截图、缓存、淡入动画、默认配置</li>
+<li>可以的话，组件最好可以达到，其他人在不看文档，不看源码前提下，以最少的成本接入直接上手使用</li>
+</ul>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>截图、缓存、动画这些都属于纯功能代码的封装了，具体就不说了。</p>
+<p>这里想来讲讲，如何设计，可以让其他人以最少的成本接入直接上手使用。</p>
+<p>我的想法是，利用 AndroidStudio 的代码提示功能，具体的说就是，你只需要了解组件的入口是 DBlur 即可，至于后续怎么使用，全靠 AndroidStudio 来提示，跟着 AndroidStudio 走就行。</p>
+<p>例如：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-7eb4707f967a5577.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="DBlur入口.png">  </p>
+<p>当敲完 DBlur. 时，会弹出代码提示框，入口很少，是吧，就两个，看命名也能猜到作用：<code>getCacheBitmap()</code> 明显是用来取缓存的，那么要高斯模糊自然是另外一个入口 <code>source()</code>，这个方法有多个重载函数，看参数，其实也能知道，这就对应着要模糊的图片的不同来源类型，如：</p>
+<ul>
+<li>直接传入 Bitmap 对其进行模糊</li>
+<li>传入 Activity/View，内部会对这个界面/控件进行截图后再模糊</li>
+<li>传入 resId，对 drawable 资源图片进行模糊</li>
+</ul>
+<p>那么，可能想问了，哪里进行高斯模糊配置，哪里设置同步或异步，哪里注册回调等等。别急，既然只给你开了一个入口，那么就跟着入口走下去，自然会一步步引导你走到最后。如：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-9efa2fb81a12cd2d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BlurConfigBuilder入口.png">  </p>
+<p>第一步、第二步该做什么，我都给你规定好了，你也只能按照步骤一步步来。想要设置高斯模糊配置，你得先指定图片来源，才能进入第二步，在这里，可以进行的配置也都给你列出来了，想要哪个，直接设置即可。如：</p>
+<ul>
+<li><code>mode()</code>，<code>modeRs()</code>，<code>modeNative()</code> 等等类似 mode 开头的方法，用于指定要使用哪种高斯模糊方案，一共四种，每种内部都有提供对应的常量标志，但如果你不知道哪里找，那么直接调用 modeXXX 方法即可。</li>
+<li><code>radius()</code> 用于设置高斯模糊计算的半径，内部默认为 4。</li>
+<li><code>sampling()</code> 用于设置对原图的缩小比例，内部默认为 8，即默认先缩小 8 倍，再模糊，最后再放大。</li>
+<li><code>cache()</code> 用于设置缓存此次模糊后的图片，没有调用默认不缓存。</li>
+<li><code>animAlpha()</code> 用于设置使用淡入动画，需要结合 <code>intoTarget()</code> 使用，否则不生效。</li>
+<li><code>intoTarget()</code> 用于设置模糊完成后，自动显示到指定控件上。</li>
+</ul>
+<p>另外，看每个方法返回的类名，其实这个过程都是在设置配置项，如果有对 Builder 模式了解的话，应该清楚，这个大多用来解决构造函数参数过多的场景，最后一般都会有一个 <code>build()</code> 或者 <code>create()</code> 类型的方法。参考的是 Android 源码中 AlertDialog。</p>
+<p>也就是说，要进入下一个步骤，需要调用 <code>build()</code> 方法，如：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-96ce20f8a2154350.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="doblur.png">  </p>
+<p>显然，已经到最后一个步骤了，这里就是发起高斯模糊工作的地方了。</p>
+<ul>
+<li><code>doBlur()</code> 会指定此次高斯模糊工作异步进行，所以需要注册回调的在这里传入。</li>
+<li><code>doBlurSync()</code> 指定高斯模糊同步进行，模糊后的 Bitmap 直接返回。</li>
+</ul>
+<p>至此，接入结束。</p>
+<p>使用这个高斯模糊的组件，只需要知道 DBlur 入口，其他都跟随着 AndroidStudio 代码提示一步步往下走即可，当然你也可以直接看源码，注释里也写得蛮清楚的了。</p>
+<p>这个就是我的想法，能力不足，只能想出这种方案，如果有哪里需要改进，哪里不合理，或者有其他思路，欢迎指点一下。</p>
+<h3 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">compile <span class="string">'com.dasu.image:blur:0.0.4'</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//使用默认配置，最短调用链</span></span><br><span class="line">Bitmap bitmap = DBlur.source(MainActivity.<span class="keyword">this</span>).build().doBlurSync();</span><br><span class="line"></span><br><span class="line"><span class="comment">//同步模糊，将imageView控制的视图进行模糊，完成后自动显示到 imageView1 控件上，以淡入动画方式</span></span><br><span class="line">DBlur.source(imageView).intoTarget(imageView1).animAlpha().build().doBlurSync();</span><br><span class="line"></span><br><span class="line"><span class="comment">//异步模糊，将drawable资源文件中的图片以 NATIVE 方式进行模糊，注册回调，完成时手动显示到 imageView1 控件上</span></span><br><span class="line">DBlur.source(<span class="keyword">this</span>, R.drawable.background).mode(BlurConfig.MODE_NATIVE).build()</span><br><span class="line">      .doBlur(<span class="keyword">new</span> OnBlurListener() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBlurSuccess</span><span class="params">(Bitmap bitmap)</span> </span>&#123;</span><br><span class="line">                imageView1.setImageBitmap(bitmap);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBlurFailed</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="comment">//do something</span></span><br><span class="line">            &#125;&#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="Github"><a href="#Github" class="headerlink" title="Github"></a><a href="https://github.com/woshidasusu/base-module/tree/master/blur" target="_blank" rel="noopener">Github</a></h3><p><a href="https://github.com/woshidasusu/base-module/tree/master/blur" target="_blank" rel="noopener">DBlur 的 Github 链接：https://github.com/woshidasusu/base-module/tree/master/blur</a>  </p>
+]]></content>
+      <categories>
+        <category>Android组件</category>
+      </categories>
+  </entry>
+  <entry>
     <title>Android中一张图片占据的内存大小是如何计算</title>
     <url>/2018/10/14/Android%E7%9F%A5%E8%AF%86/Android%E4%B8%AD%E4%B8%80%E5%BC%A0%E5%9B%BE%E7%89%87%E5%8D%A0%E6%8D%AE%E7%9A%84%E5%86%85%E5%AD%98%E5%A4%A7%E5%B0%8F%E6%98%AF%E5%A6%82%E4%BD%95%E8%AE%A1%E7%AE%97/</url>
     <content><![CDATA[<blockquote>
@@ -6651,189 +6834,6 @@ b.y; <span class="comment">//1</span>
 ]]></content>
       <categories>
         <category>Android知识</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>封装个-Android-的高斯模糊组件</title>
-    <url>/2018/10/14/Android%E7%BB%84%E4%BB%B6/%E5%B0%81%E8%A3%85%E4%B8%AA-Android-%E7%9A%84%E9%AB%98%E6%96%AF%E6%A8%A1%E7%B3%8A%E7%BB%84%E4%BB%B6/</url>
-    <content><![CDATA[<blockquote>
-<p><strong>本篇文章已授权微信公众号 hongyangAndroid （鸿洋）独家发布</strong>  </p>
-</blockquote>
-<p>最近基于 <a href="https://github.com/kikoso/android-stackblur" target="_blank" rel="noopener">Android StackBlur</a> 开源库，根据自己碰到的需求场景，封装了个高斯模糊组件，顺便记录一下。  </p>
-<p><strong>为什么要自己重复造轮子？</strong>  </p>
-<p>其实也谈不上重头自己造轮子，毕竟是基于大神的开源库，做了二次封装。封装的目的在于，方便外部使用。毕竟有着自己的编程习惯，大神的开源库也只是提供了基础的功能，现实编程中，产品的需求是各种各样的。</p>
-<p>导致每次使用时，都蛮麻烦的，需要额外自己处理蛮多东西。而一旦新的项目又需要接入高斯模糊了，又得重新写一些代码，复制粘贴也麻烦，经常由于各种业务耦合报错。</p>
-<p>既然如此，干脆花时间抽个基础、公用的高斯模糊组件，需要时直接依赖即可。</p>
-<h1 id="基础理论"><a href="#基础理论" class="headerlink" title="基础理论"></a>基础理论</h1><h3 id="高斯模糊"><a href="#高斯模糊" class="headerlink" title="高斯模糊"></a>高斯模糊</h3><p>高斯模糊的原理和算法就不介绍了，我也不懂，没深入，这里就大概讲讲我的粗坯理解：</p>
-<p>我们知道，一张图片，本质上其实是一个个像素点构成的，虽然经过计算机处理后，呈现在我们眼前的是具体的图像。但在计算机中，其实就是一堆数组数据。</p>
-<p>数组中每个单位就是一个个像素点，那么每个像素点是存储什么内容呢，其实也就是 RGB 或者 ARGB 之类格式的数据。</p>
-<p>高斯模糊，大体上就是对这张图片中的每个像素点都重新进行计算，每个像素点的新值等于以它为中心，半径为 r 的周围区域内所有像素点各自按照不同权重相加之和的平均值。</p>
-<p>可以粗坯的理解为，<strong>本来这个像素点是要呈现它自己本身的内容，但经过高斯模糊计算后，掺杂进它周围区域像素点的内容了。就像加水稀释类似的道理，既然都掺杂进周围的内容了，那么它呈现的内容相比最初，肯定就不那么清晰了</strong>。</p>
-<p>而如果掺杂的半径越大，混合进的内容也就越多，那么它本身的内容就越淡了，是不是这个理。所以，这就是为什么每个开源的高斯模糊组件库，使用时基本都需要我们传入一个 radius 半径的参数。而且，半径越大，越模糊。</p>
-<p>这么一粗坯的解释，就理解多了，是吧。</p>
-<p>为什么需要大概掌握这个理论基础呢？</p>
-<p>想想，高斯模糊是遍历所有像素点，对每个像素点都重新计算。那么，这自然是一个耗时的工作，掌握了理论基础，我们要优化时也才有方向去优化。</p>
-<h3 id="性能对比"><a href="#性能对比" class="headerlink" title="性能对比"></a>性能对比</h3><p>大神的开源库中提供了三种高斯模糊方式，而我在 <a href="https://github.com/Blankj/AndroidUtilCode" target="_blank" rel="noopener">Blankj 的 AndroidUtilCode</a> 开源库中发现了另外一种，所以我将他们都整合起来，一共有四种：</p>
-<ul>
-<li>Google 官方提供的 RenderScript 方式 （RSBlur）</li>
-<li>C 编写的高斯算法 blur.c 方式 （NativeBlur）</li>
-<li>Java 编写的高斯算法方式1（JavaBlur）</li>
-<li>Java 编写的高斯算法方式2（StackBlur）</li>
-</ul>
-<p>其实，大体上就三种：Google 官方提供的，大神用 C 写的高斯模糊算法，大神用 Java 写的高斯模糊算法。至于后面两种，看了下，算法的代码不一样，我就把它们当做是两种不同的算法实现了。也许是一样，但我没深入去看，反正代码不一样，我就这么认为了。</p>
-<p>下面我们来做个实验，在如下相同条件下，不同高斯模糊方案的耗时比较：</p>
-<ul>
-<li>radius=10, scale=1, bitmap=200*200(11.69KB)</li>
-</ul>
-<p>ps: radius 表示高斯算法计算过程中的半径取值，scale=1表示对 bitmap 原图进行高斯模糊。这些前提条件需要了解一下，不然你在看网上其他类似性能比对的文章时，发现它们动不动就优化到几 ms 级别的，然而你自己尝试却始终达不到。这是因为也许所使用的这些前提都不一致，不一致的前提下，耗时根本无从比较。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">testBlur</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="keyword">int</span> sum = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">		<span class="keyword">long</span> time = SystemClock.uptimeMillis();</span><br><span class="line">		DBlur.source(<span class="keyword">this</span>, R.drawable.image).modeRs().radius(<span class="number">10</span>).sampling(<span class="number">1</span>).build().doBlurSync();</span><br><span class="line">		<span class="keyword">long</span> end = SystemClock.uptimeMillis();</span><br><span class="line">		sum += (end - time);</span><br><span class="line">	&#125;</span><br><span class="line">    Log.e(<span class="string">"DBlur"</span>, <span class="string">"RSBlur cast "</span> + (sum/<span class="number">100</span>) + <span class="string">"ms"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>代码模板如上，分别运行 100 次后取平均值，四种不同方式的耗时如下表：</p>
-<table>
-<thead>
-<tr>
-<th align="center">前提条件</th>
-<th align="center">RSBlur</th>
-<th align="center">NativeBlur</th>
-<th align="center">JavaBlur</th>
-<th align="center">StackBlur</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">radius=<strong>10</strong>, scale=1, bitmap=200*200</td>
-<td align="center">51ms</td>
-<td align="center">13ms</td>
-<td align="center">162ms</td>
-<td align="center">384ms</td>
-</tr>
-<tr>
-<td align="center">radius=<strong>20</strong>, scale=1, bitmap=200*200</td>
-<td align="center">56ms</td>
-<td align="center">12ms</td>
-<td align="center">164ms</td>
-<td align="center">435ms</td>
-</tr>
-<tr>
-<td align="center">radius=10, scale=<strong>2</strong>, bitmap=200*200</td>
-<td align="center">48ms</td>
-<td align="center">11ms</td>
-<td align="center">75ms</td>
-<td align="center">110ms</td>
-</tr>
-<tr>
-<td align="center">radius=10, scale=<strong>8</strong>, bitmap=200*200</td>
-<td align="center">45ms</td>
-<td align="center">7ms</td>
-<td align="center">14ms</td>
-<td align="center">19ms</td>
-</tr>
-<tr>
-<td align="center">radius=10, scale=8, bitmap=<strong>1920*1180</strong></td>
-<td align="center">183ms</td>
-<td align="center">143ms</td>
-<td align="center">346ms</td>
-<td align="center">460ms</td>
-</tr>
-<tr>
-<td align="center">radius=<strong>20</strong>, scale=8, bitmap=1920*1180</td>
-<td align="center">204ms</td>
-<td align="center">145ms</td>
-<td align="center">353ms</td>
-<td align="center">510ms</td>
-</tr>
-<tr>
-<td align="center">radius=20, scale=<strong>1</strong>, bitmap=1920*1180</td>
-<td align="center">474ms</td>
-<td align="center">444ms</td>
-<td align="center">8663ms</td>
-<td align="center">内存溢出</td>
-</tr>
-</tbody></table>
-<p>100 次样本可能不多，但大体上我们也能比较出不同类型的高斯模糊之前的区别，及其适用场景：</p>
-<ul>
-<li>总体上，NativeBlur 和 RSBlur 的耗时会少于 JavaBlur 和 StackBlur</li>
-<li>JavaBlur 和 StackBlur 方式，如果先对 Bitmap 进行缩小，再高斯模糊，最后再放大，耗时会大大缩短</li>
-<li>radius 增大会增加耗时，但影响不大，但视图呈现效果会越模糊</li>
-<li>scale 对原图缩小倍数越多，耗时越短，但视图呈现效果同样会越模糊</li>
-<li>分辨率越高的图片，高斯模糊的就越耗时</li>
-<li>对于大图而言，如果要使用 JavaBlur 或 StackBlur，最好设置 scale 先缩小再模糊，否则将非常耗时且容易内存溢出</li>
-<li>如果已经通过 scale 方式进行优化，那么最好 radius 值可以相对小一点，否则两者的值都大会对图片的模糊效果特别强烈，也许会过了头</li>
-</ul>
-<h3 id="性能优化"><a href="#性能优化" class="headerlink" title="性能优化"></a>性能优化</h3><p>高斯模糊的优化考虑点，其实就三个：</p>
-<ul>
-<li>选择不同的高斯模糊方式</li>
-<li>通过 scale 对原图先缩小，再模糊，最后再放大方式</li>
-<li>优化高斯模糊算法</li>
-</ul>
-<p>最后一点就不考虑了，毕竟难度太大。那么，其实就剩下两种，要么是从高斯模糊的方案上选择，要么从待模糊的图片上做手脚。</p>
-<p>虽然有四种高斯模糊方案，但每种都有各自优缺点：</p>
-<ul>
-<li>RSBlur 在低端机上可能无法兼容</li>
-<li>NativeBlur 需要生成对应 CPU 架构的 so 文件支持</li>
-<li>JavaBlur 和 StackBlur 耗时会较长</li>
-</ul>
-<p>优化的考虑点大体上这几种：</p>
-<ul>
-<li>大体上，使用 NativeBlur 或者 RSBlur 即可，如果出现一些问题，那么此时可考虑切到 JavaBlur 或 StackBlur 方案，但记得结合 scale 方式优化处理。</li>
-<li>如果高斯模糊的图片有实时性要求，要求模糊得同步进行处理，主线程后续的工作需要等待高斯模糊后才能够处理的话，那么尽量选择 scale 方式进行优化，减少耗时。</li>
-<li>如果对实时性没要求，但对图片模糊程度有要求，那其实，只要后台异步去进行高斯模糊即可，此时 scale 可不用缩小太多，而利用 radius 来控制模糊效果，以达到理想的要求。</li>
-<li>如果两者都有要求，那就自行尝试寻找折中点吧。</li>
-</ul>
-<p>最后说一点，因为已经封装成组件库了，RSBlur 也是引入的 support 包，so 文件也打包好了，那么使用这两种方案足够满足绝大部分场景了，所以，没有特意指定，组件默认的方案为 RSBlur。</p>
-<h1 id="二次封装"><a href="#二次封装" class="headerlink" title="二次封装"></a>二次封装</h1><h3 id="需求场景"><a href="#需求场景" class="headerlink" title="需求场景"></a>需求场景</h3><p>为什么要二次封装？那肯定是因为有自己的各种需求场景的，我的需求如下：</p>
-<ul>
-<li>要能够对当前页面（Activity）截图后，进行模糊</li>
-<li>要能够对 drawable 资源图片进行模糊、或者对指定 View 的视图进行模糊</li>
-<li>模糊完成后，要能够自动以淡入的动画方式显示在指定的控件上</li>
-<li>存在这种需求场景：对当前界面截图、并且模糊，模糊后的图片展示的时机可能在其他界面，因此需要支持缓存功能，可以根据指定 cacheKey 值获取缓存</li>
-<li>当然，可以根据各种配置使用高斯模糊，当不指定配置时，有默认配置</li>
-</ul>
-<p>总结一下，其实封装要做的事也就是要实现：</p>
-<ul>
-<li>截图、缓存、淡入动画、默认配置</li>
-<li>可以的话，组件最好可以达到，其他人在不看文档，不看源码前提下，以最少的成本接入直接上手使用</li>
-</ul>
-<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>截图、缓存、动画这些都属于纯功能代码的封装了，具体就不说了。</p>
-<p>这里想来讲讲，如何设计，可以让其他人以最少的成本接入直接上手使用。</p>
-<p>我的想法是，利用 AndroidStudio 的代码提示功能，具体的说就是，你只需要了解组件的入口是 DBlur 即可，至于后续怎么使用，全靠 AndroidStudio 来提示，跟着 AndroidStudio 走就行。</p>
-<p>例如：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/1924341-7eb4707f967a5577.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="DBlur入口.png">  </p>
-<p>当敲完 DBlur. 时，会弹出代码提示框，入口很少，是吧，就两个，看命名也能猜到作用：<code>getCacheBitmap()</code> 明显是用来取缓存的，那么要高斯模糊自然是另外一个入口 <code>source()</code>，这个方法有多个重载函数，看参数，其实也能知道，这就对应着要模糊的图片的不同来源类型，如：</p>
-<ul>
-<li>直接传入 Bitmap 对其进行模糊</li>
-<li>传入 Activity/View，内部会对这个界面/控件进行截图后再模糊</li>
-<li>传入 resId，对 drawable 资源图片进行模糊</li>
-</ul>
-<p>那么，可能想问了，哪里进行高斯模糊配置，哪里设置同步或异步，哪里注册回调等等。别急，既然只给你开了一个入口，那么就跟着入口走下去，自然会一步步引导你走到最后。如：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/1924341-9efa2fb81a12cd2d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BlurConfigBuilder入口.png">  </p>
-<p>第一步、第二步该做什么，我都给你规定好了，你也只能按照步骤一步步来。想要设置高斯模糊配置，你得先指定图片来源，才能进入第二步，在这里，可以进行的配置也都给你列出来了，想要哪个，直接设置即可。如：</p>
-<ul>
-<li><code>mode()</code>，<code>modeRs()</code>，<code>modeNative()</code> 等等类似 mode 开头的方法，用于指定要使用哪种高斯模糊方案，一共四种，每种内部都有提供对应的常量标志，但如果你不知道哪里找，那么直接调用 modeXXX 方法即可。</li>
-<li><code>radius()</code> 用于设置高斯模糊计算的半径，内部默认为 4。</li>
-<li><code>sampling()</code> 用于设置对原图的缩小比例，内部默认为 8，即默认先缩小 8 倍，再模糊，最后再放大。</li>
-<li><code>cache()</code> 用于设置缓存此次模糊后的图片，没有调用默认不缓存。</li>
-<li><code>animAlpha()</code> 用于设置使用淡入动画，需要结合 <code>intoTarget()</code> 使用，否则不生效。</li>
-<li><code>intoTarget()</code> 用于设置模糊完成后，自动显示到指定控件上。</li>
-</ul>
-<p>另外，看每个方法返回的类名，其实这个过程都是在设置配置项，如果有对 Builder 模式了解的话，应该清楚，这个大多用来解决构造函数参数过多的场景，最后一般都会有一个 <code>build()</code> 或者 <code>create()</code> 类型的方法。参考的是 Android 源码中 AlertDialog。</p>
-<p>也就是说，要进入下一个步骤，需要调用 <code>build()</code> 方法，如：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/1924341-96ce20f8a2154350.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="doblur.png">  </p>
-<p>显然，已经到最后一个步骤了，这里就是发起高斯模糊工作的地方了。</p>
-<ul>
-<li><code>doBlur()</code> 会指定此次高斯模糊工作异步进行，所以需要注册回调的在这里传入。</li>
-<li><code>doBlurSync()</code> 指定高斯模糊同步进行，模糊后的 Bitmap 直接返回。</li>
-</ul>
-<p>至此，接入结束。</p>
-<p>使用这个高斯模糊的组件，只需要知道 DBlur 入口，其他都跟随着 AndroidStudio 代码提示一步步往下走即可，当然你也可以直接看源码，注释里也写得蛮清楚的了。</p>
-<p>这个就是我的想法，能力不足，只能想出这种方案，如果有哪里需要改进，哪里不合理，或者有其他思路，欢迎指点一下。</p>
-<h3 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">compile <span class="string">'com.dasu.image:blur:0.0.4'</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//使用默认配置，最短调用链</span></span><br><span class="line">Bitmap bitmap = DBlur.source(MainActivity.<span class="keyword">this</span>).build().doBlurSync();</span><br><span class="line"></span><br><span class="line"><span class="comment">//同步模糊，将imageView控制的视图进行模糊，完成后自动显示到 imageView1 控件上，以淡入动画方式</span></span><br><span class="line">DBlur.source(imageView).intoTarget(imageView1).animAlpha().build().doBlurSync();</span><br><span class="line"></span><br><span class="line"><span class="comment">//异步模糊，将drawable资源文件中的图片以 NATIVE 方式进行模糊，注册回调，完成时手动显示到 imageView1 控件上</span></span><br><span class="line">DBlur.source(<span class="keyword">this</span>, R.drawable.background).mode(BlurConfig.MODE_NATIVE).build()</span><br><span class="line">      .doBlur(<span class="keyword">new</span> OnBlurListener() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBlurSuccess</span><span class="params">(Bitmap bitmap)</span> </span>&#123;</span><br><span class="line">                imageView1.setImageBitmap(bitmap);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBlurFailed</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="comment">//do something</span></span><br><span class="line">            &#125;&#125;);</span><br></pre></td></tr></table></figure>
-
-<h3 id="Github"><a href="#Github" class="headerlink" title="Github"></a><a href="https://github.com/woshidasusu/base-module/tree/master/blur" target="_blank" rel="noopener">Github</a></h3><p><a href="https://github.com/woshidasusu/base-module/tree/master/blur" target="_blank" rel="noopener">DBlur 的 Github 链接：https://github.com/woshidasusu/base-module/tree/master/blur</a>  </p>
-]]></content>
-      <categories>
-        <category>Android组件</category>
       </categories>
   </entry>
   <entry>
@@ -7178,61 +7178,6 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
-    <title>谈谈 final finally finalize 区别</title>
-    <url>/2018/07/09/Java/%E8%B0%88%E8%B0%88-final-finally-finalize-%E5%8C%BA%E5%88%AB/</url>
-    <content><![CDATA[<blockquote>
-<p><strong>本篇文章已授权微信公众号 dasu_Android（大苏）独家发布</strong>  </p>
-</blockquote>
-<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本篇所涉及的提问，正文的知识点，全都来自于<strong>杨晓峰的《Java核心技术36讲》</strong>，当然，我并不会全文照搬过来，毕竟这是付费的课程，应该会涉及到侵权之类的问题。</p>
-<p>所以，本篇正文中的知识点，是我从课程中将知识点消耗后，用个人的理解、观念所表达出来的文字，参考了原文，但由于是个人理解，因此不保证观点完全正确，也不代表错误的观点是课程所表达的。如果这样仍旧还是侵权了，请告知，会将发表的文章删掉。</p>
-<p>当然，如果你对此课程有兴趣，建议你自己也购买一下，新用户立减 30，微信扫码订阅时还可以返现 6 元，相当于 32 元购买 36 讲的文章，每篇文章还不到 1 元，蛮划算的了。</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/1924341-6ca755c2bd0a6122.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="QQ图片20180703142535.png">  </p>
-<h1 id="提问"><a href="#提问" class="headerlink" title="提问"></a>提问</h1><ul>
-<li>谈谈 final、finally、finalize 有什么不同？</li>
-<li>为什么局部内部类和匿名内部类只能访问局部final变量？ </li>
-</ul>
-<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>emmm，说实话，感觉这一讲好像没什么实质性内容。而且，就像评论区里有人提到的，搞不懂为啥总有人喜欢拿这三者来比较，它们有个毛的关系？仅仅就是因为单词相近就拿来比较？</p>
-<p>但课程小结还是要做下，梳理梳理下相关面试知识点也好，那也不说废话了，结合原文和评论区，以及一些扩展，尽量多总结一些知识点吧。</p>
-<h4 id="final"><a href="#final" class="headerlink" title="final"></a>final</h4><p>final 是 java 中的关键字，可用于修饰类，方法，变量。</p>
-<p>当修饰类时，表明这个类不可被继承。Java 中有一些核心类都被 final 修饰了，比如 String，System。当考虑到安全性原因时，可以将该类设计成 final。</p>
-<p>当修饰方法时，表明该方法不可被重写。一般是某些流程控制不希望被修改掉时，可以将这些方法声明成 final，比如 View 中的 <code>measure()</code>，<code>requestFocus()</code>，<code>findViewById()</code>。</p>
-<p>当修饰变量时，表明该变量为常量，不允许被重新赋值，因此声明成 final 的变量都需要显示的进行赋值，否则编译会报错。 </p>
-<h4 id="finally"><a href="#finally" class="headerlink" title="finally"></a>finally</h4><p>finally 是确保 try-catch 方式最后执行的一种机制，通常的用法都是在 finally 里进行一些资源的关闭，回收。比如 IO 流的关闭等等。</p>
-<p>建议最好不要利用 finally 来控制流程，也不要在 finally 中有返回值，否则很容易影响正常流程，导致流程结构特别杂乱。</p>
-<p>另外，有些特殊情况下，finally 中的代码并不会被执行到，比如：  </p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//1.try-catch异常退出</span></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    System.exit(<span class="number">1</span>)</span><br><span class="line">&#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">    ....</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">	<span class="comment">//不会执行到这里</span></span><br><span class="line">    Log.d(<span class="string">"finally"</span>, <span class="string">"finally"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//2.无限循环</span></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">while</span>(<span class="keyword">true</span>) &#123;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="comment">//不会执行到这里</span></span><br><span class="line">    Log.d(<span class="string">"finally"</span>, <span class="string">"finally"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//3. 线程被杀死</span></span><br><span class="line"><span class="comment">//当执行 try-catch 时，线程被杀死了，那么 finally 里的代码也无法被执行到</span></span><br></pre></td></tr></table></figure>
-
-<p>总之，finally 通常情况下都会最后被执行到，所以最好不要在这里有 return 之类的语句来影响正常流程。但在某些特殊的场景下，finally 并不会被执行到，了解一下即可。</p>
-<h4 id="finalize"><a href="#finalize" class="headerlink" title="finalize"></a>finalize</h4><p>这个是 Object 中的一个方法，方法注释说了很多，大概就是讲这个方法是由垃圾收集器即将要回收该对象时会调用该方法，用户可在这里做一些最后的资源释放工作。</p>
-<p>以上是概念定义，但说实话，没用过该方法，而且作者也说了，不推荐使用 finalize 机制来做资源回收，并且在 JDK 9，这个方法已经被标志为 deprecated 废弃的方法了。</p>
-<p>作者有提到说，因为我们无法保证 finalize 什么时候执行，执行是否符合预期，使用不当还会影响性能，导致程序死锁、挂起等问题。</p>
-<p>那么，有其他方案来替代 finalize 处理回收资源的工作么？有，Cleaner 机制，这个我没接触过，作者提了这个替代方案。另外，作者也说了，回收资源最好就是资源用完后就随手清除，或者结合 try-catch-finally 机制回收。不管是 finalize 或者 Cleaner 机制，最好都只将它看成是最后一道防线，一旦将主要的回收工作依赖于这两个机制的话，很容易出现各种问题。</p>
-<h3 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h3><p><strong>为什么局部内部类和匿名内部类只能访问局部final变量？</strong>  </p>
-<p>先来看这么段代码：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//参数 msg 必须声明为 final 类型</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">notifyChange</span><span class="params">(<span class="keyword">final</span> String msg)</span> </span>&#123;</span><br><span class="line">    mTextView.post(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            mTextView.setText(msg);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>在这里，<code>post()</code> 方法的参数是一个匿名内部类，在内部类中如果要使用外部 <code>notifyChange()</code> 方法的参数 msg，那么必须将 msg 类型声明成 final，否则编译器会保错。</p>
-<p>这种场景非常常见的吧，不管是类似上述的 Ui 场景，还有网络访问时也经常需要通过回调通知上层，此时也就经常出现这种场景了。</p>
-<p>那么，<strong>有考虑过，为什么内部类只能访问局部 final 变量么？</strong>  </p>
-<p>如果懂得反编译 class 文件的，那么应该就很清楚了。我也不懂，理解这点是通过阅读其他大神分析的文章，以下是我的理解：</p>
-<p>首先，变量都是有生命周期的，成员变量的生命周期就跟随着对象的整个生命周期，而局部变量的生命周期则是非常有限。</p>
-<p>比如方法内部的局部变量，它的生命周期就是在这个方法执行结束就终止。同样，方法的参数也是局部变量，它是生命周期也同样是到该方法执行结束。</p>
-<p>另外，内部类的执行时机有时是会在外部方法执行结束之后。就拿上述例子来说，<code>post()</code> 中 Runnable 的执行时机，肯定是在外部 <code>notifyChange()</code> 方法执行完之后的。</p>
-<p>那么，问题来了。内部类 Runnable 的执行需要使用到外部方法 <code>notifyChange()</code> 的参数，但当它执行的时候，这个参数的生命周期早已结束，已经被回收掉了。既然已经被回收了，内部类又是怎么使用外部的这个局部变量呢？</p>
-<p>有大神反编译了 class 文件后，给出了结论，<strong>原来内部类使用外部的局部变量时，是通过 copy 一份过来</strong>。也就是说，其实内部类此时使用的是自己内部定义的局部变量了，只是这个变量的值是复制外部那个局部变量的而已。</p>
-<p>这也就解释了，为什么外部的局部变量明明已经被回收了，内部类仍旧可以使用，因为内部类此时使用的并不是外部类的局部变量引用了。</p>
-<p>但到这里，<strong>新的问题就来了</strong>：既然内部类使用的局部变量本质上跟外部的局部变量是相互独立的两个变量，那如果在内部类中修改了这个局部变量的值会出现什么情况？是吧，数据的不一致性。</p>
-<p>基于此，java 编译器就直接限定死，内部类使用外部的局部变量时，必须将其限制为 final 类型，确保该变量不允许进行更改。</p>
-<p>这样一来，其实也就顺便理解了，为什么成员变量可以直接在内部类中使用，因为成员变量的声明周期很长，不存在局部变量的问题。</p>
-<p>以上内容，是在大神的文章里被醍醐灌顶了，感谢大神，原文链接放出来：  </p>
-<p><a href="https://www.cnblogs.com/dolphin0520/p/3811445.html" target="_blank" rel="noopener">Java内部类详解</a></p>
-<hr>
-]]></content>
-      <categories>
-        <category>Java</category>
-      </categories>
-  </entry>
-  <entry>
     <title>毕业一年啦</title>
     <url>/2018/07/09/%E7%9E%8E%E6%89%AF%E6%89%AF/%E6%AF%95%E4%B8%9A%E4%B8%80%E5%B9%B4%E5%95%A6/</url>
     <content><![CDATA[<blockquote>
@@ -7293,6 +7238,61 @@ b.y; <span class="comment">//1</span>
 ]]></content>
       <categories>
         <category>谈人生</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>谈谈 final finally finalize 区别</title>
+    <url>/2018/07/09/Java/%E8%B0%88%E8%B0%88-final-finally-finalize-%E5%8C%BA%E5%88%AB/</url>
+    <content><![CDATA[<blockquote>
+<p><strong>本篇文章已授权微信公众号 dasu_Android（大苏）独家发布</strong>  </p>
+</blockquote>
+<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本篇所涉及的提问，正文的知识点，全都来自于<strong>杨晓峰的《Java核心技术36讲》</strong>，当然，我并不会全文照搬过来，毕竟这是付费的课程，应该会涉及到侵权之类的问题。</p>
+<p>所以，本篇正文中的知识点，是我从课程中将知识点消耗后，用个人的理解、观念所表达出来的文字，参考了原文，但由于是个人理解，因此不保证观点完全正确，也不代表错误的观点是课程所表达的。如果这样仍旧还是侵权了，请告知，会将发表的文章删掉。</p>
+<p>当然，如果你对此课程有兴趣，建议你自己也购买一下，新用户立减 30，微信扫码订阅时还可以返现 6 元，相当于 32 元购买 36 讲的文章，每篇文章还不到 1 元，蛮划算的了。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-6ca755c2bd0a6122.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="QQ图片20180703142535.png">  </p>
+<h1 id="提问"><a href="#提问" class="headerlink" title="提问"></a>提问</h1><ul>
+<li>谈谈 final、finally、finalize 有什么不同？</li>
+<li>为什么局部内部类和匿名内部类只能访问局部final变量？ </li>
+</ul>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>emmm，说实话，感觉这一讲好像没什么实质性内容。而且，就像评论区里有人提到的，搞不懂为啥总有人喜欢拿这三者来比较，它们有个毛的关系？仅仅就是因为单词相近就拿来比较？</p>
+<p>但课程小结还是要做下，梳理梳理下相关面试知识点也好，那也不说废话了，结合原文和评论区，以及一些扩展，尽量多总结一些知识点吧。</p>
+<h4 id="final"><a href="#final" class="headerlink" title="final"></a>final</h4><p>final 是 java 中的关键字，可用于修饰类，方法，变量。</p>
+<p>当修饰类时，表明这个类不可被继承。Java 中有一些核心类都被 final 修饰了，比如 String，System。当考虑到安全性原因时，可以将该类设计成 final。</p>
+<p>当修饰方法时，表明该方法不可被重写。一般是某些流程控制不希望被修改掉时，可以将这些方法声明成 final，比如 View 中的 <code>measure()</code>，<code>requestFocus()</code>，<code>findViewById()</code>。</p>
+<p>当修饰变量时，表明该变量为常量，不允许被重新赋值，因此声明成 final 的变量都需要显示的进行赋值，否则编译会报错。 </p>
+<h4 id="finally"><a href="#finally" class="headerlink" title="finally"></a>finally</h4><p>finally 是确保 try-catch 方式最后执行的一种机制，通常的用法都是在 finally 里进行一些资源的关闭，回收。比如 IO 流的关闭等等。</p>
+<p>建议最好不要利用 finally 来控制流程，也不要在 finally 中有返回值，否则很容易影响正常流程，导致流程结构特别杂乱。</p>
+<p>另外，有些特殊情况下，finally 中的代码并不会被执行到，比如：  </p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//1.try-catch异常退出</span></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    System.exit(<span class="number">1</span>)</span><br><span class="line">&#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">    ....</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">	<span class="comment">//不会执行到这里</span></span><br><span class="line">    Log.d(<span class="string">"finally"</span>, <span class="string">"finally"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//2.无限循环</span></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">while</span>(<span class="keyword">true</span>) &#123;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="comment">//不会执行到这里</span></span><br><span class="line">    Log.d(<span class="string">"finally"</span>, <span class="string">"finally"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//3. 线程被杀死</span></span><br><span class="line"><span class="comment">//当执行 try-catch 时，线程被杀死了，那么 finally 里的代码也无法被执行到</span></span><br></pre></td></tr></table></figure>
+
+<p>总之，finally 通常情况下都会最后被执行到，所以最好不要在这里有 return 之类的语句来影响正常流程。但在某些特殊的场景下，finally 并不会被执行到，了解一下即可。</p>
+<h4 id="finalize"><a href="#finalize" class="headerlink" title="finalize"></a>finalize</h4><p>这个是 Object 中的一个方法，方法注释说了很多，大概就是讲这个方法是由垃圾收集器即将要回收该对象时会调用该方法，用户可在这里做一些最后的资源释放工作。</p>
+<p>以上是概念定义，但说实话，没用过该方法，而且作者也说了，不推荐使用 finalize 机制来做资源回收，并且在 JDK 9，这个方法已经被标志为 deprecated 废弃的方法了。</p>
+<p>作者有提到说，因为我们无法保证 finalize 什么时候执行，执行是否符合预期，使用不当还会影响性能，导致程序死锁、挂起等问题。</p>
+<p>那么，有其他方案来替代 finalize 处理回收资源的工作么？有，Cleaner 机制，这个我没接触过，作者提了这个替代方案。另外，作者也说了，回收资源最好就是资源用完后就随手清除，或者结合 try-catch-finally 机制回收。不管是 finalize 或者 Cleaner 机制，最好都只将它看成是最后一道防线，一旦将主要的回收工作依赖于这两个机制的话，很容易出现各种问题。</p>
+<h3 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h3><p><strong>为什么局部内部类和匿名内部类只能访问局部final变量？</strong>  </p>
+<p>先来看这么段代码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//参数 msg 必须声明为 final 类型</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">notifyChange</span><span class="params">(<span class="keyword">final</span> String msg)</span> </span>&#123;</span><br><span class="line">    mTextView.post(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            mTextView.setText(msg);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在这里，<code>post()</code> 方法的参数是一个匿名内部类，在内部类中如果要使用外部 <code>notifyChange()</code> 方法的参数 msg，那么必须将 msg 类型声明成 final，否则编译器会保错。</p>
+<p>这种场景非常常见的吧，不管是类似上述的 Ui 场景，还有网络访问时也经常需要通过回调通知上层，此时也就经常出现这种场景了。</p>
+<p>那么，<strong>有考虑过，为什么内部类只能访问局部 final 变量么？</strong>  </p>
+<p>如果懂得反编译 class 文件的，那么应该就很清楚了。我也不懂，理解这点是通过阅读其他大神分析的文章，以下是我的理解：</p>
+<p>首先，变量都是有生命周期的，成员变量的生命周期就跟随着对象的整个生命周期，而局部变量的生命周期则是非常有限。</p>
+<p>比如方法内部的局部变量，它的生命周期就是在这个方法执行结束就终止。同样，方法的参数也是局部变量，它是生命周期也同样是到该方法执行结束。</p>
+<p>另外，内部类的执行时机有时是会在外部方法执行结束之后。就拿上述例子来说，<code>post()</code> 中 Runnable 的执行时机，肯定是在外部 <code>notifyChange()</code> 方法执行完之后的。</p>
+<p>那么，问题来了。内部类 Runnable 的执行需要使用到外部方法 <code>notifyChange()</code> 的参数，但当它执行的时候，这个参数的生命周期早已结束，已经被回收掉了。既然已经被回收了，内部类又是怎么使用外部的这个局部变量呢？</p>
+<p>有大神反编译了 class 文件后，给出了结论，<strong>原来内部类使用外部的局部变量时，是通过 copy 一份过来</strong>。也就是说，其实内部类此时使用的是自己内部定义的局部变量了，只是这个变量的值是复制外部那个局部变量的而已。</p>
+<p>这也就解释了，为什么外部的局部变量明明已经被回收了，内部类仍旧可以使用，因为内部类此时使用的并不是外部类的局部变量引用了。</p>
+<p>但到这里，<strong>新的问题就来了</strong>：既然内部类使用的局部变量本质上跟外部的局部变量是相互独立的两个变量，那如果在内部类中修改了这个局部变量的值会出现什么情况？是吧，数据的不一致性。</p>
+<p>基于此，java 编译器就直接限定死，内部类使用外部的局部变量时，必须将其限制为 final 类型，确保该变量不允许进行更改。</p>
+<p>这样一来，其实也就顺便理解了，为什么成员变量可以直接在内部类中使用，因为成员变量的声明周期很长，不存在局部变量的问题。</p>
+<p>以上内容，是在大神的文章里被醍醐灌顶了，感谢大神，原文链接放出来：  </p>
+<p><a href="https://www.cnblogs.com/dolphin0520/p/3811445.html" target="_blank" rel="noopener">Java内部类详解</a></p>
+<hr>
+]]></content>
+      <categories>
+        <category>Java</category>
       </categories>
   </entry>
   <entry>
@@ -8188,15 +8188,6 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
-    <title>Android技能树</title>
-    <url>/2018/05/27/%E6%8A%80%E8%83%BD%E6%A0%91/Android%E6%8A%80%E8%83%BD%E6%A0%91/</url>
-    <content><![CDATA[<p><img src="https://upload-images.jianshu.io/upload_images/1924341-d23f4ef9f50304cc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Android技能树.png"></p>
-]]></content>
-      <categories>
-        <category>技能树</category>
-      </categories>
-  </entry>
-  <entry>
     <title>Gradle 系列博客梳理</title>
     <url>/2018/05/27/Gradle/Gradle-%E7%B3%BB%E5%88%97%E5%8D%9A%E5%AE%A2%E6%A2%B3%E7%90%86/</url>
     <content><![CDATA[<blockquote>
@@ -8268,6 +8259,15 @@ b.y; <span class="comment">//1</span>
 ]]></content>
       <categories>
         <category>Gradle</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>Android技能树</title>
+    <url>/2018/05/27/%E6%8A%80%E8%83%BD%E6%A0%91/Android%E6%8A%80%E8%83%BD%E6%A0%91/</url>
+    <content><![CDATA[<p><img src="https://upload-images.jianshu.io/upload_images/1924341-d23f4ef9f50304cc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Android技能树.png"></p>
+]]></content>
+      <categories>
+        <category>技能树</category>
       </categories>
   </entry>
   <entry>
