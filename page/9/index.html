@@ -288,6 +288,563 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://woshidasusu.github.io/2017/08/21/Android源码解析/Android-KeyEvent-点击事件分发处理流程（一）/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="请叫我大苏">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/img.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="dasu's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/08/21/Android源码解析/Android-KeyEvent-点击事件分发处理流程（一）/" itemprop="url">Android KeyEvent 点击事件分发处理流程（一）</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-08-21T21:30:25+08:00">
+                2017-08-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android源码解析/" itemprop="url" rel="index">
+                    <span itemprop="name">Android源码解析</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                  <span class="post-meta-divider">|</span>
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3.6k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  13 min
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+          
+本篇文章已授权微信公众号 安卓巴士Android开发者门户 独家发布  
+
+这次打算来梳理一下 Android Tv 中的按键点击事件 KeyEvent 的分发处理流程。一谈到点击事件机制，网上资料已经非常齐全了，像什么分发、拦截、处理三大流程啊；或者 dispatchTouchEvent、onInterceptTouchEvent、onTouchEvent 啊；再或者返回 true 表示消费，
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2017/08/21/Android源码解析/Android-KeyEvent-点击事件分发处理流程（一）/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://woshidasusu.github.io/2017/06/01/Android项目/【Android】又一个Gank客户端来啦/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="请叫我大苏">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/img.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="dasu's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/06/01/Android项目/【Android】又一个Gank客户端来啦/" itemprop="url">【Android】又一个Gank客户端来啦</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-06-01T21:46:25+08:00">
+                2017-06-01
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android项目/" itemprop="url" rel="index">
+                    <span itemprop="name">Android项目</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                  <span class="post-meta-divider">|</span>
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  537
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  1 min
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+          
+本篇文章已授权微信公众号 dasu_Android（大苏）独家发布  
+
+老规矩，看效果  
+介绍Gank平台的移动端又来了，非常感谢Gank平台开放接口，让我们这些小白有机会练手、学习。  
+本项目在架构方面有稍微花点心思，虽然还是最简单的MVC模式，但基本参考MVP的思想，Activity只负责ui显示逻辑，ui和业务会尽量的分离开，每个包的类权限严格控制，尽量对外部隐藏其实现细节。另外，本
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2017/06/01/Android项目/【Android】又一个Gank客户端来啦/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://woshidasusu.github.io/2017/04/21/Android知识/【Android】再来一篇Fragment的懒加载（只加载一次哦）/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="请叫我大苏">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/img.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="dasu's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/04/21/Android知识/【Android】再来一篇Fragment的懒加载（只加载一次哦）/" itemprop="url">【Android】再来一篇Fragment的懒加载（只加载一次哦）</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-04-21T21:30:25+08:00">
+                2017-04-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android知识/" itemprop="url" rel="index">
+                    <span itemprop="name">Android知识</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                  <span class="post-meta-divider">|</span>
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2.4k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  9 min
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+          
+本篇文章已授权微信公众号 dasu_Android（大苏）独家发布  
+
+#使用前需知2017-7-14更新：  目前有人使用后出现了诸如首次打开显示空白界面，但点击有反应；或来回切换又变空白界面的问题。这些问题我暂时还不知道该怎么解决，后期有时间时会具体去分析下问题该怎么解决。所以你如果要使用该代码，希望考虑一下，我自己的小应用目前是没碰到这些问题。  
+效果老规矩，先来看看效果图  
+
+没错
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2017/04/21/Android知识/【Android】再来一篇Fragment的懒加载（只加载一次哦）/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://woshidasusu.github.io/2017/03/22/Android知识/【Android】TextView的文字长度测量及各种padding解析/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1222,193 +1779,6 @@ Android5.0+推出的新控件感觉特别酷，最近想模仿大神做个看图
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://woshidasusu.github.io/2016/09/08/瞎扯扯/小码农的故事05/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="请叫我大苏">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/uploads/img.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="dasu's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2016/09/08/瞎扯扯/小码农的故事05/" itemprop="url">小码农的故事05</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-09-08T21:30:25+08:00">
-                2016-09-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/谈人生/" itemprop="url" rel="index">
-                    <span itemprop="name">谈人生</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                  <span class="post-meta-divider">|</span>
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  2.3k
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  7 min
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-          
-前言：这应该是最后一章了，故事虽然到这就结束了，但现实里还要继续下去，希望在很久的以后来回顾时，能因自己学生时代有这样的经历而欣慰。说明：故事中的人物均是化名，故事情节经过些许加工，故事情节并没有针对任何人，仅以此纪念自己的成长。回顾上一章：详情请猛戳
-
-##第四章：Beta收官
-
-　　三个多周的Alpha冲刺，一个周左右的休息调整时间。紧接着也就是Beta阶段的冲刺了。
-　　在Alpha版本中
-          ...
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2016/09/08/瞎扯扯/小码农的故事05/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://woshidasusu.github.io/2016/09/08/Android知识/【Android】属性动画的使用理解/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1601,7 +1971,7 @@ ValueAnimator
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://woshidasusu.github.io/2016/09/07/瞎扯扯/小码农的故事04/">
+    <link itemprop="mainEntityOfPage" href="http://woshidasusu.github.io/2016/09/08/瞎扯扯/小码农的故事05/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="请叫我大苏">
@@ -1620,7 +1990,7 @@ ValueAnimator
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2016/09/07/瞎扯扯/小码农的故事04/" itemprop="url">小码农的故事04</a></h1>
+                <a class="post-title-link" href="/2016/09/08/瞎扯扯/小码农的故事05/" itemprop="url">小码农的故事05</a></h1>
         
 
         <div class="post-meta">
@@ -1632,8 +2002,8 @@ ValueAnimator
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-09-07T21:30:25+08:00">
-                2016-09-07
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-09-08T21:30:25+08:00">
+                2016-09-08
               </time>
             
 
@@ -1688,7 +2058,7 @@ ValueAnimator
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2.8k
+                  2.3k
                 </span>
               
 
@@ -1704,7 +2074,7 @@ ValueAnimator
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  9 min
+                  7 min
                 </span>
               
             </div>
@@ -1728,387 +2098,16 @@ ValueAnimator
         
           
           
-前言：咳咳，一个多月了，最近忙这忙那，都把这个故事给落下了，昨晚刚回到家，白天得干活，晚上赶紧把这个故事写完，以此纪念自己的软工。说明：故事中的人物均是化名，故事情节经过些许加工，故事情节并没有针对任何人，仅以此纪念自己的成长。回顾上一章：详情请猛戳
+前言：这应该是最后一章了，故事虽然到这就结束了，但现实里还要继续下去，希望在很久的以后来回顾时，能因自己学生时代有这样的经历而欣慰。说明：故事中的人物均是化名，故事情节经过些许加工，故事情节并没有针对任何人，仅以此纪念自己的成长。回顾上一章：详情请猛戳
 
-##第四章：Alpha冲刺
+##第四章：Beta收官
 
-　　Alpha阶段的冲刺就这么的来了，似乎来得有点晚，因为你已经接近一个月没有敲过代码了。这个月来，懂哥一直要求你
+　　三个多周的Alpha冲刺，一个周左右的休息调整时间。紧接着也就是Beta阶段的冲刺了。
+　　在Alpha版本中
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2016/09/07/瞎扯扯/小码农的故事04/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://woshidasusu.github.io/2016/09/06/瞎扯扯/小码农的故事03/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="请叫我大苏">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/uploads/img.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="dasu's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2016/09/06/瞎扯扯/小码农的故事03/" itemprop="url">小码农的故事03</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-09-06T21:30:25+08:00">
-                2016-09-06
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/谈人生/" itemprop="url" rel="index">
-                    <span itemprop="name">谈人生</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                  <span class="post-meta-divider">|</span>
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  4.8k
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  16 min
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-          
-前言：逛知乎时，经常看见有大神将各种经历写成小故事，感觉特别有趣。咳咳，这次也自己来尝试下，将这学期的软工实践写成故事试试看，故事中均已第二人称来描述。故事中的人物均是化名。故事情节经过些许加工。说明：故事情节并没有针对任何人，仅以此纪念自己的成长。回顾上一章：详情请猛戳
-
-##第三章：项目编程前夕
-
-　　课程已经进入团队合作开发阶段了，并不太糟的是你的团队组成了，成员个个也都很不错。首先是担当
-          ...
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2016/09/06/瞎扯扯/小码农的故事03/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://woshidasusu.github.io/2016/09/04/瞎扯扯/小码农的故事02/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="请叫我大苏">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/uploads/img.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="dasu's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2016/09/04/瞎扯扯/小码农的故事02/" itemprop="url">小码农的故事02</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-09-04T21:30:25+08:00">
-                2016-09-04
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/谈人生/" itemprop="url" rel="index">
-                    <span itemprop="name">谈人生</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                  <span class="post-meta-divider">|</span>
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  2.5k
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  8 min
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-          
-前言：逛知乎时，经常看见有大神将各种经历写成小故事，感觉特别有趣。咳咳，这次也自己来尝试下，将这学期的软工实践写成故事试试看，故事中均已第二人称来描述。故事中的人物均是化名。故事情节经过些许加工。说明：故事情节并没有针对任何人，仅以此纪念自己的成长。回顾上一章：详情请猛戳
-
-##第二章：团队人选风波
-
-　　结队编程终于告一段落了，接下来就是令人期待的团队合作开发阶段了。终于要开始你一直很期待的任
-          ...
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2016/09/04/瞎扯扯/小码农的故事02/#more" rel="contents">
+            <a class="btn" href="/2016/09/08/瞎扯扯/小码农的故事05/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -2198,7 +2197,7 @@ ValueAnimator
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">91</span>
+                  <span class="site-state-item-count">94</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -2209,7 +2208,7 @@ ValueAnimator
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-count">17</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -2297,7 +2296,7 @@ ValueAnimator
 
   <div class="theme-info">
     <div class="powered-by"></div>
-    <span class="post-count">博客全站共 349.2k 字</span>
+    <span class="post-count">博客全站共 353.7k 字</span>
   </div>
 
   

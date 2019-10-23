@@ -1,6 +1,250 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>面试题积累</title>
+    <url>/2019/10/23/%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%A8%A1%E6%8B%9F%E5%AE%9E%E7%8E%B0call%E5%92%8Capply/</url>
+    <content><![CDATA[<h1 id="模拟实现-call-和-apply"><a href="#模拟实现-call-和-apply" class="headerlink" title="模拟实现 call 和 apply"></a>模拟实现 call 和 apply</h1><blockquote>
+<p>本文参考：<a href="https://muyiy.cn/blog/3/3.3.html#%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF" target="_blank" rel="noopener">深度解析 call 和 apply 原理、使用场景及实现</a></p>
+</blockquote>
+<h3 id="基础"><a href="#基础" class="headerlink" title="基础"></a>基础</h3><p>首先来认识一下 call 和 apply，它们都是 Function.prototype 上的方法，也就是说，所有函数都拥有的方法。</p>
+<p>作用都是用来显示绑定函数内部的上下文 this 的指向，区别仅在于两者对参数的处理不同，一个接收参数列表，一个接收参数数组。列出 MDN 的地址：</p>
+<blockquote>
+<p><a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Function/apply" target="_blank" rel="noopener">Function.prototype.apply()</a></p>
+<p><a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Function/call" target="_blank" rel="noopener">Function.prototype.call()</a></p>
+</blockquote>
+<h4 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h4><figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">b</span>(<span class="params">a, b</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="keyword">this</span>, a, b);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> o = &#123;</span><br><span class="line">    a: <span class="number">1</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">b.call(<span class="literal">null</span>, <span class="number">1</span>, <span class="number">2</span>);  <span class="comment">// 输出： Window   1   2</span></span><br><span class="line">b.call(o, <span class="number">1</span>, <span class="number">2</span>);  <span class="comment">// 输出 &#123;a: 1&#125;   1   2</span></span><br><span class="line"></span><br><span class="line">b.apply(<span class="literal">null</span>, [<span class="number">1</span>, <span class="number">2</span>]);  <span class="comment">// 输出： Window   1   2</span></span><br><span class="line">b.apply(o, [<span class="number">1</span>, <span class="number">2</span>]);   <span class="comment">// 输出：  &#123;a: 1&#125;   1   2</span></span><br></pre></td></tr></table></figure>
+
+<p>所以 call 和 apply 的执行效果其实是一样的，区别就在于接收参数的形式，是参数列表，还是参数数组。</p>
+<h4 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h4><ul>
+<li>调用原型方法</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 如果某对象覆盖了原型上某个方法，那么调用该方法一直是走对象上的逻辑，此时如果有需求要走父类逻辑，可通过 call，类似于其他语言的 super</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// [] 重写了 toString，所以需要的话，可以调用 Object.prototype.toString 原有逻辑</span></span><br><span class="line"><span class="built_in">Object</span>.prototype.toString.call([]); <span class="comment">// [object Array]</span></span><br><span class="line">[].toString();  <span class="comment">// ''</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">A</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.a = <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">B</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    A.call(<span class="keyword">this</span>); <span class="comment">// 调用父构造函数，类似于其他语言的 super();</span></span><br><span class="line">    <span class="keyword">this</span>.b = <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>解决参数列表和参数数组问题</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> a = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">3</span>];  <span class="comment">// 对数组数据求最大值</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">Math</span>.max.apply(<span class="literal">null</span>, a); <span class="comment">// 输出 5</span></span><br><span class="line"><span class="comment">// 因为 Math.max(arg1, arg2, arg3...) 只接收参数列表方式，不接收数组类型参数</span></span><br><span class="line"><span class="comment">// 但 ES6 中的扩展运算符也可以解决这个问题</span></span><br><span class="line"><span class="built_in">Math</span>.max(...a);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>显示指定函数内的上下文 this 指向</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> a = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">var</span> o = &#123;</span><br><span class="line">    a: <span class="number">2</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">b</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="keyword">this</span>.a);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">b(); <span class="comment">// 1</span></span><br><span class="line">b.call(o); <span class="comment">// 2</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="模拟实现"><a href="#模拟实现" class="headerlink" title="模拟实现"></a>模拟实现</h3><h4 id="Function-prototype-call-thisArg-arg1-arg2-…"><a href="#Function-prototype-call-thisArg-arg1-arg2-…" class="headerlink" title="Function.prototype.call(thisArg, arg1, arg2, …)"></a>Function.prototype.call(thisArg, arg1, arg2, …)</h4><p>要想模拟实现 call，必须得先掌握几个关键点：</p>
+<ul>
+<li>call 接收的参数形式和含义，及 thisArg 对 null，undefined，基本类型的特殊处理</li>
+<li>call 本质上是函数的另一种调用，只是修改了函数内的 this</li>
+</ul>
+<p>这两点是关键，展开讲的话，也就是我们要自己实现这些工作：</p>
+<ul>
+<li>接收不定长的参数列表，第一个参数 thisArg 表示函数内 this 指向<ul>
+<li>当 thisArg 值为 null 或 undefined 时，在非严格模式下，替换成全局对象，如 window</li>
+<li>当 thisArg 值为其他基本类型，如 number，boolean 等时，在非严格模式下，自动进行包装对象转换 Object(thisArg)</li>
+</ul>
+</li>
+<li>第二个参数开始的剩余参数列表依次传给函数</li>
+<li>触发函数的执行</li>
+<li>修改函数的 this 指向第一个参数经过处理后的值</li>
+</ul>
+<p>贴代码前，先来大概讲讲各个工作的实现方案：对第一个参数 thisArg 的处理，也就是进行各种判断各种处理即可；获取剩余参数列表，可以用 ES6 的扩展运算符；触发函数执行，也就是调用一下函数即可；</p>
+<p>那么，还剩下最后一点，<strong>如何模拟实现修改函数内的 this 指向呢</strong>？</p>
+<p>这就涉及到 this 绑定的各种方式了，文末有推荐文章，感兴趣可以去看看，这里就大概说一说：</p>
+<ul>
+<li>默认绑定（如普通函数内的 this 默认绑定到 window）</li>
+<li>隐式绑定（如将函数赋值给某个对象，以对象的方法来调用该函数，this 会绑定到该对象上）</li>
+<li>显示绑定（call, apply, bind, Reflect.apply）</li>
+<li>new 绑定（当函数和 new 使用时会被当做构造函数，构造函数内部的 this 会绑定到内部新创的对象上）</li>
+<li>箭头函数的绑定（绑定到箭头函数定义时的上下文）</li>
+</ul>
+<p>这五种方式中，可以分成两类：绑定的对象是特定对象或任意对象。其中，隐式绑定和显示绑定属于后者，而我们想要模拟实现 call，自然就不能再使用显示绑定了，那只剩下从隐式绑定方案去解决了。</p>
+<p>只要把经过函数挂载到经过处理后的 thisArg 对象上，然后以对象的方法形式调用，就可以完成修改函数内 this 指向的效果了。</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Function</span>.prototype.call2 = <span class="function"><span class="keyword">function</span>(<span class="params">thisArg, ...args</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 对 thisArg 的处理</span></span><br><span class="line">    <span class="keyword">let</span> context = thisArg != <span class="literal">null</span> ? <span class="built_in">Object</span>(thisArg) : <span class="built_in">window</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 2. 将该函数挂载到指定的上下文 this 对象上</span></span><br><span class="line">    <span class="keyword">let</span> fn = <span class="built_in">Symbol</span>();  <span class="comment">// Symbol 可以避免属性冲突或被外部修改</span></span><br><span class="line">    context[fn] = <span class="keyword">this</span>; <span class="comment">// this 调用 call2 的函数</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 3. 以对象的方法形式调用函数，并取得返回值</span></span><br><span class="line">    <span class="keyword">let</span> result;</span><br><span class="line">    <span class="keyword">if</span>(args) &#123;</span><br><span class="line">        result = context[fn](...args);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        result = context[fn]();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 4. 清掉挂载的 fn，并返回</span></span><br><span class="line">    <span class="keyword">delete</span> context[fn];</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>至于如何判断函数内部是否有开启了严格模式，这点就不知道怎么实现了。</p>
+<h4 id="Function-prototype-apply-thisArg-argsArray"><a href="#Function-prototype-apply-thisArg-argsArray" class="headerlink" title="Function.prototype.apply(thisArg, [argsArray])"></a>Function.prototype.apply(thisArg, [argsArray])</h4><p>apply 跟 call 本质上是一样的，区别仅在于对参数的接收形式不同，直接看模拟实现的代码：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Function</span>.prototype.apply2 = <span class="function"><span class="keyword">function</span>(<span class="params">thisArg, args</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 对 thisArg 的处理</span></span><br><span class="line">    <span class="keyword">let</span> context = thisArg != <span class="literal">null</span> ? <span class="built_in">Object</span>(thisArg) : <span class="built_in">window</span>;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">Array</span>.isArray(args)) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">TypeError</span>(<span class="string">'args is not a Array'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 2. 将该函数挂载到指定的上下文 this 对象上</span></span><br><span class="line">    <span class="keyword">let</span> fn = <span class="built_in">Symbol</span>();  <span class="comment">// Symbol 可以避免属性冲突或被外部修改</span></span><br><span class="line">    context[fn] = <span class="keyword">this</span>; <span class="comment">// this 调用 call2 的函数</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 3. 以对象的方法形式调用函数，并取得返回值</span></span><br><span class="line">    <span class="keyword">let</span> result;</span><br><span class="line">    <span class="keyword">if</span>(args) &#123;</span><br><span class="line">        result = context[fn](...args);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        result = context[fn]();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 4. 清掉挂载的 fn，并返回</span></span><br><span class="line">    <span class="keyword">delete</span> context[fn];</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><ul>
+<li><a href="https://muyiy.cn/blog/3/3.1.html#_1-%E8%B0%83%E7%94%A8%E4%BD%8D%E7%BD%AE" target="_blank" rel="noopener">JavaScript深入之史上最全–5种this绑定全面解析</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>面试题</category>
+        <category>前端</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>面试题积累</title>
+    <url>/2019/10/22/%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%A8%A1%E6%8B%9F%E5%AE%9E%E7%8E%B0new%E6%93%8D%E4%BD%9C%E7%AC%A6/</url>
+    <content><![CDATA[<h1 id="模拟实现-new-操作符"><a href="#模拟实现-new-操作符" class="headerlink" title="模拟实现 new 操作符"></a><a href="https://muyiy.cn/blog/3/3.5.html#%E5%AE%9A%E4%B9%89" target="_blank" rel="noopener">模拟实现 new 操作符</a></h1><blockquote>
+<p>本文参考：<a href="https://muyiy.cn/blog/3/3.5.html" target="_blank" rel="noopener">深度解析 new 原理及模拟实现</a></p>
+</blockquote>
+<p>首先需要理解，JavaScript 中的构造函数跟 Java 中的构造函数性质是不一样的。js 不是基于 class 这种静态类模式，而是基于原型对象的模式。</p>
+<p>所以，在 js 中，new 操作符，其实可以通俗的理解成一个辅助工具，用来辅助函数构造出一个新对象。所以，我们才能够来模拟实现它，因为它其实通俗理解，就是一个工具函数。</p>
+<p>得先明确这点，才能知道，的确是可以模拟 new 操作符的。</p>
+<h3 id="new-的职责"><a href="#new-的职责" class="headerlink" title="new 的职责"></a>new 的职责</h3><figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">A</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.a = <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line">A.prototype.b = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">var</span> a = <span class="keyword">new</span> A(); <span class="comment">// &#123;a: 1&#125;</span></span><br><span class="line">a.b; <span class="comment">// 1</span></span><br></pre></td></tr></table></figure>
+
+<p>所以，以上这种场景的 new 操作符其实就是做了几件事：</p>
+<ul>
+<li><strong>创建一个继承自 A.prototype 的空对象</strong></li>
+<li><strong>让空对象作为函数 A 的上下文，并调用 A</strong></li>
+<li><strong>返回这个空对象</strong></li>
+</ul>
+<p>这是基本的 new 使用的场景，那么我们要来模拟实现的话，这几件事就得自己处理：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> _new(<span class="params">Fn, ...args</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 创建一个继承构造函数.prototype的空对象</span></span><br><span class="line">    <span class="keyword">var</span> obj = <span class="built_in">Object</span>.create(Fn.prototype);</span><br><span class="line">    <span class="comment">// 2. 让空对象作为函数 A 的上下文，并调用 A</span></span><br><span class="line">    Fn.call(obj, ...args);</span><br><span class="line">    <span class="comment">// 3. 返回这个空对象</span></span><br><span class="line">    <span class="keyword">return</span> obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>这样就结束了吗？并没有</strong></p>
+<p>要模拟实现一个完整的 new 操作符，就还得将它的其他使用场景都考虑进去：</p>
+<ul>
+<li><strong>当构造函数有返回值时</strong></li>
+<li><strong>判断一个函数是否能够作为构造函数使用</strong></li>
+</ul>
+<p>先来考虑第一种：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">A</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.a = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="attr">b</span>: <span class="number">1</span>&#125;;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">new</span> A(); <span class="comment">// &#123;b: 1&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">B</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.b = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">new</span> B(); <span class="comment">// &#123;b:1&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>所以，当构造函数返回一个对象时，那么就以这个对象作为构造函数生成的对象；当构造函数返回基本类型数据时，当做没有返回值处理，内部新建个对象返回。</p>
+<p>套用 MDN 对 new 的说明：</p>
+<blockquote>
+<p>new 运算符创建一个用户定义的对象类型的实例<strong>或</strong>具有构造函数的内置对象的实例。 ——（来自于MDN）</p>
+</blockquote>
+<p>其实这句解释就把 new 操作符的所有职责或者说所有使用场景覆盖了：</p>
+<ul>
+<li>用户定义的对象类型 ==&gt; 当构造函数有返回值时</li>
+<li>具有构造函数的内置对象 ==&gt; 当前函数可用来作为构造函数，那么返回内部创建的新对象</li>
+</ul>
+<p>所以，要完整模拟一个 new 的工作，还得完成上面两点，先来看看对返回值的处理，很简单：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> _new(<span class="params">Fn, ...args</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 创建一个继承构造函数.prototype的空对象</span></span><br><span class="line">    <span class="keyword">var</span> obj = <span class="built_in">Object</span>.create(Fn.prototype);</span><br><span class="line">    <span class="comment">// 2. 让空对象作为函数 A 的上下文，并调用 A，同时获取它的返回值</span></span><br><span class="line">    <span class="keyword">let</span> result = Fn.call(obj, ...args);</span><br><span class="line">    <span class="comment">// 3. 如果构造函数返回一个对象，那么直接 return 它，否则返回内部创建的新对象</span></span><br><span class="line">    <span class="keyword">return</span> result <span class="keyword">instanceof</span> <span class="built_in">Object</span> ? result : obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接下去就剩最后一个处理了：判断一个函数是否可以作为构造函数</p>
+<h4 id="如何判断函数是否可以作为构造函数"><a href="#如何判断函数是否可以作为构造函数" class="headerlink" title="如何判断函数是否可以作为构造函数"></a>如何判断函数是否可以作为构造函数</h4><p>我们通过 function 定义的普通函数都可以结合 new 来作为构造函数使用，那么到底如何判断一个函数能否作为构造函数呢？</p>
+<p>网上有些文章里说了：</p>
+<blockquote>
+<p>每个函数都有一些内部属性，如： [[Construct]]  表示可以用来作为构造函数使用，[[Call]] 表示可以用来作为普通函数使用</p>
+<p>所以，当一个函数没有 [[Construct]] 内部属性时，它就不能用来作为构造函数</p>
+</blockquote>
+<p>???</p>
+<p>没错，从引擎角度来看，的确是这样处理，但这些内部属性我们并没有办法看到的啊，那对于我们这些写 js 的来说，如何判断一个函数是否能够作为构造函数呢？靠经验积累？</p>
+<p>那就先来说说靠经验积累好了：</p>
+<ul>
+<li>箭头函数不能作为构造函数使用（每篇介绍箭头函数的文章里基本都会说明）</li>
+<li>Generator 函数不能作为构造函数使用（俗称 * 函数，如 <code>function *A(){}</code>）</li>
+<li>对象的简写方法不能作为构造函数使用（<code>{ A(){} }</code>）</li>
+<li>内置方法不能作为构造函数使用（如 Math.min）</li>
+</ul>
+<p>靠经验积累只能是这样一条条去罗列，末尾链接的文章里有这么一句话：</p>
+<blockquote>
+<p>[除非特别说明，es6+ 实现的特定函数都没有实现 [[Construct]] 内置方法](<a href="https://www.stefanjudis.com/today-i-learned/not-every-javascript-function-is-constructable/" target="_blank" rel="noopener">https://www.stefanjudis.com/today-i-learned/not-every-javascript-function-is-constructable/</a>)<br>简单的说，特定函数设计之初肯定不是为了用来构造的</p>
+</blockquote>
+<p>这大佬是直接去阅读的 ECMA 规范，可靠性很强</p>
+<p>那么，经验积累的方式更多是用于面试的场景，但模拟实现 new 是得从代码层面去判断，所以，还有其他方式可以用来判断函数是否能够作为构造函数吗？</p>
+<p>有的，末尾链接的文章里，大佬给出了很多种思路，大致列一下：</p>
+<ul>
+<li>通过构造函数是否有该属性判断 Fn.prototype.constructor，但有局限性，无法处理手动修改的场景</li>
+<li>通过抛异常方式，局限性是依赖于原有 new 操作符，而且会导致构造函数逻辑被先行处理</li>
+<li>通过 Reflect.construct，加上 Symbol 的特殊处理后，就没有局限性，推荐方案</li>
+</ul>
+<p>每种思路，文章都有讲解，感兴趣可以直接去看看，这里就只挑最后一种来讲讲：</p>
+<ul>
+<li><strong>通过 <code>Reflect.construct()</code> 来判断一个函数是否能够作为构造函数</strong></li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 代码来自文末的链接</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">is_constructor</span>(<span class="params">f</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 特殊判断，Symbol 能通过检测</span></span><br><span class="line">  <span class="keyword">if</span> (f === <span class="built_in">Symbol</span>) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="built_in">Reflect</span>.construct(<span class="built_in">String</span>, [], f);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其实本质上也是用抛异常方式来判断，但与直接 new A() 的抛异常方式不同的是，它不会触发构造函数的执行。这就得来看看 Reflect.construct 了：</p>
+<p>Reflect.construct 方法等同于 new target(…args)，提供了一种不使用 new 来调用构造函数的方法：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">A</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.a = <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">new</span> A(); <span class="comment">// &#123;a: 1&#125;</span></span><br><span class="line"><span class="comment">// 等价于</span></span><br><span class="line"><span class="built_in">Reflect</span>.construct(A, []); <span class="comment">// &#123;a: 1&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>有的可能就好奇了，既然这样，那就直接用 Reflect.construct 来模拟实现 new 不就好了，还需要自己写上面那么多代码，处理那么多场景么？</p>
+<p>emmm，你说的很有道理，是可以这样没错，但这样，不就学不到 new 的职责原理了吗，不就回答不了面试官的提问了吗？</p>
+<p>Reflect.construct 还可以接收一个可选的第三个参数：</p>
+<blockquote>
+<p>Reflect.construct(target, argumentsList[, newTarget])</p>
+<ul>
+<li>target: 被调用的构造函数</li>
+<li>argumentsList：参数列表，类数组类型数据</li>
+<li>new Target：可选，当有传入时，使用 newTarget.prototype 来作为实例对象的 prototype，否则使用 target.prototype</li>
+<li><strong>当 target 或者 newTarget 不能作为构造函数时，抛出 TypeError 异常</strong></li>
+</ul>
+</blockquote>
+<p>那么，我们可以怎样来利用这些特性呢？先看使用原始 new 的方式：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">A</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line">B = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="number">2</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">new</span> A(); <span class="comment">// 输出1</span></span><br><span class="line"><span class="keyword">new</span> B(); <span class="comment">// TypeError，抛异常</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用抛异常方式来判断某个函数能否作为构造函数时，如果可以，那么构造函数就会被先执行一遍，如果刚好在构造函数内处理一些业务代码，那么可能就会有副作用影响了</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">isConstructor</span>(<span class="params">Fn</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">   	 	<span class="keyword">new</span> A();   <span class="comment">// 能够判断出 A 可以作为构造函数，但 A 会被先执行一次</span></span><br><span class="line">    	<span class="comment">// new B();  // 能够判断出 B 不能作为构造函数</span></span><br><span class="line">	&#125; <span class="keyword">catch</span>(e) &#123;</span><br><span class="line">    	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>那么，该如何来使用 Reflect.construct 呢？</p>
+<p>关键在于它的第三个参数，是用来指定构造函数生成的对象的 prototype，并不会去执行它，但却会跟第一个参数构造函数一起经过能否作为构造函数（[[Construct]]）检查，看看用法：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">A</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line">A.prototype.a = <span class="number">1</span>;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">B</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line"> 	<span class="built_in">console</span>.log(<span class="number">2</span>);   </span><br><span class="line">&#125;</span><br><span class="line">B.prototype.a = <span class="number">2</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> a = <span class="built_in">Reflect</span>.construct(A, []); <span class="comment">// 输出 1</span></span><br><span class="line">a.a; <span class="comment">// 1，继承自 A.prototype</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> b = <span class="built_in">Reflect</span>.construct(A, [], B); <span class="comment">// 输出 1</span></span><br><span class="line">b.a; <span class="comment">// 2, 继承自 B.prototype;</span></span><br></pre></td></tr></table></figure>
+
+<p>我们来大概写一下 Reflect.construct 传入三个参数时的伪代码：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Reflect</span>.construct = <span class="function"><span class="keyword">function</span>(<span class="params">target, args, newTarget</span>) </span>&#123;</span><br><span class="line">    check target has [[Construct]]</span><br><span class="line">    check newTarget has [[Construct]]</span><br><span class="line">    <span class="keyword">var</span> obj = <span class="built_in">Object</span>.create(newTarget ? newTarget.prototype : target.prototype)</span><br><span class="line">    <span class="keyword">var</span> result = target.call(obj, ...args);</span><br><span class="line">    <span class="keyword">return</span> result <span class="keyword">instanceof</span> <span class="built_in">Object</span> ? result : obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第一个参数 target 和第三个参数 newTarget 都会进行是否能作为构造函数使用的检查，虽然 target 会被作为构造函数而调用，但我们可以把待检查的函数传给第三个参数，而第一个参数随便传入一个无关但可用来作为构造函数使用不就好了，所以，代码是这样：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 代码来自文末的链接</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">is_constructor</span>(<span class="params">f</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 特殊处理，因为 Symbol 能通过 Reflect.construct 对参数的检测</span></span><br><span class="line">  <span class="keyword">if</span> (f === <span class="built_in">Symbol</span>) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="comment">// 第一个 target 参数传入无关的构造函数，第三个参数传入待检测函数  </span></span><br><span class="line">    <span class="built_in">Reflect</span>.construct(<span class="built_in">String</span>, [], f);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 当 f 可作为构造函数使用，Reflect.construct 就会正常执行，那么此时：</span></span><br><span class="line"><span class="comment">// Reflect.construct(String, [], f) 其实相当于执行了:</span></span><br><span class="line"><span class="comment">// var a = new String();</span></span><br><span class="line"><span class="comment">// a.__proto__ = f.prototype</span></span><br><span class="line"><span class="comment">// 既不会让被检测函数先行执行一遍，又可以达到利用引擎层面检测函数是否能作为构造函数的目的</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>最终，模拟 new 的实现代码：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> _new(<span class="params">Fn, ...args</span>) </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">is_constructor</span>(<span class="params">f</span>) </span>&#123;</span><br><span class="line">      	<span class="keyword">if</span> (f === <span class="built_in">Symbol</span>) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      	<span class="keyword">try</span> &#123;</span><br><span class="line">        	<span class="built_in">Reflect</span>.construct(<span class="built_in">String</span>, [], f);</span><br><span class="line">      	&#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">        	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      	&#125;</span><br><span class="line">      	<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 1. 参数判断检测</span></span><br><span class="line">    <span class="keyword">let</span> isFunction = <span class="keyword">typeof</span> Fn === <span class="string">'function'</span>;</span><br><span class="line">    <span class="keyword">if</span> (!isFunction || !is_constructor(Fn)) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">TypeError</span>(<span class="string">`<span class="subst">$&#123;Fn.name || Fn&#125;</span> is not a constructor`</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 2. 创建一个继承构造函数.prototype的空对象</span></span><br><span class="line">    <span class="keyword">var</span> obj = <span class="built_in">Object</span>.create(Fn.prototype);</span><br><span class="line">    <span class="comment">// 3. 让空对象作为函数 A 的上下文，并调用 A，同时获取它的返回值</span></span><br><span class="line">    <span class="keyword">let</span> result = Fn.call(obj, ...args);</span><br><span class="line">    <span class="comment">// 4. 如果构造函数返回一个对象，那么直接 return 它，否则返回内部创建的新对象</span></span><br><span class="line">    <span class="keyword">return</span> result <span class="keyword">instanceof</span> <span class="built_in">Object</span> ? result : obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>几个关键点理清就可以写出来了：</p>
+<ul>
+<li>如何判断某个函数能否作为构造函数</li>
+<li>构造函数有返回值时的处理</li>
+<li>构造函数生成的对象的原型处理</li>
+</ul>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://github.com/francecil/leetcode/issues/11" target="_blank" rel="noopener">francecil/leetcode：实现 new 操作符</a></p>
+]]></content>
+      <categories>
+        <category>面试题</category>
+        <category>前端</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>面试题积累</title>
+    <url>/2019/09/16/%E9%9D%A2%E8%AF%95%E9%A2%98/%E9%9D%A2%E8%AF%95%E9%A2%98%E6%94%B6%E9%9B%86%E6%B1%87%E6%80%BB/</url>
+    <content><![CDATA[<h1 id="面试题积累"><a href="#面试题积累" class="headerlink" title="面试题积累"></a>面试题积累</h1><p><strong>update on：2019-10-23</strong></p>
+<h3 id="CSS"><a href="#CSS" class="headerlink" title="CSS"></a>CSS</h3><ol>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/CSS/div%E6%B0%B4%E5%B9%B3%E5%9E%82%E7%9B%B4%E5%B1%85%E4%B8%AD.md" target="_blank" rel="noopener">怎么让一个 div 水平垂直居中</a></li>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/CSS/%E4%BB%8B%E7%BB%8D%E4%B8%8BBFC%E5%8F%8A%E5%85%B6%E5%BA%94%E7%94%A8.md" target="_blank" rel="noopener">介绍下 BFC 及其应用</a></li>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/CSS/%E5%A4%9A%E8%A1%8C%E6%96%87%E6%9C%AC%E6%BA%A2%E5%87%BA%E7%9C%81%E7%95%A5%E6%95%88%E6%9E%9C.md" target="_blank" rel="noopener">如何用 css 或 js 实现多行文本溢出省略效果，考虑兼容性</a></li>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/CSS/%E5%A6%82%E4%BD%95%E8%A6%86%E7%9B%96important%E7%9A%84%E5%86%85%E8%81%94width%E5%B1%9E%E6%80%A7.md" target="_blank" rel="noopener">如何覆盖important的内联width属性</a>  </li>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/CSS/%E6%AF%94%E8%BE%83opacity%E5%92%8Cvisibility%E5%92%8Cdisplay%E9%9A%90%E8%97%8F%E5%85%83%E7%B4%A0%E7%9A%84%E4%BC%98%E5%8A%A3.md" target="_blank" rel="noopener">分析比较 opacity: 0、visibility: hidden、display: none 优劣和适用场景</a></li>
+</ol>
+<h3 id="JS"><a href="#JS" class="headerlink" title="JS"></a>JS</h3><ol>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/JS/js%E9%9D%A2%E8%AF%95%E9%A2%98.md#1" target="_blank" rel="noopener">[‘1’, ‘2’, ‘3’].map(parseInt) what &amp; why?</a></li>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/JS/js%E9%9D%A2%E8%AF%95%E9%A2%98.md#2" target="_blank" rel="noopener">什么是防抖和节流？有什么区别？如何实现？</a></li>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/JS/js%E9%9D%A2%E8%AF%95%E9%A2%98.md#3" target="_blank" rel="noopener">介绍下 Set、Map、WeakSet 和 WeakMap 的区别？</a></li>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/JS/js%E9%9D%A2%E8%AF%95%E9%A2%98.md#4" target="_blank" rel="noopener">ES5/ES6 的继承除了写法以外还有什么区别？</a></li>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/JS/js%E9%9D%A2%E8%AF%95%E9%A2%98.md#5" target="_blank" rel="noopener">判断数组的几种方式？</a></li>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/JS/js%E9%9D%A2%E8%AF%95%E9%A2%98.md#6" target="_blank" rel="noopener">讲讲模块化发展？</a></li>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/JS/js%E9%9D%A2%E8%AF%95%E9%A2%98.md#7" target="_blank" rel="noopener">全局作用域中，用 const 和 let 声明的变量不在 window 上，那到底在哪里？如何去获取？</a></li>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/JS/js%E9%9D%A2%E8%AF%95%E9%A2%98.md#8" target="_blank" rel="noopener">具名函数表达式（NFE）函数名变量的作用域？</a></li>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/JS/js%E9%9D%A2%E8%AF%95%E9%A2%98.md#9" target="_blank" rel="noopener">push方法和连续赋值下的运算符优先级问题？</a></li>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/JS/js%E9%9D%A2%E8%AF%95%E9%A2%98.md#10" target="_blank" rel="noopener">call和apply的区别是什么，哪个性能更好一些？</a></li>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/JS/js%E9%9D%A2%E8%AF%95%E9%A2%98.md#11" target="_blank" rel="noopener">箭头函数和普通函数的区别？</a></li>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/JS/js%E9%9D%A2%E8%AF%95%E9%A2%98.md#12" target="_blank" rel="noopener">为什么 for 循环嵌套顺序会影响性能？</a></li>
+</ol>
+<h3 id="异步"><a href="#异步" class="headerlink" title="异步"></a>异步</h3><ol>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/%E5%BC%82%E6%AD%A5/setTimeout%26Promise%26Async_Await%E5%8C%BA%E5%88%AB.md" target="_blank" rel="noopener"> setTimeout、Promise、Async/Await 的区别</a></li>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/%E5%BC%82%E6%AD%A5/%E5%BC%82%E6%AD%A5%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88.md" target="_blank" rel="noopener">异步的解决方案</a></li>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/%E5%BC%82%E6%AD%A5/Promise.md#1" target="_blank" rel="noopener">模拟实现一个 Promise.finally</a></li>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/%E5%BC%82%E6%AD%A5/Promise.md#2" target="_blank" rel="noopener">模拟实现一个 Promise.all</a></li>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/%E5%BC%82%E6%AD%A5/Promise.md#3" target="_blank" rel="noopener">模拟实现一个 Promise.race</a></li>
+</ol>
+<h3 id="设计模式"><a href="#设计模式" class="headerlink" title="设计模式"></a>设计模式</h3><ol>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F%E5%92%8C%E5%8F%91%E5%B8%83%E8%AE%A2%E9%98%85%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%8C%BA%E5%88%AB.md" target="_blank" rel="noopener">观察者模式 VS 发布-订阅模式</a></li>
+</ol>
+<h3 id="网络"><a href="#网络" class="headerlink" title="网络"></a>网络</h3><ol>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/%E7%BD%91%E7%BB%9C/%E8%B0%88%E8%B0%88TCP%E7%9A%84%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B%E5%92%8C%E5%9B%9B%E6%AC%A1%E6%8C%A5%E6%89%8B.md" target="_blank" rel="noopener">谈谈TCP的三次握手和四次挥手</a></li>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/%E7%BD%91%E7%BB%9C/%E8%B0%88%E8%B0%88%E4%B8%89%E4%B8%AAhttp%E7%89%88%E6%9C%AC%E5%8D%8F%E8%AE%AE%E7%9A%84%E5%8C%BA%E5%88%AB.md" target="_blank" rel="noopener">介绍下 http 1.0 1.1 2.0 协议的区别</a></li>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/%E7%BD%91%E7%BB%9C/http%E7%8A%B6%E6%80%81%E7%A0%81.md" target="_blank" rel="noopener">谈谈 HTTP 状态码</a></li>
+</ol>
+<h3 id="手写"><a href="#手写" class="headerlink" title="手写"></a>手写</h3><ol>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/%E6%A8%A1%E6%8B%9F%E5%AE%9E%E7%8E%B0new%E6%93%8D%E4%BD%9C%E7%AC%A6.md" target="_blank" rel="noopener">模拟实现一个 new 操作符功能</a></li>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/%E6%A8%A1%E6%8B%9F%E5%AE%9E%E7%8E%B0call%E5%92%8Capply.md" target="_blank" rel="noopener">模拟实现 call 和 apply</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>面试题</category>
+        <category>前端</category>
+      </categories>
+  </entry>
+  <entry>
     <title>前端26-ES6知识点脑图</title>
     <url>/2019/09/10/%E5%89%8D%E7%AB%AF/%E8%BF%9B%E9%98%B6/ES6%E7%9F%A5%E8%AF%86%E7%82%B9%E8%84%91%E5%9B%BE/</url>
     <content><![CDATA[<p><img src="https://upload-images.jianshu.io/upload_images/1924341-08207b62a1fd73a9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="ES6知识点.png"></p>
@@ -2374,68 +2618,6 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
-    <title>前端16-JavaScript执行上下文EC和变量对象VO（进阶）</title>
-    <url>/2018/11/02/%E5%89%8D%E7%AB%AF/%E8%BF%9B%E9%98%B6/%E5%89%8D%E7%AB%AF%E5%85%A5%E9%97%A816-JavaScript%E8%BF%9B%E9%98%B6%E4%B9%8BEC%E5%92%8CVO/</url>
-    <content><![CDATA[<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本系列文章内容全部梳理自以下几个来源：</p>
-<ul>
-<li>《JavaScript权威指南》</li>
-<li><a href="https://developer.mozilla.org/zh-CN/docs/Web" target="_blank" rel="noopener">MDN web docs</a></li>
-<li><a href="https://github.com/smyhvae/Web" target="_blank" rel="noopener">Github:smyhvae/web</a></li>
-<li><a href="https://github.com/goddyZhao/Translation/tree/master/JavaScript" target="_blank" rel="noopener">Github:goddyZhao/Translation/JavaScript</a></li>
-</ul>
-<p>作为一个前端小白，入门跟着这几个来源学习，感谢作者的分享，在其基础上，通过自己的理解，梳理出的知识点，或许有遗漏，或许有些理解是错误的，如有发现，欢迎指点下。</p>
-<p>PS：梳理的内容以《JavaScript权威指南》这本书中的内容为主，因此接下去跟 JavaScript 语法相关的系列文章基本只介绍 ES5 标准规范的内容、ES6 等这系列梳理完再单独来讲讲。</p>
-<h1 id="正文-执行上下文EC和变量对象VO"><a href="#正文-执行上下文EC和变量对象VO" class="headerlink" title="正文-执行上下文EC和变量对象VO"></a>正文-执行上下文EC和变量对象VO</h1><p>EC：Execution Context，中文翻译执行上下文，也有翻译成执行环境的。</p>
-<p>VO：Variable object，中文翻译变量对象。</p>
-<p>这两个概念很重要，涉及到作用域以及作用域链的原理。</p>
-<h3 id="执行上下文-EC"><a href="#执行上下文-EC" class="headerlink" title="执行上下文 EC"></a>执行上下文 EC</h3><p>先说说Android中的上下文： </p>
-<ul>
-<li>Android</li>
-</ul>
-<p>Android 中也有上下文：Context，四大组件都是上下文，还有一个全局的 Application上下文。在 Android 中基本是以四大组件为界限，每创建一个四大组件，都会产生一个上下文，比如每个 Activity 都是独立的上下文。</p>
-<p>在 Android 中，上下文 Context 的作用大体上用于标识各种资源的所属，要加载一张图片、创建一个 View、弹一个 Dialog 等等，你需要告诉系统，这些是谁发出的指令，要挂载到哪个上下文，这些资源依赖于上下文的生命周期。</p>
-<p>所以才会出现，有时弹 Dialog 或者更新某个 View 时抛异常说 Context 已销毁，因为它需要挂载的上下文已经销毁了，那么就没有上下文来统筹管理这些资源了，自然会抛异常。</p>
-<ul>
-<li>JavaScript</li>
-</ul>
-<p>在 JavaScript 中，上下文是指执行上下文，通俗点理解，代码执行的上下文，所以也有翻译成执行环境，可以通俗的把它理解成一个对象，对象名 EC，表示代码的执行上下文。</p>
-<p>既然理解成一个对象，那么就有它创建的时机，在 JavaScript 中，每当要执行不同类型的代码时，就会创建一个执行上下文 EC。</p>
-<p>而代码的类型分三种：</p>
-<ul>
-<li>全局代码</li>
-<li>函数代码</li>
-<li>eval()执行的代码</li>
-</ul>
-<p>最后一种不讨论，全局代码就是指写在函数外的代码，在前端里，当 HTML 加载一个 js 文件时，全局代码就会被执行，那么在全局代码执行前就会先创建一个全局的执行上下文 EC，之后每调用一次函数，要执行函数内的代码时，会再创建一个函数执行上下文 EC。</p>
-<p>也就是说，不讨论 eval 的话，那么在 JavaScript 有两种执行上下文，一种是全局执行上下文，一种是函数执行上下文。</p>
-<p>而每次创建一个执行上下文时，都会将其放入一个栈结构，这个栈就称为执行上下文栈（ECS），也有翻译成执行环境栈。</p>
-<p>所以执行 js 文件代码期间，这个栈底一直是全局执行上下文，直到 js 文件代码执行结束。全局代码执行过程中，每调用一次函数，新创建一个函数执行上下文，就放入栈内。</p>
-<p>因此，栈顶就表示当前执行的代码，如果栈顶是全局执行上下文，表示正在执行全局代码；如果栈顶是函数执行上下文，表示正在执行函数内的代码。当函数执行结束时，这个函数执行上下文就从栈中移出。</p>
-<p>那么执行上下文（EC）有什么用呢？</p>
-<p>用途可多了，跟 Android 不一样，Android 里由于是各种资源的组合使用，但在 JavaScript 中更多的是嵌套函数的变量使用。所以，用途之一就是保存各个变量。</p>
-<p>将 EC 理解成一个对象的话，它有两个属性，一个是变量对象（VO），另一个是作用域链（Scope Chain）。对于全局执行上下文，当 HTML 加载一个 js 文件时，就会创建一个全局 EC，此时会创建它的两个属性：变量对象和作用域链。之后，每调用一次函数，创建这次函数执行的上下文，函数内部的变量的使用就依赖于这个函数执行上下文中的变量对象和作用域链。</p>
-<p>也就是说，内部函数之所以可以使用外部函数内的变量，之所以可以使用全局变量，都是依赖于当前这个内部函数的执行上下文。</p>
-<p>而且，变量之所以会提前声明也是因为执行上下文的因素。这些当讲解了执行上下文 EC 的创建过程就清楚了。</p>
-<h3 id="变量对象-VO"><a href="#变量对象-VO" class="headerlink" title="变量对象 VO"></a>变量对象 VO</h3><p>变量对象只是一个抽象的概念，可以通俗的理解成保存当前上下文所有变量的对象。</p>
-<p>在不同的执行上下文中，它有不同的具体表现。</p>
-<p>在全局执行上下文中，变量对象 VO 的具体表现就是全局对象，因为所有的全局变量其实都是全局对象的属性，而变量对象 VO 的作用是要保存当前上下文中的所有变量，所以此时的变量对象 VO 实际上是指向的全局对象。</p>
-<p>尤其在前端中，全局对象就是 window，所以全局执行上下文的变量对象 VO = window。</p>
-<p>在函数执行上下文中，因为变量对象 VO 是要保存当前上下文中所有的变量，一个函数内的变量包括：形参变量、局部变量、自身函数对象引用变量、arguments、this。</p>
-<p>针对函数执行上下文，为了保存这些变量，特意创建了一个对象，称它为活动对象 AO，函数内所需的变量就都保存在 AO 中，所以在函数执行上下文中，变量对象 VO 的具体表现也就是 AO。</p>
-<p>小结：变量对象 VO 是一个抽象概念，用于保存当前执行上下文中所有的变量。所以在全局执行上下文中，因为全局对象已经保存着当前上下文所有的变量，所以 VO 在这里的具体实现就是全局对象。在函数执行上下文中，由于要保存函数形参、局部变量、自身函数对象引用变量、arguments、this，所以新创建了一个叫活动对象 AO 来保存，此时 VO 的具体实现就是 AO。</p>
-<h3 id="作用域链"><a href="#作用域链" class="headerlink" title="作用域链"></a>作用域链</h3><p>每次函数调用时，都会创建一个函数执行上下文 EC，但其中的变量对象 VO 只保存着当前上下文中的变量而已，那么函数内如果需要使用到外部函数的变量，甚至是使用全局的变量时，此时就需要依赖于执行上下文的另一个属性：作用域链。</p>
-<p>作用域链本质上，其实是将有嵌套层次关系的执行上下文的 VO 拼接起来。</p>
-<p>所以大部分场景作用域链只有两个节点：当前函数执行上下文的 VO –&gt; 全局执行上下文的 VO。所以函数内才可以根据作用域链访问全局内的变量。</p>
-<p>当出现函数内再嵌套函数时，此时作用域链就会比较长：</p>
-<p>内层函数执行上下文的 VO –&gt; 外层函数执行上下文的 VO –&gt; 全局执行上下文 VO。</p>
-<p>至于作用域链是如何将有嵌套层次的执行上下文的 VO 拼接起来，需要借助函数对象的内部属性 [[Scope]]，[[]]表示执行引擎为对象创建的内部属性，我们访问不了，也操作不了。具体原理在作用域链一节中讲解。  </p>
-]]></content>
-      <categories>
-        <category>前端</category>
-        <category>进阶</category>
-      </categories>
-  </entry>
-  <entry>
     <title>前端15-JavaScript原型链（进阶）</title>
     <url>/2018/11/02/%E5%89%8D%E7%AB%AF/%E8%BF%9B%E9%98%B6/%E5%89%8D%E7%AB%AF%E5%85%A5%E9%97%A815-JavaScript%E8%BF%9B%E9%98%B6%E4%B9%8B%E5%8E%9F%E5%9E%8B%E9%93%BE/</url>
     <content><![CDATA[<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本系列文章内容全部梳理自以下几个来源：</p>
@@ -2543,6 +2725,68 @@ b.y; <span class="comment">//1</span>
 <p>而且，建议看这张图时，每次都将某条原型链跟踪到底，再去看另一条，这过程不要过多关注在分支上，否则很容易混乱。</p>
 <p>对于新手，如果能够对这张稍作备注，而不是直接将这张图放出来，我觉得会更好，如下：</p>
 <p><img src="https://upload-images.jianshu.io/upload_images/1924341-ed3572ea96c33df5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt>  </p>
+]]></content>
+      <categories>
+        <category>前端</category>
+        <category>进阶</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>前端16-JavaScript执行上下文EC和变量对象VO（进阶）</title>
+    <url>/2018/11/02/%E5%89%8D%E7%AB%AF/%E8%BF%9B%E9%98%B6/%E5%89%8D%E7%AB%AF%E5%85%A5%E9%97%A816-JavaScript%E8%BF%9B%E9%98%B6%E4%B9%8BEC%E5%92%8CVO/</url>
+    <content><![CDATA[<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本系列文章内容全部梳理自以下几个来源：</p>
+<ul>
+<li>《JavaScript权威指南》</li>
+<li><a href="https://developer.mozilla.org/zh-CN/docs/Web" target="_blank" rel="noopener">MDN web docs</a></li>
+<li><a href="https://github.com/smyhvae/Web" target="_blank" rel="noopener">Github:smyhvae/web</a></li>
+<li><a href="https://github.com/goddyZhao/Translation/tree/master/JavaScript" target="_blank" rel="noopener">Github:goddyZhao/Translation/JavaScript</a></li>
+</ul>
+<p>作为一个前端小白，入门跟着这几个来源学习，感谢作者的分享，在其基础上，通过自己的理解，梳理出的知识点，或许有遗漏，或许有些理解是错误的，如有发现，欢迎指点下。</p>
+<p>PS：梳理的内容以《JavaScript权威指南》这本书中的内容为主，因此接下去跟 JavaScript 语法相关的系列文章基本只介绍 ES5 标准规范的内容、ES6 等这系列梳理完再单独来讲讲。</p>
+<h1 id="正文-执行上下文EC和变量对象VO"><a href="#正文-执行上下文EC和变量对象VO" class="headerlink" title="正文-执行上下文EC和变量对象VO"></a>正文-执行上下文EC和变量对象VO</h1><p>EC：Execution Context，中文翻译执行上下文，也有翻译成执行环境的。</p>
+<p>VO：Variable object，中文翻译变量对象。</p>
+<p>这两个概念很重要，涉及到作用域以及作用域链的原理。</p>
+<h3 id="执行上下文-EC"><a href="#执行上下文-EC" class="headerlink" title="执行上下文 EC"></a>执行上下文 EC</h3><p>先说说Android中的上下文： </p>
+<ul>
+<li>Android</li>
+</ul>
+<p>Android 中也有上下文：Context，四大组件都是上下文，还有一个全局的 Application上下文。在 Android 中基本是以四大组件为界限，每创建一个四大组件，都会产生一个上下文，比如每个 Activity 都是独立的上下文。</p>
+<p>在 Android 中，上下文 Context 的作用大体上用于标识各种资源的所属，要加载一张图片、创建一个 View、弹一个 Dialog 等等，你需要告诉系统，这些是谁发出的指令，要挂载到哪个上下文，这些资源依赖于上下文的生命周期。</p>
+<p>所以才会出现，有时弹 Dialog 或者更新某个 View 时抛异常说 Context 已销毁，因为它需要挂载的上下文已经销毁了，那么就没有上下文来统筹管理这些资源了，自然会抛异常。</p>
+<ul>
+<li>JavaScript</li>
+</ul>
+<p>在 JavaScript 中，上下文是指执行上下文，通俗点理解，代码执行的上下文，所以也有翻译成执行环境，可以通俗的把它理解成一个对象，对象名 EC，表示代码的执行上下文。</p>
+<p>既然理解成一个对象，那么就有它创建的时机，在 JavaScript 中，每当要执行不同类型的代码时，就会创建一个执行上下文 EC。</p>
+<p>而代码的类型分三种：</p>
+<ul>
+<li>全局代码</li>
+<li>函数代码</li>
+<li>eval()执行的代码</li>
+</ul>
+<p>最后一种不讨论，全局代码就是指写在函数外的代码，在前端里，当 HTML 加载一个 js 文件时，全局代码就会被执行，那么在全局代码执行前就会先创建一个全局的执行上下文 EC，之后每调用一次函数，要执行函数内的代码时，会再创建一个函数执行上下文 EC。</p>
+<p>也就是说，不讨论 eval 的话，那么在 JavaScript 有两种执行上下文，一种是全局执行上下文，一种是函数执行上下文。</p>
+<p>而每次创建一个执行上下文时，都会将其放入一个栈结构，这个栈就称为执行上下文栈（ECS），也有翻译成执行环境栈。</p>
+<p>所以执行 js 文件代码期间，这个栈底一直是全局执行上下文，直到 js 文件代码执行结束。全局代码执行过程中，每调用一次函数，新创建一个函数执行上下文，就放入栈内。</p>
+<p>因此，栈顶就表示当前执行的代码，如果栈顶是全局执行上下文，表示正在执行全局代码；如果栈顶是函数执行上下文，表示正在执行函数内的代码。当函数执行结束时，这个函数执行上下文就从栈中移出。</p>
+<p>那么执行上下文（EC）有什么用呢？</p>
+<p>用途可多了，跟 Android 不一样，Android 里由于是各种资源的组合使用，但在 JavaScript 中更多的是嵌套函数的变量使用。所以，用途之一就是保存各个变量。</p>
+<p>将 EC 理解成一个对象的话，它有两个属性，一个是变量对象（VO），另一个是作用域链（Scope Chain）。对于全局执行上下文，当 HTML 加载一个 js 文件时，就会创建一个全局 EC，此时会创建它的两个属性：变量对象和作用域链。之后，每调用一次函数，创建这次函数执行的上下文，函数内部的变量的使用就依赖于这个函数执行上下文中的变量对象和作用域链。</p>
+<p>也就是说，内部函数之所以可以使用外部函数内的变量，之所以可以使用全局变量，都是依赖于当前这个内部函数的执行上下文。</p>
+<p>而且，变量之所以会提前声明也是因为执行上下文的因素。这些当讲解了执行上下文 EC 的创建过程就清楚了。</p>
+<h3 id="变量对象-VO"><a href="#变量对象-VO" class="headerlink" title="变量对象 VO"></a>变量对象 VO</h3><p>变量对象只是一个抽象的概念，可以通俗的理解成保存当前上下文所有变量的对象。</p>
+<p>在不同的执行上下文中，它有不同的具体表现。</p>
+<p>在全局执行上下文中，变量对象 VO 的具体表现就是全局对象，因为所有的全局变量其实都是全局对象的属性，而变量对象 VO 的作用是要保存当前上下文中的所有变量，所以此时的变量对象 VO 实际上是指向的全局对象。</p>
+<p>尤其在前端中，全局对象就是 window，所以全局执行上下文的变量对象 VO = window。</p>
+<p>在函数执行上下文中，因为变量对象 VO 是要保存当前上下文中所有的变量，一个函数内的变量包括：形参变量、局部变量、自身函数对象引用变量、arguments、this。</p>
+<p>针对函数执行上下文，为了保存这些变量，特意创建了一个对象，称它为活动对象 AO，函数内所需的变量就都保存在 AO 中，所以在函数执行上下文中，变量对象 VO 的具体表现也就是 AO。</p>
+<p>小结：变量对象 VO 是一个抽象概念，用于保存当前执行上下文中所有的变量。所以在全局执行上下文中，因为全局对象已经保存着当前上下文所有的变量，所以 VO 在这里的具体实现就是全局对象。在函数执行上下文中，由于要保存函数形参、局部变量、自身函数对象引用变量、arguments、this，所以新创建了一个叫活动对象 AO 来保存，此时 VO 的具体实现就是 AO。</p>
+<h3 id="作用域链"><a href="#作用域链" class="headerlink" title="作用域链"></a>作用域链</h3><p>每次函数调用时，都会创建一个函数执行上下文 EC，但其中的变量对象 VO 只保存着当前上下文中的变量而已，那么函数内如果需要使用到外部函数的变量，甚至是使用全局的变量时，此时就需要依赖于执行上下文的另一个属性：作用域链。</p>
+<p>作用域链本质上，其实是将有嵌套层次关系的执行上下文的 VO 拼接起来。</p>
+<p>所以大部分场景作用域链只有两个节点：当前函数执行上下文的 VO –&gt; 全局执行上下文的 VO。所以函数内才可以根据作用域链访问全局内的变量。</p>
+<p>当出现函数内再嵌套函数时，此时作用域链就会比较长：</p>
+<p>内层函数执行上下文的 VO –&gt; 外层函数执行上下文的 VO –&gt; 全局执行上下文 VO。</p>
+<p>至于作用域链是如何将有嵌套层次的执行上下文的 VO 拼接起来，需要借助函数对象的内部属性 [[Scope]]，[[]]表示执行引擎为对象创建的内部属性，我们访问不了，也操作不了。具体原理在作用域链一节中讲解。  </p>
 ]]></content>
       <categories>
         <category>前端</category>
@@ -5037,7 +5281,7 @@ b.y; <span class="comment">//1</span>
 </ul>
 <p>在 HTML 中的  &lt;head&gt; 内使用  &lt;style&gt; 标签，在某些情况下很有用，比如当你不能直接修改 CSS 文件时。</p>
 <p>示例：</p>
-<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span></span><br><span class="line">    a &#123;</span><br><span class="line">        background: gray;</span><br><span class="line">        color: #6a90d9;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span></span><br><span class="line">    a &#123;</span><br><span class="line">        background: gray;</span><br><span class="line"><span class="css">        <span class="selector-tag">color</span>: <span class="selector-id">#6a90d9</span>;</span></span><br><span class="line">    &#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br></pre></td></tr></table></figure>
 
 <ul>
 <li><strong>外部样式表</strong></li>
@@ -5697,7 +5941,7 @@ b.y; <span class="comment">//1</span>
 <p>既然是一门语言，那么学习这么脚本语言自然需要先掌握其语法，以及运行方式。</p>
 <p>浏览器解析 HTML 文档是按顺序解析的，也就是说，当遇到脚本语言时，也会按顺序一条条的解释执行，直至将脚本语言执行结束再继续解析文档。这就解释了，为什么一份 HTML 文档里，&lt;script&gt; 标签经常是在各种各样的位置出现的。</p>
 <p>而 HTML 文档使用 js 的方式是通过 &lt;script&gt; 标签来实现，如：</p>
-<h4 id="内嵌"><a href="#内嵌" class="headerlink" title="内嵌"></a>内嵌</h4><figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span></span><br><span class="line">    console.log("hello world")</span><br><span class="line"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="内嵌"><a href="#内嵌" class="headerlink" title="内嵌"></a>内嵌</h4><figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="javascript">    <span class="built_in">console</span>.log(<span class="string">"hello world"</span>)</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="引用外部-js-文件"><a href="#引用外部-js-文件" class="headerlink" title="引用外部 js 文件"></a>引用外部 js 文件</h4><pre><code class="html"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"js/hello.js"</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></code></pre>
 ]]></content>
@@ -7178,6 +7422,61 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
+    <title>谈谈 final finally finalize 区别</title>
+    <url>/2018/07/09/Java/%E8%B0%88%E8%B0%88-final-finally-finalize-%E5%8C%BA%E5%88%AB/</url>
+    <content><![CDATA[<blockquote>
+<p><strong>本篇文章已授权微信公众号 dasu_Android（大苏）独家发布</strong>  </p>
+</blockquote>
+<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本篇所涉及的提问，正文的知识点，全都来自于<strong>杨晓峰的《Java核心技术36讲》</strong>，当然，我并不会全文照搬过来，毕竟这是付费的课程，应该会涉及到侵权之类的问题。</p>
+<p>所以，本篇正文中的知识点，是我从课程中将知识点消耗后，用个人的理解、观念所表达出来的文字，参考了原文，但由于是个人理解，因此不保证观点完全正确，也不代表错误的观点是课程所表达的。如果这样仍旧还是侵权了，请告知，会将发表的文章删掉。</p>
+<p>当然，如果你对此课程有兴趣，建议你自己也购买一下，新用户立减 30，微信扫码订阅时还可以返现 6 元，相当于 32 元购买 36 讲的文章，每篇文章还不到 1 元，蛮划算的了。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-6ca755c2bd0a6122.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="QQ图片20180703142535.png">  </p>
+<h1 id="提问"><a href="#提问" class="headerlink" title="提问"></a>提问</h1><ul>
+<li>谈谈 final、finally、finalize 有什么不同？</li>
+<li>为什么局部内部类和匿名内部类只能访问局部final变量？ </li>
+</ul>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>emmm，说实话，感觉这一讲好像没什么实质性内容。而且，就像评论区里有人提到的，搞不懂为啥总有人喜欢拿这三者来比较，它们有个毛的关系？仅仅就是因为单词相近就拿来比较？</p>
+<p>但课程小结还是要做下，梳理梳理下相关面试知识点也好，那也不说废话了，结合原文和评论区，以及一些扩展，尽量多总结一些知识点吧。</p>
+<h4 id="final"><a href="#final" class="headerlink" title="final"></a>final</h4><p>final 是 java 中的关键字，可用于修饰类，方法，变量。</p>
+<p>当修饰类时，表明这个类不可被继承。Java 中有一些核心类都被 final 修饰了，比如 String，System。当考虑到安全性原因时，可以将该类设计成 final。</p>
+<p>当修饰方法时，表明该方法不可被重写。一般是某些流程控制不希望被修改掉时，可以将这些方法声明成 final，比如 View 中的 <code>measure()</code>，<code>requestFocus()</code>，<code>findViewById()</code>。</p>
+<p>当修饰变量时，表明该变量为常量，不允许被重新赋值，因此声明成 final 的变量都需要显示的进行赋值，否则编译会报错。 </p>
+<h4 id="finally"><a href="#finally" class="headerlink" title="finally"></a>finally</h4><p>finally 是确保 try-catch 方式最后执行的一种机制，通常的用法都是在 finally 里进行一些资源的关闭，回收。比如 IO 流的关闭等等。</p>
+<p>建议最好不要利用 finally 来控制流程，也不要在 finally 中有返回值，否则很容易影响正常流程，导致流程结构特别杂乱。</p>
+<p>另外，有些特殊情况下，finally 中的代码并不会被执行到，比如：  </p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//1.try-catch异常退出</span></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    System.exit(<span class="number">1</span>)</span><br><span class="line">&#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">    ....</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">	<span class="comment">//不会执行到这里</span></span><br><span class="line">    Log.d(<span class="string">"finally"</span>, <span class="string">"finally"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//2.无限循环</span></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">while</span>(<span class="keyword">true</span>) &#123;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="comment">//不会执行到这里</span></span><br><span class="line">    Log.d(<span class="string">"finally"</span>, <span class="string">"finally"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//3. 线程被杀死</span></span><br><span class="line"><span class="comment">//当执行 try-catch 时，线程被杀死了，那么 finally 里的代码也无法被执行到</span></span><br></pre></td></tr></table></figure>
+
+<p>总之，finally 通常情况下都会最后被执行到，所以最好不要在这里有 return 之类的语句来影响正常流程。但在某些特殊的场景下，finally 并不会被执行到，了解一下即可。</p>
+<h4 id="finalize"><a href="#finalize" class="headerlink" title="finalize"></a>finalize</h4><p>这个是 Object 中的一个方法，方法注释说了很多，大概就是讲这个方法是由垃圾收集器即将要回收该对象时会调用该方法，用户可在这里做一些最后的资源释放工作。</p>
+<p>以上是概念定义，但说实话，没用过该方法，而且作者也说了，不推荐使用 finalize 机制来做资源回收，并且在 JDK 9，这个方法已经被标志为 deprecated 废弃的方法了。</p>
+<p>作者有提到说，因为我们无法保证 finalize 什么时候执行，执行是否符合预期，使用不当还会影响性能，导致程序死锁、挂起等问题。</p>
+<p>那么，有其他方案来替代 finalize 处理回收资源的工作么？有，Cleaner 机制，这个我没接触过，作者提了这个替代方案。另外，作者也说了，回收资源最好就是资源用完后就随手清除，或者结合 try-catch-finally 机制回收。不管是 finalize 或者 Cleaner 机制，最好都只将它看成是最后一道防线，一旦将主要的回收工作依赖于这两个机制的话，很容易出现各种问题。</p>
+<h3 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h3><p><strong>为什么局部内部类和匿名内部类只能访问局部final变量？</strong>  </p>
+<p>先来看这么段代码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//参数 msg 必须声明为 final 类型</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">notifyChange</span><span class="params">(<span class="keyword">final</span> String msg)</span> </span>&#123;</span><br><span class="line">    mTextView.post(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            mTextView.setText(msg);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在这里，<code>post()</code> 方法的参数是一个匿名内部类，在内部类中如果要使用外部 <code>notifyChange()</code> 方法的参数 msg，那么必须将 msg 类型声明成 final，否则编译器会保错。</p>
+<p>这种场景非常常见的吧，不管是类似上述的 Ui 场景，还有网络访问时也经常需要通过回调通知上层，此时也就经常出现这种场景了。</p>
+<p>那么，<strong>有考虑过，为什么内部类只能访问局部 final 变量么？</strong>  </p>
+<p>如果懂得反编译 class 文件的，那么应该就很清楚了。我也不懂，理解这点是通过阅读其他大神分析的文章，以下是我的理解：</p>
+<p>首先，变量都是有生命周期的，成员变量的生命周期就跟随着对象的整个生命周期，而局部变量的生命周期则是非常有限。</p>
+<p>比如方法内部的局部变量，它的生命周期就是在这个方法执行结束就终止。同样，方法的参数也是局部变量，它是生命周期也同样是到该方法执行结束。</p>
+<p>另外，内部类的执行时机有时是会在外部方法执行结束之后。就拿上述例子来说，<code>post()</code> 中 Runnable 的执行时机，肯定是在外部 <code>notifyChange()</code> 方法执行完之后的。</p>
+<p>那么，问题来了。内部类 Runnable 的执行需要使用到外部方法 <code>notifyChange()</code> 的参数，但当它执行的时候，这个参数的生命周期早已结束，已经被回收掉了。既然已经被回收了，内部类又是怎么使用外部的这个局部变量呢？</p>
+<p>有大神反编译了 class 文件后，给出了结论，<strong>原来内部类使用外部的局部变量时，是通过 copy 一份过来</strong>。也就是说，其实内部类此时使用的是自己内部定义的局部变量了，只是这个变量的值是复制外部那个局部变量的而已。</p>
+<p>这也就解释了，为什么外部的局部变量明明已经被回收了，内部类仍旧可以使用，因为内部类此时使用的并不是外部类的局部变量引用了。</p>
+<p>但到这里，<strong>新的问题就来了</strong>：既然内部类使用的局部变量本质上跟外部的局部变量是相互独立的两个变量，那如果在内部类中修改了这个局部变量的值会出现什么情况？是吧，数据的不一致性。</p>
+<p>基于此，java 编译器就直接限定死，内部类使用外部的局部变量时，必须将其限制为 final 类型，确保该变量不允许进行更改。</p>
+<p>这样一来，其实也就顺便理解了，为什么成员变量可以直接在内部类中使用，因为成员变量的声明周期很长，不存在局部变量的问题。</p>
+<p>以上内容，是在大神的文章里被醍醐灌顶了，感谢大神，原文链接放出来：  </p>
+<p><a href="https://www.cnblogs.com/dolphin0520/p/3811445.html" target="_blank" rel="noopener">Java内部类详解</a></p>
+<hr>
+]]></content>
+      <categories>
+        <category>Java</category>
+      </categories>
+  </entry>
+  <entry>
     <title>毕业一年啦</title>
     <url>/2018/07/09/%E7%9E%8E%E6%89%AF%E6%89%AF/%E6%AF%95%E4%B8%9A%E4%B8%80%E5%B9%B4%E5%95%A6/</url>
     <content><![CDATA[<blockquote>
@@ -7238,61 +7537,6 @@ b.y; <span class="comment">//1</span>
 ]]></content>
       <categories>
         <category>谈人生</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>谈谈 final finally finalize 区别</title>
-    <url>/2018/07/09/Java/%E8%B0%88%E8%B0%88-final-finally-finalize-%E5%8C%BA%E5%88%AB/</url>
-    <content><![CDATA[<blockquote>
-<p><strong>本篇文章已授权微信公众号 dasu_Android（大苏）独家发布</strong>  </p>
-</blockquote>
-<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本篇所涉及的提问，正文的知识点，全都来自于<strong>杨晓峰的《Java核心技术36讲》</strong>，当然，我并不会全文照搬过来，毕竟这是付费的课程，应该会涉及到侵权之类的问题。</p>
-<p>所以，本篇正文中的知识点，是我从课程中将知识点消耗后，用个人的理解、观念所表达出来的文字，参考了原文，但由于是个人理解，因此不保证观点完全正确，也不代表错误的观点是课程所表达的。如果这样仍旧还是侵权了，请告知，会将发表的文章删掉。</p>
-<p>当然，如果你对此课程有兴趣，建议你自己也购买一下，新用户立减 30，微信扫码订阅时还可以返现 6 元，相当于 32 元购买 36 讲的文章，每篇文章还不到 1 元，蛮划算的了。</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/1924341-6ca755c2bd0a6122.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="QQ图片20180703142535.png">  </p>
-<h1 id="提问"><a href="#提问" class="headerlink" title="提问"></a>提问</h1><ul>
-<li>谈谈 final、finally、finalize 有什么不同？</li>
-<li>为什么局部内部类和匿名内部类只能访问局部final变量？ </li>
-</ul>
-<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>emmm，说实话，感觉这一讲好像没什么实质性内容。而且，就像评论区里有人提到的，搞不懂为啥总有人喜欢拿这三者来比较，它们有个毛的关系？仅仅就是因为单词相近就拿来比较？</p>
-<p>但课程小结还是要做下，梳理梳理下相关面试知识点也好，那也不说废话了，结合原文和评论区，以及一些扩展，尽量多总结一些知识点吧。</p>
-<h4 id="final"><a href="#final" class="headerlink" title="final"></a>final</h4><p>final 是 java 中的关键字，可用于修饰类，方法，变量。</p>
-<p>当修饰类时，表明这个类不可被继承。Java 中有一些核心类都被 final 修饰了，比如 String，System。当考虑到安全性原因时，可以将该类设计成 final。</p>
-<p>当修饰方法时，表明该方法不可被重写。一般是某些流程控制不希望被修改掉时，可以将这些方法声明成 final，比如 View 中的 <code>measure()</code>，<code>requestFocus()</code>，<code>findViewById()</code>。</p>
-<p>当修饰变量时，表明该变量为常量，不允许被重新赋值，因此声明成 final 的变量都需要显示的进行赋值，否则编译会报错。 </p>
-<h4 id="finally"><a href="#finally" class="headerlink" title="finally"></a>finally</h4><p>finally 是确保 try-catch 方式最后执行的一种机制，通常的用法都是在 finally 里进行一些资源的关闭，回收。比如 IO 流的关闭等等。</p>
-<p>建议最好不要利用 finally 来控制流程，也不要在 finally 中有返回值，否则很容易影响正常流程，导致流程结构特别杂乱。</p>
-<p>另外，有些特殊情况下，finally 中的代码并不会被执行到，比如：  </p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//1.try-catch异常退出</span></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    System.exit(<span class="number">1</span>)</span><br><span class="line">&#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">    ....</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">	<span class="comment">//不会执行到这里</span></span><br><span class="line">    Log.d(<span class="string">"finally"</span>, <span class="string">"finally"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//2.无限循环</span></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">while</span>(<span class="keyword">true</span>) &#123;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="comment">//不会执行到这里</span></span><br><span class="line">    Log.d(<span class="string">"finally"</span>, <span class="string">"finally"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//3. 线程被杀死</span></span><br><span class="line"><span class="comment">//当执行 try-catch 时，线程被杀死了，那么 finally 里的代码也无法被执行到</span></span><br></pre></td></tr></table></figure>
-
-<p>总之，finally 通常情况下都会最后被执行到，所以最好不要在这里有 return 之类的语句来影响正常流程。但在某些特殊的场景下，finally 并不会被执行到，了解一下即可。</p>
-<h4 id="finalize"><a href="#finalize" class="headerlink" title="finalize"></a>finalize</h4><p>这个是 Object 中的一个方法，方法注释说了很多，大概就是讲这个方法是由垃圾收集器即将要回收该对象时会调用该方法，用户可在这里做一些最后的资源释放工作。</p>
-<p>以上是概念定义，但说实话，没用过该方法，而且作者也说了，不推荐使用 finalize 机制来做资源回收，并且在 JDK 9，这个方法已经被标志为 deprecated 废弃的方法了。</p>
-<p>作者有提到说，因为我们无法保证 finalize 什么时候执行，执行是否符合预期，使用不当还会影响性能，导致程序死锁、挂起等问题。</p>
-<p>那么，有其他方案来替代 finalize 处理回收资源的工作么？有，Cleaner 机制，这个我没接触过，作者提了这个替代方案。另外，作者也说了，回收资源最好就是资源用完后就随手清除，或者结合 try-catch-finally 机制回收。不管是 finalize 或者 Cleaner 机制，最好都只将它看成是最后一道防线，一旦将主要的回收工作依赖于这两个机制的话，很容易出现各种问题。</p>
-<h3 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h3><p><strong>为什么局部内部类和匿名内部类只能访问局部final变量？</strong>  </p>
-<p>先来看这么段代码：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//参数 msg 必须声明为 final 类型</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">notifyChange</span><span class="params">(<span class="keyword">final</span> String msg)</span> </span>&#123;</span><br><span class="line">    mTextView.post(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            mTextView.setText(msg);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>在这里，<code>post()</code> 方法的参数是一个匿名内部类，在内部类中如果要使用外部 <code>notifyChange()</code> 方法的参数 msg，那么必须将 msg 类型声明成 final，否则编译器会保错。</p>
-<p>这种场景非常常见的吧，不管是类似上述的 Ui 场景，还有网络访问时也经常需要通过回调通知上层，此时也就经常出现这种场景了。</p>
-<p>那么，<strong>有考虑过，为什么内部类只能访问局部 final 变量么？</strong>  </p>
-<p>如果懂得反编译 class 文件的，那么应该就很清楚了。我也不懂，理解这点是通过阅读其他大神分析的文章，以下是我的理解：</p>
-<p>首先，变量都是有生命周期的，成员变量的生命周期就跟随着对象的整个生命周期，而局部变量的生命周期则是非常有限。</p>
-<p>比如方法内部的局部变量，它的生命周期就是在这个方法执行结束就终止。同样，方法的参数也是局部变量，它是生命周期也同样是到该方法执行结束。</p>
-<p>另外，内部类的执行时机有时是会在外部方法执行结束之后。就拿上述例子来说，<code>post()</code> 中 Runnable 的执行时机，肯定是在外部 <code>notifyChange()</code> 方法执行完之后的。</p>
-<p>那么，问题来了。内部类 Runnable 的执行需要使用到外部方法 <code>notifyChange()</code> 的参数，但当它执行的时候，这个参数的生命周期早已结束，已经被回收掉了。既然已经被回收了，内部类又是怎么使用外部的这个局部变量呢？</p>
-<p>有大神反编译了 class 文件后，给出了结论，<strong>原来内部类使用外部的局部变量时，是通过 copy 一份过来</strong>。也就是说，其实内部类此时使用的是自己内部定义的局部变量了，只是这个变量的值是复制外部那个局部变量的而已。</p>
-<p>这也就解释了，为什么外部的局部变量明明已经被回收了，内部类仍旧可以使用，因为内部类此时使用的并不是外部类的局部变量引用了。</p>
-<p>但到这里，<strong>新的问题就来了</strong>：既然内部类使用的局部变量本质上跟外部的局部变量是相互独立的两个变量，那如果在内部类中修改了这个局部变量的值会出现什么情况？是吧，数据的不一致性。</p>
-<p>基于此，java 编译器就直接限定死，内部类使用外部的局部变量时，必须将其限制为 final 类型，确保该变量不允许进行更改。</p>
-<p>这样一来，其实也就顺便理解了，为什么成员变量可以直接在内部类中使用，因为成员变量的声明周期很长，不存在局部变量的问题。</p>
-<p>以上内容，是在大神的文章里被醍醐灌顶了，感谢大神，原文链接放出来：  </p>
-<p><a href="https://www.cnblogs.com/dolphin0520/p/3811445.html" target="_blank" rel="noopener">Java内部类详解</a></p>
-<hr>
-]]></content>
-      <categories>
-        <category>Java</category>
       </categories>
   </entry>
   <entry>
@@ -8188,15 +8432,6 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
-    <title>Android技能树</title>
-    <url>/2018/05/27/%E6%8A%80%E8%83%BD%E6%A0%91/Android%E6%8A%80%E8%83%BD%E6%A0%91/</url>
-    <content><![CDATA[<p><img src="https://upload-images.jianshu.io/upload_images/1924341-d23f4ef9f50304cc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Android技能树.png"></p>
-]]></content>
-      <categories>
-        <category>技能树</category>
-      </categories>
-  </entry>
-  <entry>
     <title>Gradle 系列博客梳理</title>
     <url>/2018/05/27/Gradle/Gradle-%E7%B3%BB%E5%88%97%E5%8D%9A%E5%AE%A2%E6%A2%B3%E7%90%86/</url>
     <content><![CDATA[<blockquote>
@@ -8268,6 +8503,15 @@ b.y; <span class="comment">//1</span>
 ]]></content>
       <categories>
         <category>Gradle</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>Android技能树</title>
+    <url>/2018/05/27/%E6%8A%80%E8%83%BD%E6%A0%91/Android%E6%8A%80%E8%83%BD%E6%A0%91/</url>
+    <content><![CDATA[<p><img src="https://upload-images.jianshu.io/upload_images/1924341-d23f4ef9f50304cc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Android技能树.png"></p>
+]]></content>
+      <categories>
+        <category>技能树</category>
       </categories>
   </entry>
   <entry>
@@ -11924,44 +12168,6 @@ public abstract class ViewPagerFragment extends Fragment {
       </categories>
   </entry>
   <entry>
-    <title>小码农的故事05</title>
-    <url>/2016/09/08/%E7%9E%8E%E6%89%AF%E6%89%AF/%E5%B0%8F%E7%A0%81%E5%86%9C%E7%9A%84%E6%95%85%E4%BA%8B05/</url>
-    <content><![CDATA[<hr>
-<p>前言：这应该是最后一章了，故事虽然到这就结束了，但现实里还要继续下去，希望在很久的以后来回顾时，能因自己学生时代有这样的经历而欣慰。<br>说明：故事中的人物均是化名，故事情节经过些许加工，故事情节并没有针对任何人，仅以此纪念自己的成长。<br>回顾上一章：<a href="http://www.jianshu.com/p/59273956629f" target="_blank" rel="noopener">详情请猛戳</a></p>
-<hr>
-<p>##第四章：Beta收官</p>
-<hr>
-<p>　　三个多周的Alpha冲刺，一个周左右的休息调整时间。紧接着也就是Beta阶段的冲刺了。</p>
-<p>　　在Alpha版本中，虽然你们预期的功能基本都实现了，但仍然有很多不足。比如界面太丑，代码模块化太烂等等。瓜哥跟你在那一周的休息调整时间里都表示过，要在Beta阶段大干一场，好好的将这些问题都解决掉。然而，现实总是残酷了，当然，这是后话，暂且不提。</p>
-<p>　　在Alpha结束后，你写了篇总结。也就是总结了下在Alpha阶段的一些感想，里面你提到了你们的项目因准备不足而陷入各种难题，提到了队友因意见不合而不断争吵的问题。总之，这三周过来，或多或少都学到了很多。</p>
-<p>　　在Alpha刚开始的编程时，你记得懂哥说项目要学会使用在框架的基础上进行开发，而不是所有代码都自己来书写。带着这种观念，你在写界面的时候引入了一大堆第三方库。需要一个点击效果，好，引入。需要一个弹窗效果，好，引入。然而你并没有真正的深入去学习你所引入的第三方库，导致很多库之间其实已经有冗余的功能了。</p>
-<p>　　更糟糕的是，队友因为你引入这么多库，从而导致在编译项目时花费了大量时间。因此，你打算在Beta阶段时将多余的库都删除掉。</p>
-<p>　　另一个项目的问题是，当初因为没认真考虑，而引入了一个不熟悉的数据库框架。到后面进行开发时，才发现你们需要的很多功能那个框架都实现不了，但已经有很多基础的数据库功能是基于那个框架上面编写的，如果要换掉那个框架，将是一个工作量巨大的任务。但如果不换掉，想要的功能又没办法实现。</p>
-<p>　　为了解决这个问题，你查了各种资料，做了各种尝试，熬到了半夜两三点。最后用一种特别暴力的方法去暂时的解决掉，搞定后你特别想去睡一觉，这种活简直了！日后需要怎么做再留给瓜哥去头疼吧。</p>
-<p>　　Beta期间也有两三周的时间，但懂哥只要求进行七次会议记录而已。瓜哥为了能让项目保持一种稳定，平均的进展，安排了每过两三四天开一次会议。但计划总是赶不上变化。</p>
-<p>　　第一周还好，因为大家第一周里面都没有什么考试，进展也还算顺利，一些Alpha遗留的问题也渐渐的解决了。但到了第二周时，有的队员有考试，而且是接连两三场考试，基于此，瓜哥最后表示，这周就先把项目放一边，大家好好复习，准备考试，等最后一周再来继续项目。</p>
-<p>　　本来以为，放一周的时间去调整，不做项目可以让大家到最后一周时能更有干劲。但事实却是，一周没碰过项目，导致大家对于项目的热情大大的降低了。不仅如此，对于项目很多地方都渐渐的感到陌生了，更可怕的是，你居然忘记了某块有合作的代码当初到底是不是你编写的。</p>
-<p>　　日后瓜哥也提过，当初因为放了一周，导致他也对于项目的进展掌握出现了很多问题。当然，这是后话，暂且不提。第二周的Beta过去了，大家都在忙着复习，确确实实都把项目扔一边去了。等到了第三周时，第一次会议上，大家甚至都不知道要说什么话。</p>
-<p>　　离最后的时间也就只剩下一周左右了，你突然觉得来不及了。自己无聊时不断地手工测试你们的软件，你发现似乎还存在一大堆问题，但就是不知道怎么把这个问题描述出来。你觉得队友应该也会自己去手工测试，然后发现相同的问题，但事实上队友基本没提过你发现的问题。</p>
-<p>　　在一次会议上，你直接表示出了厌烦，你表示说这样下去项目根本做不出来，现在仍然存在很多问题。瓜哥要你说出具体有哪些问题，但你又说不出来，你说自己跑一遍就会发现一堆问题了，但瓜哥却表示，你说有问题却又不把问题说清楚。这样，在Alpha阶段发生的一次冲突到现在又出现了一次。只是这次你没有继续接话下去，因为你突然很不想说话了。</p>
-<p>　　甚至，你出现了厌工。你总觉得，软件只有你一个人在测试，在找Bug，但事实上很多Bug都被你因为自己的心情烦躁而放大了。你不知道这是不是因为情绪不好，还是因为时间快临近截止，还是因为缺少跟队友的沟通，从而导致了你对于项目厌工的心情。</p>
-<p>　　你甚至出现过，你不做了的想法，放一边去，反正等最后验收时没办法完成作品那责任也不是你自己去担。</p>
-<p>　　然而，就在你自己胡思乱想，乱发脾气时。瓜哥又对总仓库进行了一次提交，你去看了下瓜哥的提交代码。你发现，瓜哥居然把你一直很苦恼的一些BUG解决了。瞬间，你冷静下来了。每个人都在为这个项目不断的熬夜，不断的努力。在别人埋头修BUG的时候，你却在抱怨，却在厌工。</p>
-<p>　　那天你没敲什么代码，就只是早早结束熬夜，提前上床。你想平静下自己，想让自己恢复到Alpha阶段时的状态。你觉得如果你继续以这种情绪下去的话，特别对不起瓜哥。当初是你把瓜哥拉进队伍里来的，瓜哥对于项目也一直很负责，你不能只是因为自己的情绪不好就厌工。这对项目，对瓜哥，对队员都很不公平。</p>
-<p>　　调整了状态后，你继续做项目下去。每次的会议上，你也很少再带有情绪，而是静静的听着瓜哥的安排。然后根据瓜哥安排的任务，尽可能的保证在规定时间内完成。</p>
-<p>　　Beta阶段的主要任务是实现跟网页端小组的项目的互联互通。使用同一个数据库，对数据库中表的设计，字段的设计，瓜哥都去找网页端的负责人讨论，然后再把结果告诉你们。但实现的过程中仍然碰到很多问题，为了解决这些问题，基本都把时间放在上面。</p>
-<p>　　导致了你们一开始计划在Beta阶段对界面进行大修改，对项目进行大重构的安排完全被丢到一边去了。</p>
-<p>　　在Beta的演示验收上面，又出现了各种问题，更奇葩的是这问题竟不带重复的。Alpha阶段演示验收时你们就碰上了无网络，服务器崩了，数据线连接没反应等问题导致被迫下台，先让下一组演示。而这一次的演示上，居然碰上了服务器连接不上，重启不了，演示时漏掉演示某部分功能~~</p>
-<p>　　Beta的演示验收是由各小组互评加懂哥点评结合完成的。其他小组对于你们的项目看法基本都是功能太单一了，太简单了！好吧，其实是没演示。</p>
-<p>　　演示验收完毕，这学期的软工实践算是告一段落了。也是时候再写篇总结了。</p>
-<p>　　不同于以往的数据库实践之类的课程，这门课确实让你经历了很多。见客户、每日会议、分工开发、Github团队合作、争吵讨论、编码规范、写文档等等。懂哥说过，他最大的希望就是通过这门课程，可以让他的学生能有能力接私活。你突然很期待起来，好想自己接一次私活看看。那么，就再继续充实自己吧，让自己可以拥有接私活的能力。加油吧。</p>
-<p>　　<strong>（完结。再次向懂哥，范老师表示致敬）</strong></p>
-]]></content>
-      <categories>
-        <category>谈人生</category>
-      </categories>
-  </entry>
-  <entry>
     <title>【Android】属性动画的使用理解</title>
     <url>/2016/09/08/Android%E7%9F%A5%E8%AF%86/%E3%80%90Android%E3%80%91%E5%B1%9E%E6%80%A7%E5%8A%A8%E7%94%BB%E7%9A%84%E4%BD%BF%E7%94%A8%E7%90%86%E8%A7%A3/</url>
     <content><![CDATA[<blockquote>
@@ -12059,6 +12265,44 @@ animator.start();
 ]]></content>
       <categories>
         <category>Android知识</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>小码农的故事05</title>
+    <url>/2016/09/08/%E7%9E%8E%E6%89%AF%E6%89%AF/%E5%B0%8F%E7%A0%81%E5%86%9C%E7%9A%84%E6%95%85%E4%BA%8B05/</url>
+    <content><![CDATA[<hr>
+<p>前言：这应该是最后一章了，故事虽然到这就结束了，但现实里还要继续下去，希望在很久的以后来回顾时，能因自己学生时代有这样的经历而欣慰。<br>说明：故事中的人物均是化名，故事情节经过些许加工，故事情节并没有针对任何人，仅以此纪念自己的成长。<br>回顾上一章：<a href="http://www.jianshu.com/p/59273956629f" target="_blank" rel="noopener">详情请猛戳</a></p>
+<hr>
+<p>##第四章：Beta收官</p>
+<hr>
+<p>　　三个多周的Alpha冲刺，一个周左右的休息调整时间。紧接着也就是Beta阶段的冲刺了。</p>
+<p>　　在Alpha版本中，虽然你们预期的功能基本都实现了，但仍然有很多不足。比如界面太丑，代码模块化太烂等等。瓜哥跟你在那一周的休息调整时间里都表示过，要在Beta阶段大干一场，好好的将这些问题都解决掉。然而，现实总是残酷了，当然，这是后话，暂且不提。</p>
+<p>　　在Alpha结束后，你写了篇总结。也就是总结了下在Alpha阶段的一些感想，里面你提到了你们的项目因准备不足而陷入各种难题，提到了队友因意见不合而不断争吵的问题。总之，这三周过来，或多或少都学到了很多。</p>
+<p>　　在Alpha刚开始的编程时，你记得懂哥说项目要学会使用在框架的基础上进行开发，而不是所有代码都自己来书写。带着这种观念，你在写界面的时候引入了一大堆第三方库。需要一个点击效果，好，引入。需要一个弹窗效果，好，引入。然而你并没有真正的深入去学习你所引入的第三方库，导致很多库之间其实已经有冗余的功能了。</p>
+<p>　　更糟糕的是，队友因为你引入这么多库，从而导致在编译项目时花费了大量时间。因此，你打算在Beta阶段时将多余的库都删除掉。</p>
+<p>　　另一个项目的问题是，当初因为没认真考虑，而引入了一个不熟悉的数据库框架。到后面进行开发时，才发现你们需要的很多功能那个框架都实现不了，但已经有很多基础的数据库功能是基于那个框架上面编写的，如果要换掉那个框架，将是一个工作量巨大的任务。但如果不换掉，想要的功能又没办法实现。</p>
+<p>　　为了解决这个问题，你查了各种资料，做了各种尝试，熬到了半夜两三点。最后用一种特别暴力的方法去暂时的解决掉，搞定后你特别想去睡一觉，这种活简直了！日后需要怎么做再留给瓜哥去头疼吧。</p>
+<p>　　Beta期间也有两三周的时间，但懂哥只要求进行七次会议记录而已。瓜哥为了能让项目保持一种稳定，平均的进展，安排了每过两三四天开一次会议。但计划总是赶不上变化。</p>
+<p>　　第一周还好，因为大家第一周里面都没有什么考试，进展也还算顺利，一些Alpha遗留的问题也渐渐的解决了。但到了第二周时，有的队员有考试，而且是接连两三场考试，基于此，瓜哥最后表示，这周就先把项目放一边，大家好好复习，准备考试，等最后一周再来继续项目。</p>
+<p>　　本来以为，放一周的时间去调整，不做项目可以让大家到最后一周时能更有干劲。但事实却是，一周没碰过项目，导致大家对于项目的热情大大的降低了。不仅如此，对于项目很多地方都渐渐的感到陌生了，更可怕的是，你居然忘记了某块有合作的代码当初到底是不是你编写的。</p>
+<p>　　日后瓜哥也提过，当初因为放了一周，导致他也对于项目的进展掌握出现了很多问题。当然，这是后话，暂且不提。第二周的Beta过去了，大家都在忙着复习，确确实实都把项目扔一边去了。等到了第三周时，第一次会议上，大家甚至都不知道要说什么话。</p>
+<p>　　离最后的时间也就只剩下一周左右了，你突然觉得来不及了。自己无聊时不断地手工测试你们的软件，你发现似乎还存在一大堆问题，但就是不知道怎么把这个问题描述出来。你觉得队友应该也会自己去手工测试，然后发现相同的问题，但事实上队友基本没提过你发现的问题。</p>
+<p>　　在一次会议上，你直接表示出了厌烦，你表示说这样下去项目根本做不出来，现在仍然存在很多问题。瓜哥要你说出具体有哪些问题，但你又说不出来，你说自己跑一遍就会发现一堆问题了，但瓜哥却表示，你说有问题却又不把问题说清楚。这样，在Alpha阶段发生的一次冲突到现在又出现了一次。只是这次你没有继续接话下去，因为你突然很不想说话了。</p>
+<p>　　甚至，你出现了厌工。你总觉得，软件只有你一个人在测试，在找Bug，但事实上很多Bug都被你因为自己的心情烦躁而放大了。你不知道这是不是因为情绪不好，还是因为时间快临近截止，还是因为缺少跟队友的沟通，从而导致了你对于项目厌工的心情。</p>
+<p>　　你甚至出现过，你不做了的想法，放一边去，反正等最后验收时没办法完成作品那责任也不是你自己去担。</p>
+<p>　　然而，就在你自己胡思乱想，乱发脾气时。瓜哥又对总仓库进行了一次提交，你去看了下瓜哥的提交代码。你发现，瓜哥居然把你一直很苦恼的一些BUG解决了。瞬间，你冷静下来了。每个人都在为这个项目不断的熬夜，不断的努力。在别人埋头修BUG的时候，你却在抱怨，却在厌工。</p>
+<p>　　那天你没敲什么代码，就只是早早结束熬夜，提前上床。你想平静下自己，想让自己恢复到Alpha阶段时的状态。你觉得如果你继续以这种情绪下去的话，特别对不起瓜哥。当初是你把瓜哥拉进队伍里来的，瓜哥对于项目也一直很负责，你不能只是因为自己的情绪不好就厌工。这对项目，对瓜哥，对队员都很不公平。</p>
+<p>　　调整了状态后，你继续做项目下去。每次的会议上，你也很少再带有情绪，而是静静的听着瓜哥的安排。然后根据瓜哥安排的任务，尽可能的保证在规定时间内完成。</p>
+<p>　　Beta阶段的主要任务是实现跟网页端小组的项目的互联互通。使用同一个数据库，对数据库中表的设计，字段的设计，瓜哥都去找网页端的负责人讨论，然后再把结果告诉你们。但实现的过程中仍然碰到很多问题，为了解决这些问题，基本都把时间放在上面。</p>
+<p>　　导致了你们一开始计划在Beta阶段对界面进行大修改，对项目进行大重构的安排完全被丢到一边去了。</p>
+<p>　　在Beta的演示验收上面，又出现了各种问题，更奇葩的是这问题竟不带重复的。Alpha阶段演示验收时你们就碰上了无网络，服务器崩了，数据线连接没反应等问题导致被迫下台，先让下一组演示。而这一次的演示上，居然碰上了服务器连接不上，重启不了，演示时漏掉演示某部分功能~~</p>
+<p>　　Beta的演示验收是由各小组互评加懂哥点评结合完成的。其他小组对于你们的项目看法基本都是功能太单一了，太简单了！好吧，其实是没演示。</p>
+<p>　　演示验收完毕，这学期的软工实践算是告一段落了。也是时候再写篇总结了。</p>
+<p>　　不同于以往的数据库实践之类的课程，这门课确实让你经历了很多。见客户、每日会议、分工开发、Github团队合作、争吵讨论、编码规范、写文档等等。懂哥说过，他最大的希望就是通过这门课程，可以让他的学生能有能力接私活。你突然很期待起来，好想自己接一次私活看看。那么，就再继续充实自己吧，让自己可以拥有接私活的能力。加油吧。</p>
+<p>　　<strong>（完结。再次向懂哥，范老师表示致敬）</strong></p>
+]]></content>
+      <categories>
+        <category>谈人生</category>
       </categories>
   </entry>
   <entry>
