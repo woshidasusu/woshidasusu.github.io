@@ -98,7 +98,7 @@
 <meta property="og:site_name" content="dasu&#39;s blog">
 <meta property="og:description" content="模拟实现 call 和 apply 本文参考：深度解析 call 和 apply 原理、使用场景及实现  基础首先来认识一下 call 和 apply，它们都是 Function.prototype 上的方法，也就是说，所有函数都拥有的方法。 作用都是用来显示绑定函数内部的上下文 this 的指向，区别仅在于两者对参数的处理不同，一个接收参数列表，一个接收参数数组。列出 MDN 的地址：  Fun">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-10-23T10:28:12.633Z">
+<meta property="og:updated_time" content="2019-10-24T14:05:16.533Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="模拟实现 call 和 apply">
 <meta name="twitter:description" content="模拟实现 call 和 apply 本文参考：深度解析 call 和 apply 原理、使用场景及实现  基础首先来认识一下 call 和 apply，它们都是 Function.prototype 上的方法，也就是说，所有函数都拥有的方法。 作用都是用来显示绑定函数内部的上下文 this 的指向，区别仅在于两者对参数的处理不同，一个接收参数列表，一个接收参数数组。列出 MDN 的地址：  Fun">
@@ -384,7 +384,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1.4k
+                  1.6k
                 </span>
               
 
@@ -400,7 +400,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  5 min
+                  6 min
                 </span>
               
             </div>
@@ -482,8 +482,15 @@
 <h4 id="Function-prototype-apply-thisArg-argsArray"><a href="#Function-prototype-apply-thisArg-argsArray" class="headerlink" title="Function.prototype.apply(thisArg, [argsArray])"></a>Function.prototype.apply(thisArg, [argsArray])</h4><p>apply 跟 call 本质上是一样的，区别仅在于对参数的接收形式不同，直接看模拟实现的代码：</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">Function</span>.prototype.apply2 = <span class="function"><span class="keyword">function</span>(<span class="params">thisArg, args</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 对 thisArg 的处理</span></span><br><span class="line">    <span class="keyword">let</span> context = thisArg != <span class="literal">null</span> ? <span class="built_in">Object</span>(thisArg) : <span class="built_in">window</span>;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">Array</span>.isArray(args)) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">TypeError</span>(<span class="string">'args is not a Array'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 2. 将该函数挂载到指定的上下文 this 对象上</span></span><br><span class="line">    <span class="keyword">let</span> fn = <span class="built_in">Symbol</span>();  <span class="comment">// Symbol 可以避免属性冲突或被外部修改</span></span><br><span class="line">    context[fn] = <span class="keyword">this</span>; <span class="comment">// this 调用 call2 的函数</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 3. 以对象的方法形式调用函数，并取得返回值</span></span><br><span class="line">    <span class="keyword">let</span> result;</span><br><span class="line">    <span class="keyword">if</span>(args) &#123;</span><br><span class="line">        result = context[fn](...args);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        result = context[fn]();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 4. 清掉挂载的 fn，并返回</span></span><br><span class="line">    <span class="keyword">delete</span> context[fn];</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
+<h3 id="思考"><a href="#思考" class="headerlink" title="思考"></a>思考</h3><h3 id="思考-1"><a href="#思考-1" class="headerlink" title="思考"></a>思考</h3><p><strong>上面的模拟是否有问题？能否100%模拟？</strong></p>
+<p>很难 100% 模拟，我们顶多只能挑一些重要的功能来模拟实现，上面的模拟实现当然也有很多问题，用到 ES6 新特性这点先不讲。其他的问题，比如：</p>
+<ul>
+<li>没有考虑 Node.js 环境，没有考虑严格模式的处理</li>
+<li>未发现的坑</li>
+</ul>
+<p>这些也都是可以解决的，但处理起来就麻烦一些，可以参考文末的文章。反正，大概清楚 call 和 apply 的工作职责，能把主要的工作模拟实现出来，也就差不多了。不过追求 100% 也是好事，望你加油！</p>
 <h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><ul>
-<li><a href="https://muyiy.cn/blog/3/3.1.html#_1-%E8%B0%83%E7%94%A8%E4%BD%8D%E7%BD%AE" target="_blank" rel="noopener">JavaScript深入之史上最全–5种this绑定全面解析</a></li>
+<li><a href="https://github.com/francecil/leetcode/issues/10" target="_blank" rel="noopener">实现 call, apply, bind</a></li>
 </ul>
 
       
@@ -555,6 +562,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/10/24/面试题/模拟实现bind/" rel="prev" title="模拟实现 bind">
+                模拟实现 bind <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -637,7 +648,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">94</span>
+                  <span class="site-state-item-count">95</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -717,7 +728,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#模拟实现-call-和-apply"><span class="nav-number">1.</span> <span class="nav-text">模拟实现 call 和 apply</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基础"><span class="nav-number">1.0.1.</span> <span class="nav-text">基础</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#示例"><span class="nav-number">1.0.1.1.</span> <span class="nav-text">示例</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#应用场景"><span class="nav-number">1.0.1.2.</span> <span class="nav-text">应用场景</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#模拟实现"><span class="nav-number">1.0.2.</span> <span class="nav-text">模拟实现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Function-prototype-call-thisArg-arg1-arg2-…"><span class="nav-number">1.0.2.1.</span> <span class="nav-text">Function.prototype.call(thisArg, arg1, arg2, …)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Function-prototype-apply-thisArg-argsArray"><span class="nav-number">1.0.2.2.</span> <span class="nav-text">Function.prototype.apply(thisArg, [argsArray])</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-number">1.0.3.</span> <span class="nav-text">参考</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#模拟实现-call-和-apply"><span class="nav-number">1.</span> <span class="nav-text">模拟实现 call 和 apply</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基础"><span class="nav-number">1.0.1.</span> <span class="nav-text">基础</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#示例"><span class="nav-number">1.0.1.1.</span> <span class="nav-text">示例</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#应用场景"><span class="nav-number">1.0.1.2.</span> <span class="nav-text">应用场景</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#模拟实现"><span class="nav-number">1.0.2.</span> <span class="nav-text">模拟实现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Function-prototype-call-thisArg-arg1-arg2-…"><span class="nav-number">1.0.2.1.</span> <span class="nav-text">Function.prototype.call(thisArg, arg1, arg2, …)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Function-prototype-apply-thisArg-argsArray"><span class="nav-number">1.0.2.2.</span> <span class="nav-text">Function.prototype.apply(thisArg, [argsArray])</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#思考"><span class="nav-number">1.0.3.</span> <span class="nav-text">思考</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#思考-1"><span class="nav-number">1.0.4.</span> <span class="nav-text">思考</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-number">1.0.5.</span> <span class="nav-text">参考</span></a></li></ol></li></ol></div>
             
 
           </div>
@@ -752,7 +763,7 @@
 
   <div class="theme-info">
     <div class="powered-by"></div>
-    <span class="post-count">博客全站共 353.7k 字</span>
+    <span class="post-count">博客全站共 355.8k 字</span>
   </div>
 
   
