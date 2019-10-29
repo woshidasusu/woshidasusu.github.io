@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+      
+    
+    
+      
+    
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+  <link href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/favicon.ico?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="手写防抖函数 debounce 和节流函数 throttle 本文参考：  深入浅出节流函数 throttle 深入浅出防抖函数 debounce   基础理论最近看到这么一道面试题：手写实现 debounce 和 throttle。  一脸懵逼，真的是。这两个英文单词都是什么鬼（原谅我英文词汇量太烂），后来看了下，原来是防抖和节流的意思啊。 那么，防抖和节流又是什么东西？ 这两个东西，其实都是用">
+<meta name="keywords" content="dasu, blog, 大苏">
+<meta property="og:type" content="article">
+<meta property="og:title" content="手写防抖函数 debounce 和节流函数 throttle">
+<meta property="og:url" content="http://woshidasusu.github.io/2019/10/28/面试题/手写防抖debounce和节流throttle/index.html">
+<meta property="og:site_name" content="dasu&#39;s blog">
+<meta property="og:description" content="手写防抖函数 debounce 和节流函数 throttle 本文参考：  深入浅出节流函数 throttle 深入浅出防抖函数 debounce   基础理论最近看到这么一道面试题：手写实现 debounce 和 throttle。  一脸懵逼，真的是。这两个英文单词都是什么鬼（原谅我英文词汇量太烂），后来看了下，原来是防抖和节流的意思啊。 那么，防抖和节流又是什么东西？ 这两个东西，其实都是用">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://resource.muyiy.cn/image/2019-07-24-060158.jpg">
+<meta property="og:image" content="http://resource.muyiy.cn/image/2019-07-24-060203.jpg">
+<meta property="og:updated_time" content="2019-10-29T02:13:49.519Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="手写防抖函数 debounce 和节流函数 throttle">
+<meta name="twitter:description" content="手写防抖函数 debounce 和节流函数 throttle 本文参考：  深入浅出节流函数 throttle 深入浅出防抖函数 debounce   基础理论最近看到这么一道面试题：手写实现 debounce 和 throttle。  一脸懵逼，真的是。这两个英文单词都是什么鬼（原谅我英文词汇量太烂），后来看了下，原来是防抖和节流的意思啊。 那么，防抖和节流又是什么东西？ 这两个东西，其实都是用">
+<meta name="twitter:image" content="http://resource.muyiy.cn/image/2019-07-24-060158.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://woshidasusu.github.io/2019/10/28/面试题/手写防抖debounce和节流throttle/">
+
+
+
+
+
+  <title>手写防抖函数 debounce 和节流函数 throttle | dasu's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <a href="https://github.com/woshidasusu" class="github-corner" aria-label="View source on Github"><svg width="80" height="80" viewbox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">dasu's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">I am dasu, and i'm coding</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://woshidasusu.github.io/2019/10/28/面试题/手写防抖debounce和节流throttle/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="请叫我大苏">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/img.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="dasu's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">手写防抖函数 debounce 和节流函数 throttle</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-10-28T22:30:25+08:00">
+                2019-10-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/面试题/" itemprop="url" rel="index">
+                    <span itemprop="name">面试题</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/面试题/前端/" itemprop="url" rel="index">
+                    <span itemprop="name">前端</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                  <span class="post-meta-divider">|</span>
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3.5k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  13 min
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="手写防抖函数-debounce-和节流函数-throttle"><a href="#手写防抖函数-debounce-和节流函数-throttle" class="headerlink" title="手写防抖函数 debounce 和节流函数 throttle"></a>手写防抖函数 debounce 和节流函数 throttle</h1><blockquote>
+<p>本文参考：</p>
+<ul>
+<li><a href="https://muyiy.cn/blog/7/7.1.html" target="_blank" rel="noopener">深入浅出节流函数 throttle</a></li>
+<li><a href="https://muyiy.cn/blog/7/7.2.html" target="_blank" rel="noopener">深入浅出防抖函数 debounce</a></li>
+</ul>
+</blockquote>
+<h3 id="基础理论"><a href="#基础理论" class="headerlink" title="基础理论"></a>基础理论</h3><p>最近看到这么一道面试题：手写实现 debounce 和 throttle。</p>
+<p><img src="http://resource.muyiy.cn/image/2019-07-24-060158.jpg" alt="盗图，侵删"></p>
+<p>一脸懵逼，真的是。这两个英文单词都是什么鬼（原谅我英文词汇量太烂），后来看了下，原来是防抖和节流的意思啊。</p>
+<p>那么，<strong>防抖和节流又是什么东西？</strong></p>
+<p>这两个东西，其实都是用来处理某个工作短时间内过于频繁触发的场景，只是根据不同的处理方式有不同的说法。</p>
+<p><strong>防抖：某个函数在短时间内只执行最后一次。</strong></p>
+<p>意思也就是说，函数被触发时，需要先延迟，在延迟的时间内，如果再次被触发，则取消之前的延迟，重新开始延迟。这样就能达到，只响应最后一次，其余的请求都过滤掉。</p>
+<p>这种处理方式有很多实际的应用场景：比如对输入框数据的校验处理，没必要每输入一个字符就校验一遍；</p>
+<p><strong>节流：某个函数在指定时间段内只执行第一次，直到指定时间段结束，周而复始。</strong></p>
+<p>跟防抖不一样的是，节流是指定时间段内只执行第一次，也就是这段时间内，只需要响应第一次的请求即可，后续的请求都会被过滤掉，直到下个时间段，重新来过，周而复始。</p>
+<p>应用场景：Android 里的屏幕刷新机制，每个帧（16.6ms）内，不管进行了多少次请求界面刷新的操作，只需响应第一次的请求，去向底层注册监听帧信号即可。因为接收到帧信号后，是通过遍历 View 树来刷新界面，所以注册的动作只需要进行一次就够了。Vue 的虚拟 DOM 的刷新也是类似的机制。</p>
+<p>以上这些概念还不足以明白的话，再看张图（盗自开头链接中的文章）：</p>
+<p><img src="http://resource.muyiy.cn/image/2019-07-24-060203.jpg" alt="盗用侵删"></p>
+<p>这样一来就理解了吧，第一行表示不做任何处理，频繁调用函数，每次都会响应；</p>
+<p>经过 debounce 防抖处理后，只响应最后一次，因为防抖本质上就是通过延迟，所以实际执行函数时机会晚于函数的请求时机；</p>
+<p>而经过 throttle 节流处理后，是按一定的频率来处理这堆频繁调用的函数，每个周期内，只响应第一次，过滤后面的请求，直到下个周期。</p>
+<p>其实，或许你并没有接触到 debounce 防抖或 throttle 节流这种专业术语的说法，但实际开发中，你肯定或多或少有进行过类似防抖或节流的处理。下面讲讲它的实现，你就会发现，很似曾相识。</p>
+<h3 id="手写-throttle-节流函数"><a href="#手写-throttle-节流函数" class="headerlink" title="手写 throttle 节流函数"></a>手写 throttle 节流函数</h3><p>节流，顾名思义，就是节省流量。那么，为什么可以节流，自然就是这频繁被触发的工作，其实没必要次次响应。  </p>
+<p>我们上面举了个 Android 的屏幕刷新机制的例子，也就是在一个周期内，可以有无数次会触发屏幕刷新的操作，但其实只要第一次的操作去注册一下帧信号就可以了。  </p>
+<p>实现上，其实也很简单，就是加个标志位而已：  </p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">throttle</span>(<span class="params">fn, interval = <span class="number">200</span></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">let</span> flag = <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params">...args</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (!flag) &#123;</span><br><span class="line">            flag = <span class="literal">true</span>;</span><br><span class="line">            setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">                flag = <span class="literal">false</span>;</span><br><span class="line">                fn.call(<span class="keyword">this</span>, ...args);</span><br><span class="line">            &#125;, interval);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>是吧，就是简单的加个标志位来进行过滤。这里有个关键的点：fn.call(this, …args)，为什么要通过 call 这种修改函数内部 this 的方式来调用原函数？直接 fn() 不行吗？  </p>
+<p>原因在手写 debounce 里分析吧，因为那里也是一样的处理。  </p>
+<p>那么，看到这个实现方案，有没有感觉有点熟悉，在项目中肯定会有所接触的，虽然由于这里的 throttle 函数是个通用的工具函数，而且是高阶函数，可能在项目中看到的不多。至少，我好像并没有在实际项目中使用过。  </p>
+<p>但这样的，你肯定经常写：  </p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> flag = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">a</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!flag) &#123;</span><br><span class="line">        flag = <span class="literal">true</span>;</span><br><span class="line">        <span class="comment">// do something</span></span><br><span class="line">        <span class="comment">// 在某个回调里将 flag = false; </span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这种通过 flag 标志位过滤重复事件的处理，其实就跟节流的思想有点类似。区别只是，节流是通过一定的频率来修改标志位，来重新放行，而上面这种用法，则是依赖于某个任务完成后，再去回调修改标志位，也就是任务不完成，重复的事件都会被过滤。但两者的思想其实很类似。  </p>
+<h3 id="手写-debounce-防抖函数"><a href="#手写-debounce-防抖函数" class="headerlink" title="手写 debounce 防抖函数"></a>手写 debounce 防抖函数</h3><p>防抖处理我实际中用得比较多，所以打算讲讲，网上大众的实现，以及我针对具体项目的场景下的实现。</p>
+<h4 id="js-版"><a href="#js-版" class="headerlink" title="js 版"></a>js 版</h4><p>网上基本都是用的高阶函数实现，即封装一个工具函数 debounce，它以参数形式接收原函数，并返回一个经过防抖处理的新函数，后续涉及到需要防抖处理的，都需要使用新函数来替代原函数。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">debounce</span>(<span class="params">fn, delay = <span class="number">200</span></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span> fn !== <span class="string">'function'</span>) &#123; <span class="comment">// 参数类型为函数</span></span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">TypeError</span>(<span class="string">'fn is not a function'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">let</span> lastFn = <span class="literal">null</span>; </span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params">...args</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (lastFn) &#123;</span><br><span class="line">             clearTimeout(lastFn);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">let</span> lastFn = setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">            lastFn = <span class="literal">null</span>;</span><br><span class="line">			fn.call(<span class="keyword">this</span>, ...args);</span><br><span class="line">        &#125;, delay);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其实很简单，就是每次调用函数前，先移除上次还处于延迟中的任务，然后重新发起一次新的延迟等待。</p>
+<p>上面最重要的地方在于 fn.call(this, …args)，这里之所以要通过 call 方式来修改原函数的 this，是因为，原函数通过参数进行传递时，是只会被当做普通函数处理，不管原函数本来是否挂载在某个对象上。</p>
+<p>所以，如果 debounce 内部直接以 fn() 方式调用原函数，会导致原函数的内部 this 指向发生变化。</p>
+<p>有两种解决方式：</p>
+<p>一是：debounce 以 fn() 方式调用，但在使用 debounce 的地方，传递 fn 原函数时需要先进行绑定，如:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> o = &#123;</span><br><span class="line">    c: <span class="number">1</span>,</span><br><span class="line">    a: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="keyword">this</span>.c);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> b = debounce(o.a.bind(o));</span><br></pre></td></tr></table></figure>
+
+<p>这是一种方式，缺点是需要使用者手动进行显示绑定 this。</p>
+<p>另一种方式：debounce 内部通过 apply 或 call 方式来调用原函数。</p>
+<p>但这种方式也有一个前提，就是 debounce 返回的新函数需要把它当做原函数，和原函数一样的处理。如果原函数本来挂载在某对象上，新生成的函数也需要挂载到那对象上，因为 debounce 内部的 fn.call(this) 时，这个 this 是指返回的新函数调用时的 this。所以，需要让新函数的 this 和原函数是一致的，才会是期望的正常行为。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> o = &#123;</span><br><span class="line">    c: <span class="number">1</span>,</span><br><span class="line">    a: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="keyword">this</span>.c);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">o.b = debounce(o.a);</span><br></pre></td></tr></table></figure>
+
+<p>总之，debounce 的用途就是通用的工具函数，所以需要防抖处理的工作，都可以通过 debounce 进行包装转换。</p>
+<p>就算你没写过这个通用的工具函数，至少在项目中，也写过直接定义一个全局变量来进行防抖处理吧，类似这样：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> flag = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">task</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (flag) &#123;</span><br><span class="line">        clearTimeout(flag);</span><br><span class="line">    &#125;</span><br><span class="line">    flag = setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">        flag = <span class="literal">null</span>;</span><br><span class="line">		<span class="comment">// do something</span></span><br><span class="line">    &#125;, <span class="number">200</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这其实也是防抖的处理，只是实现方式是直接对需要进行防抖处理的函数，在其代码基础上，直接进行改动。不具有通用性。</p>
+<p>所以我才说，网上大众版的 debounce 防抖函数，也许你没接触过，也没见过，但不代表你没接触到防抖处理的思想，在实际项目中，其实或多或少都会有所接触了，只是实现的方式、通用性等不一样而已。</p>
+<p>当然，以上的 js 版实现，只是一种最基础的方案，文章开头给出的链接中，还有很多扩展的实现，比如增加了支持第一次触发立即执行的功能；和 throttle 节流结合用法；手动取消延迟的功能等等。</p>
+<p>感兴趣的可以自行查阅，我是觉得，大概知道基础思想就够了，实际项目中再根据需要去进行扩展。</p>
+<h4 id="ts-angular-版"><a href="#ts-angular-版" class="headerlink" title="ts + angular 版"></a>ts + angular 版</h4><p>我还想讲讲我在实际项目中所进行的防抖处理，上面的 js 版在每篇防抖文章中，基本都是那样实现，都是封装一个高阶函数。</p>
+<p>但我实际开发中，使用的是 TypeScript，这是一种类似于 Java 思想的强类型语言，所以很少会用到高阶函数的思想，更多的是封装工具类。</p>
+<p>再加上，我框架是使用 angular，项目中除了有防抖处理的场景，还有其他诸如延迟任务的场景，轮询任务的场景等等。这些不管是从用法、实现上等来说，都很相似，所以我都统一封装在一起。</p>
+<p>另外，涉及 setTimeout，setInterval 这两个 API，如果没有进行清理工作，很容易造成内存泄漏，因此跟 setTimeout 和 setInterval 相关的用法，我都将它跟 angular 的组件进行绑定处理，避免开发人员忘记清理，至少我还可以在组件销毁时去自动清理。</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> PollingTaskUtils &#123;</span><br><span class="line">    <span class="keyword">constructor</span>(<span class="params"></span>)&#123;&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">static</span> tag(component: &#123;ngOnDestroy&#125;, tag: <span class="built_in">string</span> = <span class="string">'default'</span>): PollingMgr &#123;</span><br><span class="line">        <span class="keyword">let</span> taskTag = <span class="string">`__<span class="subst">$&#123;tag&#125;</span>__`</span>;</span><br><span class="line">        <span class="keyword">if</span> (component[taskTag] == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">let</span> pollingMgr = <span class="keyword">new</span> PollingMgr(component, taskTag);</span><br><span class="line">            component[taskTag] = pollingMgr;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> component[taskTag];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> PollingMgr &#123;</span><br><span class="line">    <span class="keyword">private</span> readonly AUTO_CLEAR_FLAG_PREFIX = <span class="string">'__auto_clear_flat'</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> _delay: <span class="built_in">number</span> = <span class="number">0</span>; <span class="comment">// 任务的延迟时长</span></span><br><span class="line">    <span class="keyword">private</span> _isLoop: <span class="built_in">boolean</span> = <span class="literal">false</span>; <span class="comment">// 是否是循环任务</span></span><br><span class="line">    <span class="keyword">private</span> _interval: <span class="built_in">number</span>;  <span class="comment">// 循环任务的间隔</span></span><br><span class="line">    <span class="keyword">private</span> _resolve: &#123;loop: <span class="function">(<span class="params">interval?: <span class="built_in">number</span></span>) =&gt;</span> <span class="built_in">any</span>&#125;</span><br><span class="line">    <span class="keyword">private</span> _pollingTask: <span class="function">(<span class="params">resolve?: &#123;loop: (<span class="params">interval?: <span class="built_in">number</span></span>) =&gt; <span class="built_in">any</span>&#125;</span>) =&gt;</span> <span class="built_in">any</span>;</span><br><span class="line">    <span class="keyword">private</span> _pollingFlag = <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">private</span> _pollingIntervalFlag = <span class="literal">null</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">constructor</span>(<span class="params"><span class="keyword">protected</span> component: &#123;ngOnDestroy&#125;, <span class="keyword">protected</span> tag: <span class="built_in">string</span></span>) &#123;</span><br><span class="line">        <span class="keyword">this</span>._resolve = &#123;</span><br><span class="line">            loop: <span class="function">(<span class="params">interval?: <span class="built_in">number</span></span>) =&gt;</span> &#123;</span><br><span class="line">             	<span class="keyword">if</span> (interval &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                    <span class="keyword">this</span>._isLoop = <span class="literal">true</span>;</span><br><span class="line">                    <span class="keyword">this</span>._interval = interval;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="keyword">this</span>._isLoop = <span class="literal">false</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">this</span>._handleLoop();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    run(task: <span class="function">(<span class="params">resolve?: &#123;loop: (<span class="params">interval?: <span class="built_in">number</span></span>) =&gt; <span class="built_in">any</span>&#125;</span>) =&gt;</span> <span class="built_in">any</span>) &#123;</span><br><span class="line">    	<span class="keyword">this</span>._clear(<span class="keyword">this</span>.component);</span><br><span class="line">        <span class="keyword">this</span>._pollingTask = task;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>._delay) &#123;</span><br><span class="line">            <span class="keyword">this</span>._pollingFlag = setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">                <span class="keyword">this</span>._pollingFlag = <span class="literal">null</span>;</span><br><span class="line">                task.apply(<span class="keyword">this</span>.component, [<span class="keyword">this</span>._resolve]);</span><br><span class="line">            &#125;, <span class="keyword">this</span>._delay);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            task.apply(<span class="keyword">this</span>.component, [<span class="keyword">this</span>._resolve]);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">this</span>._handleAutoClear();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    clear(component?: &#123;ngOnDestroy&#125;) &#123;</span><br><span class="line">        <span class="keyword">this</span>._clear(component);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    delay(dealy: <span class="built_in">number</span>): PollingMgr &#123;</span><br><span class="line">        <span class="keyword">this</span>._delay = delay;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    runInterval(task: <span class="function"><span class="params">()</span> =&gt;</span> <span class="built_in">any</span>, interval: <span class="built_in">number</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!<span class="keyword">this</span>._pollingIntervalFlag) &#123;</span><br><span class="line">            <span class="keyword">this</span>._pollingIntervalFlag = setInterval(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">                task.apply(<span class="keyword">this</span>.component);</span><br><span class="line">            &#125;, interval);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">this</span>._handleAutoClear();</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>._pollingIntervalFlag;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> _handleLoop() &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>._isLoop) &#123;</span><br><span class="line">            <span class="keyword">this</span>._clear(<span class="keyword">this</span>.component);</span><br><span class="line">            <span class="keyword">this</span>._pollingFlag = setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">                <span class="keyword">this</span>._pollingFlag = <span class="literal">null</span>;</span><br><span class="line">                <span class="keyword">this</span>._pollingTask.apply(<span class="keyword">this</span>.component, [<span class="keyword">this</span>._resolve]);</span><br><span class="line">            &#125;, <span class="keyword">this</span>._interval);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> _handleAutoClear() &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.component[<span class="keyword">this</span>.AUTO_CLEAR_FLAG_PREFIX + <span class="keyword">this</span>.tag] == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">this</span>.component[<span class="keyword">this</span>.AUTO_CLEAR_FLAG_PREFIX + <span class="keyword">this</span>.tag] = <span class="literal">true</span>;</span><br><span class="line">            <span class="keyword">let</span> originFun = <span class="keyword">this</span>.component[<span class="string">'ngOnDestroy'</span>];</span><br><span class="line">            <span class="keyword">this</span>.component[<span class="string">'ngOnDestroy'</span>] = (): <span class="function"><span class="params">void</span> =&gt;</span> &#123;</span><br><span class="line">                originFun.apply(<span class="keyword">this</span>.component);</span><br><span class="line">                <span class="keyword">delete</span> <span class="keyword">this</span>.component[<span class="keyword">this</span>.tag];</span><br><span class="line">                <span class="keyword">delete</span> <span class="keyword">this</span>.component[<span class="keyword">this</span>.AUTO_CLEAR_FLAG_PREFIX + <span class="keyword">this</span>.tag]；</span><br><span class="line">                <span class="keyword">this</span>._pollingTask = <span class="literal">null</span>;</span><br><span class="line">                <span class="keyword">this</span>._clear(<span class="keyword">this</span>.component);</span><br><span class="line">                <span class="keyword">if</span> (<span class="keyword">this</span>._pollingIntervalFlag) &#123;</span><br><span class="line">                    clearInterval(<span class="keyword">this</span>._pollingIntervalFlag);</span><br><span class="line">                    <span class="keyword">this</span>._pollingIntervalFlag = <span class="literal">null</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> _clear(component: &#123;ngOnDestroy&#125;) &#123;</span><br><span class="line">        <span class="keyword">this</span>._isLoop = <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>._pollingFlag) &#123;</span><br><span class="line">            clearTimeout(<span class="keyword">this</span>._pollingFlag);</span><br><span class="line">            <span class="keyword">this</span>._pollingFlag = <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当初封装的时候没有写注释，感兴趣的再细看吧，这里就是做个记录，方便后续查阅，下面看看用法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line">* 轮询、延迟、防抖的任务工具类</span><br><span class="line">* 入口接收两个参数：</span><br><span class="line">* component：当前的组件类，使用时必须挂载在某个组件上，在组件销户时，如果有轮询任务，会去进行释放定时器</span><br><span class="line">* tag：可选参数，用于标识不同的任务，相同的 tag，多次调用都会被视为同个任务进行防抖处理</span><br><span class="line">*/</span><br><span class="line">PollingTaskUtils.tag(component, tag?: string);</span><br><span class="line"></span><br><span class="line">// 1. 延迟任务用法，比如延迟5s后处理</span><br><span class="line">PollingTaskUtils.tag(this).delay(5000).run(() =&gt; &#123;</span><br><span class="line">	// do something</span><br><span class="line">&#125;);</span><br><span class="line">// 因为 tag 没传，该任务会和上面的被视为同个任务，如果上个任务延迟未被执行，则先取消，以下面为主</span><br><span class="line">PollingTaskUtils.tag(this).delay(5000).run(() =&gt; &#123;</span><br><span class="line">	// do something</span><br><span class="line">&#125;);</span><br><span class="line">// tag 参数指定为 &apos;task&apos;，表示一个新的任务，会上述的延迟任务相互独立</span><br><span class="line">PollingTaskUtils.tag(this).delay(5000, &apos;task&apos;).run(() =&gt; &#123;</span><br><span class="line">	// do something</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">// 2. 轮询任务，比如每隔 10s 发起一次请求</span><br><span class="line">PollingTaskUtils.tag(this).run(resolve =&gt; &#123;</span><br><span class="line">	// 模拟请求</span><br><span class="line">	setTimeout(() =&gt; &#123;</span><br><span class="line">		// do something</span><br><span class="line">		resolve.loop(10000); // 设置轮询间隔</span><br><span class="line">	&#125;, 2000)</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">// 3. 轮询任务，符合一定条件停止轮询</span><br><span class="line">PollingTaskUtils.tag(this).run(resolve =&gt; &#123;</span><br><span class="line">	// 模拟请求</span><br><span class="line">	setTimeout(() =&gt; &#123;</span><br><span class="line">		if (flag) &#123;</span><br><span class="line">			resolve.loop(-1); // &lt;=0 或者不调用时停止轮询</span><br><span class="line">		&#125; else &#123;</span><br><span class="line">			resolve.loop(3000);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;, 2000);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">// 4. 防抖处理</span><br><span class="line">let i = 0;</span><br><span class="line">while(i++ &lt; 10) &#123;</span><br><span class="line">	PollingTaskUtils.tag(this).delay(500).run(() =&gt; &#123;</span><br><span class="line">		// do something</span><br><span class="line">	&#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 5. 由于 run 内部是通过 setTimeout 来实现轮询任务，但这个并不精准，当要求较精准的轮询时，比如时钟，使用 setInterval 会比较精准</span><br><span class="line">PollingTaskUtils.tag(this).runInterval(() =&gt; &#123;</span><br><span class="line">	// do something</span><br><span class="line">&#125;, 1000);</span><br></pre></td></tr></table></figure>
+
+<p>其实用法跟直接用 setTimeout 和 setInterval 没多大区别，但好处在于，增加了跟组件的绑定，增加了对任务标识的处理，这样一来，即使忘记清理，内部也可以在组件销毁时自动去清理，即使多次调用，只要任务标识不一样，内部就会进行防抖处理。可以省掉一部分的工作量。</p>
+<p>当然，这些所有的出发点，仅适用于我的项目，因为毕竟是从项目中遇到的需求中来进行封装处理的，并不一定适用于你。</p>
+<p>我想说的是，这些工具函数的封装，重要的是掌握其思想，为什么需要进行防抖处理？防抖处理的基本实现是什么？知道这些即可，其余的，再自行根据需要扩展学习。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+      <div>
+        <div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center">
+    <img id="wechat_subscriber_qcode" src="/uploads/dasuAndroidTv2.png" alt="请叫我大苏 wechat" style="width: 200px; max-width: 100%;">
+    <div></div>
+</div>
+
+      </div>
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持将鼓励我继续创作！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/uploads/weixin.png" alt="请叫我大苏 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/uploads/alipay.jpg" alt="请叫我大苏 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/10/24/面试题/模拟实现bind/" rel="next" title="模拟实现 bind">
+                <i class="fa fa-chevron-left"></i> 模拟实现 bind
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div id="gitalk-container"></div>
+
+  
+
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/uploads/img.jpg" alt="请叫我大苏">
+            
+              <p class="site-author-name" itemprop="name">请叫我大苏</p>
+              <p class="site-description motion-element" itemprop="description">微信公众号：dasuAndroidTv<br>若图片显示异常，可到其他平台阅读</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">96</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">17</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/woshidasusu" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:295207731@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                其他平台
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.jianshu.com/u/bb52a2918096" title="简书" target="_blank">简书</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.cnblogs.com/dasusu/" title="博客园" target="_blank">博客园</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#手写防抖函数-debounce-和节流函数-throttle"><span class="nav-number">1.</span> <span class="nav-text">手写防抖函数 debounce 和节流函数 throttle</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基础理论"><span class="nav-number">1.0.1.</span> <span class="nav-text">基础理论</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#手写-throttle-节流函数"><span class="nav-number">1.0.2.</span> <span class="nav-text">手写 throttle 节流函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#手写-debounce-防抖函数"><span class="nav-number">1.0.3.</span> <span class="nav-text">手写 debounce 防抖函数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#js-版"><span class="nav-number">1.0.3.1.</span> <span class="nav-text">js 版</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ts-angular-版"><span class="nav-number">1.0.3.2.</span> <span class="nav-text">ts + angular 版</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">请叫我大苏</span><br>
+	
+  <div class="powered-by">
+    <i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+    本站访客数:<span id="busuanzi_value_site_uv"></span> | 
+    </span>
+  </div>
+
+  <div class="theme-info">
+    <div class="powered-by"></div>
+    <span class="post-count">博客全站共 359.3k 字</span>
+  </div>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+  <script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+   <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID: 'af912448da88e6f25c9a',
+          clientSecret: '6165e4b84afc0886973b9232990d260ddd75b434',
+          repo: 'woshidasusu.github.io',
+          owner: 'woshidasusu',
+          admin: ['woshidasusu'],
+          id: md5(window.location.pathname),
+          distractionFreeMode: 'true'
+        })
+        gitalk.render('gitalk-container')
+       </script>
+
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
