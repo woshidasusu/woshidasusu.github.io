@@ -1,6 +1,223 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>扩展 Object.assign 实现深拷贝</title>
+    <url>/2019/10/30/%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%A9%E5%B1%95Object.assign%E5%AE%9E%E7%8E%B0%E6%B7%B1%E6%8B%B7%E8%B4%9D/</url>
+    <content><![CDATA[<h1 id="扩展-Object-assign-实现深拷贝"><a href="#扩展-Object-assign-实现深拷贝" class="headerlink" title="扩展 Object.assign 实现深拷贝"></a>扩展 Object.assign 实现深拷贝</h1><blockquote>
+<p>本文参考： <a href="https://muyiy.cn/blog/4/4.2.html" target="_blank" rel="noopener">Object.assign 原理及其实现</a></p>
+</blockquote>
+<h3 id="需求场景"><a href="#需求场景" class="headerlink" title="需求场景"></a>需求场景</h3><p>上一篇文章：<a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/%E6%89%8B%E5%86%99%E5%AE%9E%E7%8E%B0%E6%B7%B1%E6%8B%B7%E8%B4%9D.md" target="_blank" rel="noopener">手写实现深拷贝</a>中，我们讲了浅拷贝和深拷贝，也实现了深拷贝方案。  </p>
+<p>但深拷贝，它是基于一个原对象，完完整整拷贝一份新对象出来，假如我们的需求是要将原对象上的属性完完整整拷贝到另外一个已存在的对象上，这时候深拷贝就有点无能为力了。  </p>
+<p>就有点类似于 Object.assign()：  </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> a = &#123;</span><br><span class="line">    a: <span class="number">1</span>,</span><br><span class="line">    b: <span class="number">2</span>,</span><br><span class="line">    c: &#123;</span><br><span class="line">        a: <span class="number">1</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> o = <span class="built_in">Object</span>.assign(a, &#123;<span class="attr">a</span>: <span class="number">2</span>, <span class="attr">c</span>: &#123;<span class="attr">b</span>: <span class="number">2</span>&#125;, <span class="attr">d</span>: <span class="number">3</span>&#125;);</span><br><span class="line">o; <span class="comment">// &#123;a: 2, b: 2, c: &#123;b: 2&#125;, d: 3&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>将一个原对象上的属性拷贝到另一个目标对象上，最终结果取两个对象的并集，如果有冲突的属性，则以原对象上属性为主，表现上就是直接覆盖过去，这是 Object.assign() 方法的用途。  </p>
+<p>但很可惜的是，Object.assign 只是浅拷贝，它只处理第一层属性，如果属性是基本类型，则值拷贝，如果是对象类型，则引用拷贝，如果有冲突，则整个覆盖过去。  </p>
+<p>这往往不符合我们的需求场景，讲个实际中常接触的场景：</p>
+<p>在一些表单操作页面，页面初始化时可能会先前端本地创建一个对象来存储表单项，对象中可能会有一些初始值，然后访问了后台接口，读取当前页的表单数据，后台返回了 json 对象，这时候我们希望当前页的表单存储对象应该是后台返回的 json 对象和初始创建的对象的并集，有冲突以后台返回的为主，如：   </p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> a = &#123;</span><br><span class="line">    a: &#123;</span><br><span class="line">        a: <span class="number">1</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> o = &#123;</span><br><span class="line">    a: &#123;</span><br><span class="line">        b: <span class="number">2</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 我们希望得到的是：</span></span><br><span class="line">&#123;</span><br><span class="line">    a: &#123;</span><br><span class="line">        a: <span class="number">1</span>, </span><br><span class="line">        b: <span class="number">2</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">Object</span>.assign(a, b);  <span class="comment">// &#123;a: &#123;b: 2&#125;&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>其实，说白了，这种需求就是希望可以进行深拷贝，而且是深拷贝到一个目标对象上。  </p>
+<p>上一篇的深拷贝方案虽然可以实现深度拷贝，但却不支持拷贝到一个目标对象上，而 Object.assign 虽然支持拷贝到目标对象上，但它只是浅拷贝，只处理第一层属性的拷贝。所以，两种方案都不适用于该场景。  </p>
+<p>但两种方案结合一下，其实也就是该需求的实现方案了，所以要么扩展深拷贝方案，增加与目标对象属性的交集处理和冲突处理；要么扩展 Object.assign，让它支持深拷贝。  </p>
+<h3 id="实现方案"><a href="#实现方案" class="headerlink" title="实现方案"></a>实现方案</h3><p>本篇就选择基于 Object.assign，扩展支持深拷贝：assignDeep。  </p>
+<p>这里同样会给出几个方案，因为深拷贝的实现可以用递归，也可以用循环，递归比较好写、易懂，但有栈溢出问题；循环比较难写，但没有栈溢出问题。  </p>
+<h4 id="递归版"><a href="#递归版" class="headerlink" title="递归版"></a>递归版</h4><figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">assignDeep</span>(<span class="params">target, ...sources</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 参数校验</span></span><br><span class="line">    <span class="keyword">if</span> (target == <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">TypeError</span>(<span class="string">'Cannot convert undefined or null to object'</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2. 如果是基本类型数据转为包装对象</span></span><br><span class="line">    <span class="keyword">let</span> result = <span class="built_in">Object</span>(target);</span><br><span class="line">	</span><br><span class="line">    <span class="comment">// 3. 缓存已拷贝过的对象，解决引用关系丢失问题</span></span><br><span class="line">    <span class="keyword">if</span> (!result[<span class="string">'__hash__'</span>]) &#123;</span><br><span class="line">        result[<span class="string">'__hash__'</span>] = <span class="keyword">new</span> <span class="built_in">WeakMap</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">let</span> hash  = result[<span class="string">'__hash__'</span>];</span><br><span class="line"></span><br><span class="line">    sources.forEach(<span class="function"><span class="params">v</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="comment">// 4. 如果是基本类型数据转为对象类型</span></span><br><span class="line">        <span class="keyword">let</span> source = <span class="built_in">Object</span>(v);</span><br><span class="line">        <span class="comment">// 5. 遍历原对象属性，基本类型则值拷贝，对象类型则递归遍历</span></span><br><span class="line">        <span class="built_in">Reflect</span>.ownKeys(source).forEach(<span class="function"><span class="params">key</span> =&gt;</span> &#123;</span><br><span class="line">            <span class="comment">// 6. 跳过自有的不可枚举的属性</span></span><br><span class="line">            <span class="keyword">if</span> (!<span class="built_in">Object</span>.getOwnPropertyDescriptor(source, key).enumerable) &#123;</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (<span class="keyword">typeof</span> source[key] === <span class="string">'object'</span> &amp;&amp; source[key] !== <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="comment">// 7. 属性的冲突处理和拷贝处理</span></span><br><span class="line">                <span class="keyword">let</span> isPropertyDone = <span class="literal">false</span>;</span><br><span class="line">                <span class="keyword">if</span> (!result[key] || !(<span class="keyword">typeof</span> result[key] === <span class="string">'object'</span>) </span><br><span class="line">                    || <span class="built_in">Array</span>.isArray(result[key]) !== <span class="built_in">Array</span>.isArray(source[key])) &#123;</span><br><span class="line">                    <span class="comment">// 当 target 没有该属性，或者属性类型和 source 不一致时，直接整个覆盖</span></span><br><span class="line">                    <span class="keyword">if</span> (hash.get(source[key])) &#123;</span><br><span class="line">                    	result[key] = hash.get(source[key]);</span><br><span class="line">                        isPropertyDone = <span class="literal">true</span>;</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                        result[key] = <span class="built_in">Array</span>.isArray(source[key]) ? [] : &#123;&#125;;</span><br><span class="line">                        hash.set(source[key], result[key]);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (!isPropertyDone) &#123;</span><br><span class="line">                    result[key][<span class="string">'__hash__'</span>] = hash;</span><br><span class="line">                    assignDeep(result[key], source[key]);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="built_in">Object</span>.assign(result, &#123;[key]: source[key]&#125;);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">delete</span> result[<span class="string">'__hash__'</span>];</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>要注意的地方，其实也就是模拟实现 Object.assign 的一些细节处理，比如参数校验，参数处理，属性遍历，以及引用关系丢失问题。</p>
+<h4 id="循环版"><a href="#循环版" class="headerlink" title="循环版"></a>循环版</h4><figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">assignDeep</span>(<span class="params">target, ...sources</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 参数校验</span></span><br><span class="line">    <span class="keyword">if</span> (target == <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">TypeError</span>(<span class="string">'Cannot convert undefined or null to object'</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2. 如果是基本类型，则转换包装对象</span></span><br><span class="line">    <span class="keyword">let</span> result = <span class="built_in">Object</span>(target);</span><br><span class="line">    <span class="comment">// 3. 缓存已拷贝过的对象</span></span><br><span class="line">    <span class="keyword">let</span> hash = <span class="keyword">new</span> <span class="built_in">WeakMap</span>();</span><br><span class="line">	</span><br><span class="line">    <span class="comment">// 4. 目标属性是否可直接覆盖赋值判断</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">canPropertyCover</span>(<span class="params">node</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (!node.target[node.key]) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (node.target[node.key] == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!(<span class="keyword">typeof</span> node.target[node.key] === <span class="string">'object'</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">Array</span>.isArray(node.target[node.key]) !== <span class="built_in">Array</span>.isArray(node.data)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    sources.forEach(<span class="function"><span class="params">v</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">let</span> source = <span class="built_in">Object</span>(v);</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">let</span> stack = [&#123;</span><br><span class="line">            data: source,</span><br><span class="line">            key: <span class="literal">undefined</span>,</span><br><span class="line">            target: result</span><br><span class="line">        &#125;];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span>(stack.length &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">let</span> node = stack.pop();</span><br><span class="line">            <span class="keyword">if</span> (<span class="keyword">typeof</span> node.data === <span class="string">'object'</span> &amp;&amp; node.data !== <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="keyword">let</span> isPropertyDone = <span class="literal">false</span>;</span><br><span class="line">                <span class="keyword">if</span> (hash.get(node.data) &amp;&amp; node.key !== <span class="literal">undefined</span>) &#123;</span><br><span class="line">                	<span class="keyword">if</span> (canPropertyCover(node)) &#123;</span><br><span class="line">                    	node.target[node.key] = hash.get(node.data);</span><br><span class="line">                        isPropertyDone = <span class="literal">true</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                </span><br><span class="line">                <span class="keyword">if</span>(!isPropertyDone) &#123;</span><br><span class="line">                    <span class="keyword">let</span> target;</span><br><span class="line">                    <span class="keyword">if</span> (node.key !== <span class="literal">undefined</span>) &#123;</span><br><span class="line">                        <span class="keyword">if</span> (canPropertyCover(node)) &#123;</span><br><span class="line">                        	target = <span class="built_in">Array</span>.isArray(node.data) ? [] : &#123;&#125;;</span><br><span class="line">                            hash.set(node.data, target);</span><br><span class="line">                            node.target[node.key] = target;</span><br><span class="line">                        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                            target = node.target[node.key];</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                        target = node.target;</span><br><span class="line">                    &#125;</span><br><span class="line">                    </span><br><span class="line">                    <span class="built_in">Reflect</span>.ownKeys(node.data).forEach(<span class="function"><span class="params">key</span> =&gt;</span> &#123;</span><br><span class="line">                        <span class="comment">// 过滤不可枚举属性</span></span><br><span class="line">                        <span class="keyword">if</span> (!<span class="built_in">Object</span>.getOwnPropertyDescriptor(node.data, key).enumerable) &#123;</span><br><span class="line">                            <span class="keyword">return</span>;</span><br><span class="line">                        &#125;</span><br><span class="line">                        stack.push(&#123;</span><br><span class="line">                            data: node.data[key],</span><br><span class="line">                            key: key,</span><br><span class="line">                            target: target</span><br><span class="line">                        &#125;);</span><br><span class="line">                    &#125;);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="built_in">Object</span>.assign(node.target, &#123;[node.key]: node.data&#125;);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>测试用例：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> a = &#123;&#125;;</span><br><span class="line"><span class="keyword">var</span> o = &#123;</span><br><span class="line">    a: a,</span><br><span class="line">    b: a,</span><br><span class="line">    c: <span class="built_in">Symbol</span>(),</span><br><span class="line">	[<span class="built_in">Symbol</span>()]: <span class="number">1</span>,</span><br><span class="line">	d: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;&#125;,</span><br><span class="line">	e()&#123;&#125;,</span><br><span class="line">	f: <span class="function"><span class="params">()</span> =&gt;</span> &#123;&#125;,</span><br><span class="line">	<span class="keyword">get</span> g()&#123;&#125;,</span><br><span class="line">	h: <span class="number">1</span>,</span><br><span class="line">	i: <span class="string">'sdff'</span>,</span><br><span class="line">	j: <span class="literal">null</span>,</span><br><span class="line">	k: <span class="literal">undefined</span>,</span><br><span class="line">	o: <span class="regexp">/sdfdf/</span>,</span><br><span class="line">	p: <span class="keyword">new</span> <span class="built_in">Date</span>()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">o.l = o;</span><br><span class="line"><span class="keyword">var</span> o1 = assignDeep(&#123;&#125;, &#123;<span class="attr">m</span>: &#123;<span class="attr">b</span>: <span class="number">2</span>&#125;, <span class="attr">n</span>: <span class="number">1</span>&#125;, o, &#123;<span class="attr">n</span>: &#123;<span class="attr">a</span>: <span class="number">1</span>&#125;&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>上面的方案仍旧不是100%完美，仍旧存在一些不足：</p>
+<ul>
+<li>没有考虑 ES6 的 set，Map 等新的数据结构类型</li>
+<li>get，set 存取器逻辑无法拷贝</li>
+<li>没有考虑属性值是内置对象的场景，比如 /sfds/ 正则，或 new Date() 日期这些类型的数据</li>
+<li>为了解决循环引用和引用关系丢失问题而加入的 hash 缓存无法识别一些属性冲突场景，导致同时存在冲突和循环引用时，拷贝的结果可能有误</li>
+<li>等等未发现的逻辑问题坑</li>
+</ul>
+<p>虽然有一些小问题，但基本适用于大多数场景了，出问题时再想办法慢慢填坑，目前这样足够使用了，而且，当目标对象是空对象时，此时也可以当做深拷贝来使用。</p>
+<p>当然，也欢迎指点一下。</p>
+<h4 id="TypeScript-业务版"><a href="#TypeScript-业务版" class="headerlink" title="TypeScript 业务版"></a>TypeScript 业务版</h4><p>根据实际项目中的业务需求，进行的相关处理，就没必要像上面的通用版考虑那么多细节，比如我项目中使用 ts 开发，业务需求是要解决实体类数据的初始化和服务端返回的实体类的交集合并场景。</p>
+<p>另外，只有对象类型的属性需要进行交集处理，其余类型均直接覆盖即可：</p>
+<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">【需求场景】：</span></span><br><span class="line"><span class="comment">export class ADomain &#123;</span></span><br><span class="line"><span class="comment">	name: string = 'dasu';</span></span><br><span class="line"><span class="comment">	wife: B[] = [];</span></span><br><span class="line"><span class="comment">	type: number;</span></span><br><span class="line"><span class="comment">&#125;</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">export class B &#123;</span></span><br><span class="line"><span class="comment">	count: number = 0;</span></span><br><span class="line"><span class="comment">&#125;</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">xxxDomain: ADomain;</span></span><br><span class="line"><span class="comment">xxxService.getXXX().subscript(json =&gt; &#123;</span></span><br><span class="line"><span class="comment">	this.xxxDomain = json;</span></span><br><span class="line"><span class="comment">	if (!this.xxxDomain.wife) &#123; // 这个处理很繁琐</span></span><br><span class="line"><span class="comment">		this.xxxDomain.wife = [];</span></span><br><span class="line"><span class="comment">	&#125;</span></span><br><span class="line"><span class="comment">&#125;);</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">假设变量 xxxDomain 为实体类 ADomain 实例，实体类内部对其各字段设置了一些初始值；</span></span><br><span class="line"><span class="comment">但由于 xxxService 从后端接口拿到数据后， json 对象可能并不包含 wife 字段，</span></span><br><span class="line"><span class="comment">这样当将 xxxDomain = json 赋值后，后续再使用到 xxxDomain.wife 时还得手动进行判空处理，</span></span><br><span class="line"><span class="comment">这种方式太过繁琐，一旦实体结构复杂一点，层次深一点，判空逻辑会特别长，特别乱，特别烦</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">（后端不负责初始化，而之所以某些字段需要初始化，是因为界面上需要该值进行呈现）</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">基于该需求场景，封装了这个工具类：</span></span><br><span class="line"><span class="comment">【使用示例】：</span></span><br><span class="line"><span class="comment">xxxService.getXXX().subscript(json =&gt; &#123;</span></span><br><span class="line"><span class="comment">	DomainUtils.handleUndefined(json, ADomain);</span></span><br><span class="line"><span class="comment">	this.xxxDomain = json;</span></span><br><span class="line"><span class="comment">&#125;);</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> DomainUtils &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 接收两个参数，第一个是服务端返回的 json 对象，第二个是该对象对应的 class 类，内部会自动根据 class 创建一个新的空对象，然后跟 json 对象的每个属性两两比较，如果在新对象中发现有某个字段有初始值，但 json 对象上没有，则复制过去。</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">static</span> handleUndefined(domain: object, prop) &#123;</span><br><span class="line">        <span class="keyword">let</span> o = <span class="keyword">new</span> prop();</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">Array</span>.isArray(domain)) &#123;</span><br><span class="line">            domain.forEach(<span class="function"><span class="params">value</span> =&gt;</span> &#123;</span><br><span class="line">                DomainUtils._clone(domain, o);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            DomainUtils._clone(domain, o);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> domain;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> _clone(target: object, source: object) &#123;</span><br><span class="line">        <span class="built_in">Object</span>.keys(source).forEach(<span class="function"><span class="params">value</span> =&gt;</span> &#123;</span><br><span class="line">           	<span class="keyword">if</span> (!<span class="built_in">Array</span>.isArray(source[value]) &amp;&amp; <span class="keyword">typeof</span> source[value] === <span class="string">'object'</span> &amp;&amp; source[value] !== <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (target[value] == <span class="literal">null</span>) &#123;</span><br><span class="line">                    target[value] = source[value];</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    DomainUtils._clone(target[value] <span class="keyword">as</span> object, source[value] <span class="keyword">as</span> object);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (target[value] == <span class="literal">null</span>) &#123;</span><br><span class="line">                    target[value] = source[value];</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>因为直接基于业务需求场景来进行的封装，所以我很明确参数的结构是什么，使用的场景是什么，很多细节就没处理了，比如参数的校验等。</p>
+<p>而且，这个目的在于解决初始化问题，所以并不是一个深克隆，而是直接在原对象上进行操作，等效于将初始化的值都复制到原对象上，如果原对象同属性没有值的时候。</p>
+]]></content>
+      <categories>
+        <category>面试题</category>
+        <category>前端</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>手写实现深度拷贝</title>
+    <url>/2019/10/29/%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99%E5%AE%9E%E7%8E%B0%E6%B7%B1%E6%8B%B7%E8%B4%9D/</url>
+    <content><![CDATA[<h1 id="手写实现深度拷贝"><a href="#手写实现深度拷贝" class="headerlink" title="手写实现深度拷贝"></a>手写实现深度拷贝</h1><blockquote>
+<p>本文参考：<a href="https://muyiy.cn/blog/4/4.3.html" target="_blank" rel="noopener">面试题之如何实现一个深拷贝</a></p>
+</blockquote>
+<h3 id="基础理论"><a href="#基础理论" class="headerlink" title="基础理论"></a>基础理论</h3><p>拷贝的基础是赋值，在 js 中，将一个变量赋值给另一个变量时，有两种场景：</p>
+<ul>
+<li>基本类型数据的值拷贝</li>
+<li>引用类型数据的引用拷贝</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> a = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">var</span> b = &#123;<span class="attr">a</span>: <span class="number">1</span>&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> a1 = a;</span><br><span class="line"><span class="keyword">var</span> b1 = b;</span><br><span class="line"><span class="keyword">var</span> b2 = b;</span><br><span class="line"></span><br><span class="line">a1 = <span class="number">2</span>;</span><br><span class="line">a; <span class="comment">// 1   原始类型的赋值是值拷贝，两不影响</span></span><br><span class="line"></span><br><span class="line">b1 = <span class="literal">null</span>;</span><br><span class="line">b; <span class="comment">// &#123;a: 1&#125;  对象类型的赋值是引用拷贝，修改引用指向，对原变量无影响</span></span><br><span class="line">b2.a = <span class="number">2</span>; </span><br><span class="line">b; <span class="comment">// &#123;a: 2&#125;  对象类型的赋值是引用拷贝，指向同一份对象，修改对象属性，会对原变量指向的对象有所影响</span></span><br></pre></td></tr></table></figure>
+
+<p>那么，对一个对象进行拷贝，无非就是对对象的属性进行拷贝，按照拷贝处理的方式不同，可分为浅拷贝和深拷贝：</p>
+<ul>
+<li>浅拷贝是只拷贝对象的第一层属性</li>
+<li>深拷贝则是无限层次的拷贝对象的属性，只要属性值不是基本类型，就继续深度遍历进去</li>
+</ul>
+<p>浅拷贝的双方仍旧有所关联，因为有些属性只是引用拷贝而已，都是指向同一份数据，一方修改就会影响到另一方；</p>
+<p>深拷贝的双方则是相互独立，互不影响。</p>
+<p>在 js 中，内置的各种复制、拷贝的 API，都是浅拷贝，比如：Object.assign()，{…a}，[].slice() 等等。</p>
+<p>如果项目中有需要使用到深拷贝，那么就只能是自行实现，或者使用三方库。</p>
+<h3 id="实现深拷贝"><a href="#实现深拷贝" class="headerlink" title="实现深拷贝"></a>实现深拷贝</h3><p>有人可能会觉得自己实现个深拷贝很简单，毕竟都已经知道浅拷贝只拷贝一层，那深拷贝不就等效于浅拷贝 + 递归？</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">cloneDeep</span>(<span class="params">source</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">let</span> target = &#123;&#125;;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> key <span class="keyword">in</span> source) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">typeof</span> source[key] === <span class="string">'object'</span>) &#123;</span><br><span class="line">            target[key] = cloneDeep(source[key]);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            target[key] = source[key];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> target;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>那么，<strong>上面的深拷贝实现有问题吗？</strong></p>
+<p>虽然从概念上，深拷贝就是需要层层遍历对象属性，只拷贝基本类型数据，对象类型再继续深入遍历，反应到代码上，的确也就是像上面的处理：基本类型值拷贝 + 对象类型递归处理。</p>
+<p><strong>但上例的代码，欠缺各种细节和场景的处理。</strong></p>
+<p>比如说：</p>
+<ul>
+<li>参数 source 的校验</li>
+<li>typeof null 也是 object 的过滤处理</li>
+<li>属性 key 值类型是 Symbol 的场景</li>
+<li>source 是数组时的兼容处理</li>
+<li>循环引用的场景</li>
+<li>引用关系丢失问题</li>
+<li>递归栈溢出的场景</li>
+<li>等等</li>
+</ul>
+<p>所以，本篇想讲的深拷贝实现，就是希望能把这些细节和特殊场景考虑进去，同时，也会介绍一些不同的实现方案。</p>
+<h4 id="通用版"><a href="#通用版" class="headerlink" title="通用版"></a>通用版</h4><p>想要实现通用版，其实也就是要将上面列出来的细节和各自场景考虑进行，思考每个问题该如何解决：</p>
+<ul>
+<li><strong>参数 source 的校验 &amp; null 的过滤处理</strong></li>
+</ul>
+<p>毕竟如果不是对象的话，也就没有什么拷贝的意义了，直接原值返回即可，所以这里需要对参数进行是否是对象的判断处理。</p>
+<p>使用 typeof 的话，由于 null 也是 object，所以还需要将 null 的场景过滤掉；</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">isObject</span>(<span class="params">o</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">typeof</span> o === <span class="string">'object'</span> &amp;&amp; o !== <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>Symbol 的处理</strong></li>
+</ul>
+<p>symbol 是 ES6 中新增的特性，使用 for in 方式遍历不到，所以需要 ES6 中新增的遍历方式：</p>
+<ul>
+<li>Object.getOwnPropertySymbols()</li>
+<li>Reflect.ownKeys()</li>
+</ul>
+<p>前者是单独遍历对象键值类型为 Symbol 的属性，使用这种方式的话，等于是分两次处理对象，先深拷贝一次 Symbol 属性，再深拷贝一次其他属性。</p>
+<p>后者 Reflect.ownKeys() 可以遍历到对象所有的自有属性，包括 Symbol 属性，它相当于 Object.getOwnPropertyNames() 和 Object.getOwnPropertySymbols() 的并集。使用这种方式的话，等于替换掉 for in 的遍历方式。</p>
+<ul>
+<li><strong>数组的兼容处理</strong></li>
+</ul>
+<p>这个的意思是说，需要区分当前拷贝的对象是数组还是对象，毕竟总不能将数组的数据拷贝到对象里把，所以 target 的初始化需要处理一下，区分数组的场景：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">let</span> target = <span class="built_in">Array</span>.isArray(source) ? [] : &#123;&#125;;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>循环引用 &amp; 引用关系丢失问题</strong></li>
+</ul>
+<p>这种场景还是用代码来解释比较清晰：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> a = &#123;&#125;;</span><br><span class="line"><span class="keyword">var</span> o = &#123;</span><br><span class="line">    a: a,</span><br><span class="line">    b: a</span><br><span class="line">&#125;</span><br><span class="line">o.c = o; </span><br><span class="line">o; <span class="comment">// &#123;a: &#123;&#125;, b: &#123;&#125;, c: &#123;a: &#123;&#125;, b: &#123;&#125;, c:&#123;...&#125;&#125;&#125;</span></span><br><span class="line">o.a === o.b; <span class="comment">// true</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> o1 = cloneDeep(o); <span class="comment">// 栈溢出异常，Maximum call stack size</span></span><br><span class="line"><span class="comment">// 把 o.c = o 注释掉， o1.a === o1.b  输出 false，原本的引用关系丢失了</span></span><br></pre></td></tr></table></figure>
+
+<p>循环引用指的是，对象的某个属性又指向了对象本身，这样就造成了具有无限深层次的结构，递归时自然就会栈溢出了。</p>
+<p>引用关系丢失指的是，对象的多个属性都指向同一个某对象，但经过深拷贝后，这多个属性却都指向了不同的对象，虽然被指向的这些对象的值是一致的。</p>
+<p>造成这两个问题的根本原因，其实就是，对于对象数据，每次都会重新创建一个新对象来存储拷贝过来的值。</p>
+<p>所以，解决这两个问题，其实也很简单，就是不要每次都重新创建新的对象，复用已创建的对象即可。</p>
+<p>比如说，在遍历拷贝 o.a 时，先创建一个新对象拷贝了 o.a，之后再处理 o.b 时，发现 o.b 也指向 o.a，那么就不要重新创建对象来拷贝了，直接将引用指向之前拷贝 o.a 时创建的对象即可，这样引用关系就保留下来了。</p>
+<p>这样即使遇到循环引用，就将引用指向拷贝生成的新对象即可，就不会有栈溢出的场景了。</p>
+<p>代码上的话，可以利用 ES6 的 map 数据结构，因为可以直接让 source 对象作为 key 来存储。</p>
+<p>否则就得自己用数组存储，但由于数组 key 值也只能是字符串和 Symbol，所以映射关系只能自己用对象存，这么一来，还得自己写寻找的逻辑。</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">cloneDeep</span>(<span class="params">source, hash = new WeakMap(</span>)) </span>&#123;</span><br><span class="line">    <span class="comment">// ... 省略</span></span><br><span class="line">    <span class="keyword">if</span> (hash.get(source)) &#123;</span><br><span class="line">        <span class="keyword">return</span> hash.get(source)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">let</span> target = <span class="built_in">Array</span>.isArray(source) ? [] : &#123;&#125;;</span><br><span class="line">    hash.set(source, target);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// target[key] = cloneDeep(source[key], hash); // 对象类型递归调用时，将 hash 传递进去 </span></span><br><span class="line">    <span class="comment">// .., 省略</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">cloneDeep</span>(<span class="params">source, hash = []</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// ... 省略</span></span><br><span class="line">    <span class="keyword">let</span> cache = hash.find(<span class="function"><span class="params">v</span> =&gt;</span> v.source === source);</span><br><span class="line">    <span class="keyword">if</span> (cache) &#123;</span><br><span class="line">        <span class="keyword">return</span> cache.target;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">let</span> target = <span class="built_in">Array</span>.isArray(source) ? [] : &#123;&#125;;</span><br><span class="line">    hash.push(&#123; <span class="attr">source</span>: source, <span class="attr">target</span>: target &#125;);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// target[key] = cloneDeep(source[key], hash); // 对象类型递归调用时，将 hash 传递进去</span></span><br><span class="line">    <span class="comment">// ... 省略</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>栈溢出问题</strong></li>
+</ul>
+<p>递归的最大问题，就是怕遇到栈溢出，一旦递归层次多的话。</p>
+<p>循环引用会导致递归层次过多而栈溢出，但可以通过已拷贝对象的缓存来解决这个问题。</p>
+<p>但如果对象的结构层次过多时，这种现象就无法避免了，就必须来解决栈溢出问题了。</p>
+<p>解决栈溢出两种思路：</p>
+<ul>
+<li>尾递归优化</li>
+<li>不用递归，改成循环实现</li>
+</ul>
+<p><strong>尾递归优化</strong>是指函数的最后一行代码都是调用自身函数，如果可以修改成这种模式，就可以达到尾递归优化。而这种方式之所以可以解决栈溢出，是因为，函数的最后一行都是调用自身函数，那其实就意味着当前函数执行上下文其实没必要保留了，之所以会栈溢出，就是执行上下文栈中存在过多函数执行上下文。</p>
+<p>每次调用函数都会创建一个函数执行上下文（EC），并放入执行上下文栈（ECS）中，当函数执行结束时，就将函数执行上下文移出栈。</p>
+<p>所以，函数内部嵌套调用函数时，就会造成 ECS 中有过多的 EC，递归是不断的在函数内调用自己，所以一旦层次过多，必然导致 ECS 爆表，栈溢出。</p>
+<p>而尾递归，让递归函数的最后一行执行的代码都是调用自身，这就意味着，在递归调用自身时，当前函数的职责已结束，那么 EC 其实就可以从 ECS 中移出了，这样一来，不管递归层次多深，始终都只有一个递归函数的 EC 在 ECS 中，自然就不会造成栈溢出。</p>
+<p>不过尾递归优化有个局限性，只在严格模式下才开启，因为非严格模式下，函数内部有 arguments 和 caller 两个变量会追踪调用栈，尾递归优化会导致这两变量失真报错，所以只在严格模式下才开启。</p>
+<p>而且，正常递归函数改写成尾递归，基本操作都是将局部变量变成参数，保证最后执行的一行代码是调用自身。但由于深拷贝场景，是在遍历属性过程中递归调用自身，调用完自身后面肯定还需要遍历处理其他属性，所以无法做到最后一行调用自身的要求，也就无法改写成尾递归形式。</p>
+<p>所以，尾递归优化这种方案放弃。</p>
+<p><strong>用循环替代递归</strong>是另外一种解决栈溢出方案，这种方式其实就是思考，原本需要使用递归的方式，有没有办法通过循环来实现。循环的话，也就不存在什么嵌套调用函数，也就不存在栈溢出的问题了。</p>
+<p>对象的属性结构，其实就是一颗树结构，递归方案的深拷贝，其实也就是以深度优先来遍历对象的属性树。</p>
+<p>但遍历树结构数据，除了使用递归方案外，也可以使用循环来遍历，但是需要借助相应的数据结构。</p>
+<p>当使用循环来遍历树，且深度优先时，那么就需要借助栈；如果是广度优先时，则是需要借助队列。</p>
+<p>具体做法则是，一次只处理一个节点，处理节点时遍历取出它所有子节点，代码上也就是双层循环，比如说：</p>
+<ol>
+<li>从树根节点开始，遍历它的第一层子节点，把这些节点都放入栈或队列中，结束本次循环；</li>
+<li>下次循环开始，取出栈顶或队头节点处理：若该节点还有子节点，那么遍历取出所有子节点，放入栈或队列中，结束本次循环；</li>
+<li>重复第2步，直至栈或队列中无节点；</li>
+<li>如果是用栈辅助，则对应深度优先遍历；如果是用队列辅助，则对应广度优先。</li>
+</ol>
+<p>所以，这里用循环遍历对象属性树的方式来解决栈溢出问题。</p>
+<ul>
+<li><strong>代码</strong></li>
+</ul>
+<p>最后就看看实现的代码，这里给出两个版本，分别是未处理栈溢出场景（递归方案）、循环替代递归：</p>
+<p><strong>未处理栈溢出版（递归方案）：</strong></p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 递归遍历对象的属性树</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">cloneDeep</span>(<span class="params">source, hash = new WeakMap(</span>)) </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 非对象类型数据，直接返回</span></span><br><span class="line">    <span class="keyword">if</span> (!(<span class="keyword">typeof</span> source === <span class="string">'object'</span> &amp;&amp; source !== <span class="literal">null</span>)) &#123;</span><br><span class="line">        <span class="keyword">return</span> source;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 2. 复用已拷贝的对象，解决引用关系丢失和循环引用问题</span></span><br><span class="line">    <span class="keyword">if</span> (hash.get(source)) &#123;</span><br><span class="line">        <span class="keyword">return</span> hash.get(source);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 3. 区分对象和数组</span></span><br><span class="line">    <span class="keyword">let</span> target = <span class="built_in">Array</span>.isArray(source) ? [] : &#123;&#125;;</span><br><span class="line">    hash.set(source, target);  <span class="comment">// 缓存已拷贝的对象</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 4. 遍历对象所有自有属性，包括 Symbol</span></span><br><span class="line">    <span class="built_in">Reflect</span>.ownKeys(source).forEach(<span class="function"><span class="params">key</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="comment">// 跳过自有的不可枚举的属性</span></span><br><span class="line">        <span class="keyword">if</span> (!<span class="built_in">Object</span>.getOwnPropertyDescriptor(source, key).enumerable) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">       	<span class="comment">// 对象类型再继续递归遍历，其他类型直接赋值拷贝</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">typeof</span> source === <span class="string">'object'</span> &amp;&amp; source !== <span class="literal">null</span>) &#123;</span><br><span class="line">            target[key] = cloneDeep(source[key], hash);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            target[key] = source[key];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> target;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>循环替代递归版（循环方案）：</strong></p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 循环遍历对象的属性树，跟递归方案中相同代码用途是一样的，这里就不注释了</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">cloneDeep</span>(<span class="params">source</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!(<span class="keyword">typeof</span> source === <span class="string">'object'</span> &amp;&amp; source !== <span class="literal">null</span>)) &#123;</span><br><span class="line">        <span class="keyword">return</span> source;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">let</span> target = <span class="built_in">Array</span>.isArray(source) ? [] : &#123;&#125;;</span><br><span class="line">    <span class="keyword">let</span> hash = <span class="keyword">new</span> <span class="built_in">WeakMap</span>();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 将根节点放入栈中，节点结构说明：data 存储当前属性值，key 存储属性名，target 含义：target[key] = data</span></span><br><span class="line">    <span class="keyword">let</span> stack = [&#123;</span><br><span class="line">        data: source,</span><br><span class="line">        key: <span class="literal">undefined</span>,</span><br><span class="line">        target: target</span><br><span class="line">    &#125;];</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 因为是借助 stack 栈辅助，所以是深度优先遍历，每次循环只处理一个节点</span></span><br><span class="line">    <span class="keyword">while</span>(stack.length &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">let</span> node = stack.pop();</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">typeof</span> node.data === <span class="string">'object'</span> &amp;&amp; node.data !== <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="comment">// 当前对象有已拷贝过的缓存，则直接用缓存，解决引用关系丢失问题</span></span><br><span class="line">            <span class="keyword">if</span> (hash.get(node.data)) &#123;</span><br><span class="line">                node.target[node.key] = hash.get(node.data);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">let</span> target;</span><br><span class="line">                <span class="comment">// 构建拷贝对象的属性层次结构</span></span><br><span class="line">                <span class="keyword">if</span> (node.key !== <span class="literal">undefined</span>) &#123;</span><br><span class="line">                    target = <span class="built_in">Array</span>.isArray(node.data) ? [] : &#123;&#125;;</span><br><span class="line">                    node.target[node.key] = target;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    target = node.target;</span><br><span class="line">                &#125;</span><br><span class="line">                hash.set(node.data, target);</span><br><span class="line">                <span class="built_in">Reflect</span>.ownKeys(node.data).forEach(<span class="function"><span class="params">v</span> =&gt;</span>&#123;</span><br><span class="line">                    <span class="keyword">if</span> (!<span class="built_in">Object</span>.getOwnPropertyDescriptor(node.data, v).enumerable) &#123;</span><br><span class="line">                        <span class="keyword">return</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                    stack.push(&#123;</span><br><span class="line">                        data: node.data[v],</span><br><span class="line">                        key: v,</span><br><span class="line">                        target: target</span><br><span class="line">                    &#125;) </span><br><span class="line">                &#125;);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 当前节点是非对象类型，直接拷贝</span></span><br><span class="line">            node.target[node.key] = node.data;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> target;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>测试用例：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 测试用例</span></span><br><span class="line"><span class="keyword">var</span> a = &#123;&#125;;</span><br><span class="line"><span class="keyword">var</span> o = &#123;</span><br><span class="line">    a: a,</span><br><span class="line">    b: a,</span><br><span class="line">    c: <span class="built_in">Symbol</span>(),</span><br><span class="line">	[<span class="built_in">Symbol</span>()]: <span class="number">1</span>,</span><br><span class="line">	d: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;&#125;,</span><br><span class="line">	e()&#123;&#125;,</span><br><span class="line">	f: <span class="function"><span class="params">()</span> =&gt;</span> &#123;&#125;,</span><br><span class="line">	<span class="keyword">get</span> g()&#123;&#125;,</span><br><span class="line">	h: <span class="number">1</span>,</span><br><span class="line">	i: <span class="string">'sdff'</span>,</span><br><span class="line">	j: <span class="literal">null</span>,</span><br><span class="line">	k: <span class="literal">undefined</span>,</span><br><span class="line">	o: <span class="regexp">/sdfdf/</span>,</span><br><span class="line">	p: <span class="keyword">new</span> <span class="built_in">Date</span>()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> o1 = cloneDeep(o);</span><br><span class="line">o1;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">&#123;</span></span><br><span class="line"><span class="comment">    a: &#123;&#125;</span></span><br><span class="line"><span class="comment">    b: &#123;&#125;</span></span><br><span class="line"><span class="comment">    c: Symbol()</span></span><br><span class="line"><span class="comment">    d: ƒ ()</span></span><br><span class="line"><span class="comment">    e: ƒ e()</span></span><br><span class="line"><span class="comment">    f: () =&gt; &#123;&#125;</span></span><br><span class="line"><span class="comment">    g: undefined</span></span><br><span class="line"><span class="comment">    h: 1</span></span><br><span class="line"><span class="comment">    i: "sdff"</span></span><br><span class="line"><span class="comment">    j: null</span></span><br><span class="line"><span class="comment">    k: undefined</span></span><br><span class="line"><span class="comment">    l: &#123;l: &#123;…&#125;, p: &#123;…&#125;, o: &#123;…&#125;, k: undefined, j: null, …&#125;</span></span><br><span class="line"><span class="comment">    o: &#123;&#125;</span></span><br><span class="line"><span class="comment">    p: &#123;&#125;</span></span><br><span class="line"><span class="comment">    Symbol(): 1</span></span><br><span class="line"><span class="comment">&#125;</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="comment">// 正则的数据和 Date 数据都丢失了，这是因为判断对象的逻辑导致，typeof xx === 'object' 无法区别内置对象，想要解决，可以修改判断对象的逻辑，比如使用 Object.prototype.toString.call(xxx) 结合 Array.isArray 来只筛选出基本对象和数组类型</span></span><br><span class="line"><span class="comment">// get 存取器也只能拷贝到读取的时，无法拷贝 get 方法</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 测试栈溢出场景可借助该方法</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">createData</span>(<span class="params">deep, breadth</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> data = &#123;&#125;;</span><br><span class="line">    <span class="keyword">var</span> temp = data;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; deep; i++) &#123;</span><br><span class="line">        temp = temp[<span class="string">'data'</span>] = &#123;&#125;;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">var</span> j = <span class="number">0</span>; j &lt; breadth; j++) &#123;</span><br><span class="line">            temp[j] = j;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> data;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> a = createData(<span class="number">10000</span>);</span><br><span class="line"></span><br><span class="line">cloneDeep(a); <span class="comment">// 是否会栈溢出</span></span><br></pre></td></tr></table></figure>
+
+<p>其实，这通用版也不是100%通用，它仍旧有一些局限性，比如：</p>
+<ul>
+<li>没有考虑 ES6 的 set，Map 等新的数据结构类型</li>
+<li>拷贝后的对象的原型链结构，继承关系丢失问题</li>
+<li>get，set 存取器逻辑无法拷贝</li>
+<li>没有考虑属性值是内置对象的场景，比如 /sfds/ 正则，或 new Date() 日期这些类型的数据</li>
+<li>等等</li>
+</ul>
+<p>虽然如此，但这种方案已经大体上适用于绝大多数的场景了，如有问题，或者有新的需求，再根据需要进行扩展就可以了，欢迎指点一下。</p>
+<h4 id="JSON-parse-stringify-版"><a href="#JSON-parse-stringify-版" class="headerlink" title="JSON.parse/stringify 版"></a>JSON.parse/stringify 版</h4><p>这是实现深拷贝最简单的一种方案，但是有很大局限性，只适用于部分场景：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> o = &#123;</span><br><span class="line">    a: <span class="number">1</span>,</span><br><span class="line">    b: [<span class="number">1</span>, <span class="number">2</span>, &#123;<span class="attr">a</span>: <span class="number">1</span>&#125;]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> o1 = <span class="built_in">JSON</span>.parse(<span class="built_in">JSON</span>.stringify(o));</span><br></pre></td></tr></table></figure>
+
+<p>它的原理很简单，就是借助现有工具 JSON，先将对象序列化，再反序列化得到一个新对象，这样一来，新对象跟原对象就是两个相互独立，互不影响的对象了，以此来实现深拷贝。</p>
+<p>但它有很大的局限性，因为需要依赖于 JSON 的序列化和反序列化基础，比如说：</p>
+<ul>
+<li>不能序列化函数，属性值是函数的会丢失掉</li>
+<li>不能处理 Symbol 数据，不管是属性名还是属性值是 Symbol 的，都会丢失掉</li>
+<li>不能识别属性值手动设置为 undefined 的场景，会被认为是访问一个不存在的属性，从而导致丢失</li>
+<li>不能解决循环引用问题</li>
+<li>不能处理正则</li>
+<li>等等</li>
+</ul>
+<p>使用这种方案，还是有很多局限性，看个代码就清楚了：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> o = &#123;</span><br><span class="line">    a: <span class="number">1</span>,</span><br><span class="line">    [<span class="built_in">Symbol</span>()]: <span class="number">1</span>,</span><br><span class="line">    c: <span class="built_in">Symbol</span>(),</span><br><span class="line">    d: <span class="literal">null</span>,</span><br><span class="line">    e: <span class="literal">undefined</span>,</span><br><span class="line">    f: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;&#125;,</span><br><span class="line">    g() &#123;&#125;,</span><br><span class="line">    h: <span class="regexp">/sdfd/</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> o1 = <span class="built_in">JSON</span>.parse(<span class="built_in">JSON</span>.stringify(o));</span><br><span class="line">o1; <span class="comment">// &#123;a: 1, d: null, h: &#123;&#125;&#125;</span></span><br><span class="line"><span class="comment">// 属性 c, e, f, g 都丢失掉了，h 属性值为正则表达式，也无法正常处理</span></span><br></pre></td></tr></table></figure>
+
+<p>那么，这种方案的深拷贝就没有什么用处吗？</p>
+<p>也不是，它有它适用的场景，想想 JSON 是什么，是处理 json 对象的工具啊，而 json 对象通常是用来跟服务端交互的数据结构，在这种场景里，你一个 json 对象里，会有那些 Symbol、正则、函数奇奇怪怪的属性吗？显然不会。</p>
+<p>所以，对于规范的 json 对象来说，如果需要进行深拷贝，那么就可以使用这种方案。</p>
+<p>通俗点说，在项目中的使用场景也就是对后端接口返回的 json 数据需要深拷贝时，就可以使用这种方案。</p>
+<p>（以上个人理解，有误的话，欢迎指点一下）</p>
+<h4 id="Object-assign-版"><a href="#Object-assign-版" class="headerlink" title="Object.assign 版"></a>Object.assign 版</h4><p>上面的深拷贝方案只是将一个对象完完整整拷贝一份出来，新对象数据和原对象数据都是一模一样的，算是副本。  </p>
+<p>但如果，需求是要类似 Object.assign 这种，将一个原对象完完整整拷贝到另一个已存在的目标对象上面呢？这种场景，拷贝后的新对象就跟原对象不是一样的了，而是两者的交集，冲突的拷贝的原对象为主。</p>
+<p>这种场景上面的深拷贝方案就不适用了，这里参考 Object.assign 原理扩展实现 assignDeep，实现可将指定的原对象们，拷贝到已存在的目标对象上：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 递归版</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">assignDeep</span>(<span class="params">target, ...sources</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 参数校验</span></span><br><span class="line">    <span class="keyword">if</span> (target == <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">TypeError</span>(<span class="string">'Cannot convert undefined or null to object'</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2. 如果是基本类型数据转为包装对象</span></span><br><span class="line">    <span class="keyword">let</span> result = <span class="built_in">Object</span>(target);</span><br><span class="line">	</span><br><span class="line">    <span class="comment">// 3. 缓存已拷贝过的对象，解决引用关系丢失问题</span></span><br><span class="line">    <span class="keyword">if</span> (!result[<span class="string">'__hash__'</span>]) &#123;</span><br><span class="line">        result[<span class="string">'__hash__'</span>] = <span class="keyword">new</span> <span class="built_in">WeakMap</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">let</span> hash  = result[<span class="string">'__hash__'</span>];</span><br><span class="line"></span><br><span class="line">    sources.forEach(<span class="function"><span class="params">v</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="comment">// 4. 如果是基本类型数据转为对象类型</span></span><br><span class="line">        <span class="keyword">let</span> source = <span class="built_in">Object</span>(v);</span><br><span class="line">        <span class="comment">// 5. 遍历原对象属性，基本类型则值拷贝，对象类型则递归遍历</span></span><br><span class="line">        <span class="built_in">Reflect</span>.ownKeys(source).forEach(<span class="function"><span class="params">key</span> =&gt;</span> &#123;</span><br><span class="line">            <span class="comment">// 6. 跳过自有的不可枚举的属性</span></span><br><span class="line">            <span class="keyword">if</span> (!<span class="built_in">Object</span>.getOwnPropertyDescriptor(source, key).enumerable) &#123;</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (<span class="keyword">typeof</span> source[key] === <span class="string">'object'</span> &amp;&amp; source[key] !== <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="comment">// 7. 属性的冲突处理和拷贝处理</span></span><br><span class="line">                <span class="keyword">let</span> isPropertyDone = <span class="literal">false</span>;</span><br><span class="line">                <span class="keyword">if</span> (!result[key] || !(<span class="keyword">typeof</span> result[key] === <span class="string">'object'</span>) </span><br><span class="line">                    || <span class="built_in">Array</span>.isArray(result[key]) !== <span class="built_in">Array</span>.isArray(source[key])) &#123;</span><br><span class="line">                    <span class="comment">// 当 target 没有该属性，或者属性类型和 source 不一致时，直接整个覆盖</span></span><br><span class="line">                    <span class="keyword">if</span> (hash.get(source[key])) &#123;</span><br><span class="line">                    	result[key] = hash.get(source[key]);</span><br><span class="line">                        isPropertyDone = <span class="literal">true</span>;</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                        result[key] = <span class="built_in">Array</span>.isArray(source[key]) ? [] : &#123;&#125;;</span><br><span class="line">                        hash.set(source[key], result[key]);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (!isPropertyDone) &#123;</span><br><span class="line">                    result[key][<span class="string">'__hash__'</span>] = hash;</span><br><span class="line">                    assignDeep(result[key], source[key]);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="built_in">Object</span>.assign(result, &#123;[key]: source[key]&#125;);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">delete</span> result[<span class="string">'__hash__'</span>];</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面只给了递归版，存在栈溢出可能性，但基本没这种对象层次太深的场景，想了解其他实现如循环版以及详细内容的，可以去我另一篇文章查阅：<a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/%E6%89%A9%E5%B1%95Object.assign%E5%AE%9E%E7%8E%B0%E6%B7%B1%E8%A6%86%E7%9B%96.md" target="_blank" rel="noopener">扩展 Object.assign 实现深拷贝</a></p>
+]]></content>
+      <categories>
+        <category>面试题</category>
+        <category>前端</category>
+      </categories>
+  </entry>
+  <entry>
     <title>手写防抖函数 debounce 和节流函数 throttle</title>
     <url>/2019/10/28/%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99%E9%98%B2%E6%8A%96debounce%E5%92%8C%E8%8A%82%E6%B5%81throttle/</url>
     <content><![CDATA[<h1 id="手写防抖函数-debounce-和节流函数-throttle"><a href="#手写防抖函数-debounce-和节流函数-throttle" class="headerlink" title="手写防抖函数 debounce 和节流函数 throttle"></a>手写防抖函数 debounce 和节流函数 throttle</h1><blockquote>
@@ -238,7 +455,7 @@
 <li><strong>返回这个空对象</strong></li>
 </ul>
 <p>这是基本的 new 使用的场景，那么我们要来模拟实现的话，这几件事就得自己处理：</p>
-<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">_new</span>(<span class="params">Fn, ...args</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 创建一个继承构造函数.prototype的空对象</span></span><br><span class="line">    <span class="keyword">var</span> obj = <span class="built_in">Object</span>.create(Fn.prototype);</span><br><span class="line">    <span class="comment">// 2. 让空对象作为函数 A 的上下文，并调用 A</span></span><br><span class="line">    Fn.call(obj, ...args);</span><br><span class="line">    <span class="comment">// 3. 返回这个空对象</span></span><br><span class="line">    <span class="keyword">return</span> obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> _new(<span class="params">Fn, ...args</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 创建一个继承构造函数.prototype的空对象</span></span><br><span class="line">    <span class="keyword">var</span> obj = <span class="built_in">Object</span>.create(Fn.prototype);</span><br><span class="line">    <span class="comment">// 2. 让空对象作为函数 A 的上下文，并调用 A</span></span><br><span class="line">    Fn.call(obj, ...args);</span><br><span class="line">    <span class="comment">// 3. 返回这个空对象</span></span><br><span class="line">    <span class="keyword">return</span> obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p><strong>这样就结束了吗？并没有</strong></p>
 <p>要模拟实现一个完整的 new 操作符，就还得将它的其他使用场景都考虑进去：</p>
@@ -260,7 +477,7 @@
 <li>具有构造函数的内置对象 ==&gt; 当前函数可用来作为构造函数，那么返回内部创建的新对象</li>
 </ul>
 <p>所以，要完整模拟一个 new 的工作，还得完成上面两点，先来看看对返回值的处理，很简单：</p>
-<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">_new</span>(<span class="params">Fn, ...args</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 创建一个继承构造函数.prototype的空对象</span></span><br><span class="line">    <span class="keyword">var</span> obj = <span class="built_in">Object</span>.create(Fn.prototype);</span><br><span class="line">    <span class="comment">// 2. 让空对象作为函数 A 的上下文，并调用 A，同时获取它的返回值</span></span><br><span class="line">    <span class="keyword">let</span> result = Fn.call(obj, ...args);</span><br><span class="line">    <span class="comment">// 3. 如果构造函数返回一个对象，那么直接 return 它，否则返回内部创建的新对象</span></span><br><span class="line">    <span class="keyword">return</span> result <span class="keyword">instanceof</span> <span class="built_in">Object</span> ? result : obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> _new(<span class="params">Fn, ...args</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 创建一个继承构造函数.prototype的空对象</span></span><br><span class="line">    <span class="keyword">var</span> obj = <span class="built_in">Object</span>.create(Fn.prototype);</span><br><span class="line">    <span class="comment">// 2. 让空对象作为函数 A 的上下文，并调用 A，同时获取它的返回值</span></span><br><span class="line">    <span class="keyword">let</span> result = Fn.call(obj, ...args);</span><br><span class="line">    <span class="comment">// 3. 如果构造函数返回一个对象，那么直接 return 它，否则返回内部创建的新对象</span></span><br><span class="line">    <span class="keyword">return</span> result <span class="keyword">instanceof</span> <span class="built_in">Object</span> ? result : obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>接下去就剩最后一个处理了：判断一个函数是否可以作为构造函数</p>
 <h4 id="如何判断函数是否可以作为构造函数"><a href="#如何判断函数是否可以作为构造函数" class="headerlink" title="如何判断函数是否可以作为构造函数"></a>如何判断函数是否可以作为构造函数</h4><p>我们通过 function 定义的普通函数都可以结合 new 来作为构造函数使用，那么到底如何判断一个函数能否作为构造函数呢？</p>
@@ -326,7 +543,7 @@
 <figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 代码来自文末的链接</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">is_constructor</span>(<span class="params">f</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 特殊处理，因为 Symbol 能通过 Reflect.construct 对参数的检测</span></span><br><span class="line">  <span class="keyword">if</span> (f === <span class="built_in">Symbol</span>) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="comment">// 第一个 target 参数传入无关的构造函数，第三个参数传入待检测函数  </span></span><br><span class="line">    <span class="built_in">Reflect</span>.construct(<span class="built_in">String</span>, [], f);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 当 f 可作为构造函数使用，Reflect.construct 就会正常执行，那么此时：</span></span><br><span class="line"><span class="comment">// Reflect.construct(String, [], f) 其实相当于执行了:</span></span><br><span class="line"><span class="comment">// var a = new String();</span></span><br><span class="line"><span class="comment">// a.__proto__ = f.prototype</span></span><br><span class="line"><span class="comment">// 既不会让被检测函数先行执行一遍，又可以达到利用引擎层面检测函数是否能作为构造函数的目的</span></span><br></pre></td></tr></table></figure>
 
 <h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>最终，模拟 new 的实现代码：</p>
-<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">_new</span>(<span class="params">Fn, ...args</span>) </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">is_constructor</span>(<span class="params">f</span>) </span>&#123;</span><br><span class="line">      	<span class="keyword">if</span> (f === <span class="built_in">Symbol</span>) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      	<span class="keyword">try</span> &#123;</span><br><span class="line">        	<span class="built_in">Reflect</span>.construct(<span class="built_in">String</span>, [], f);</span><br><span class="line">      	&#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">        	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      	&#125;</span><br><span class="line">      	<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 1. 参数判断检测</span></span><br><span class="line">    <span class="keyword">let</span> isFunction = <span class="keyword">typeof</span> Fn === <span class="string">'function'</span>;</span><br><span class="line">    <span class="keyword">if</span> (!isFunction || !is_constructor(Fn)) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">TypeError</span>(<span class="string">`<span class="subst">$&#123;Fn.name || Fn&#125;</span> is not a constructor`</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 2. 创建一个继承构造函数.prototype的空对象</span></span><br><span class="line">    <span class="keyword">var</span> obj = <span class="built_in">Object</span>.create(Fn.prototype);</span><br><span class="line">    <span class="comment">// 3. 让空对象作为函数 A 的上下文，并调用 A，同时获取它的返回值</span></span><br><span class="line">    <span class="keyword">let</span> result = Fn.call(obj, ...args);</span><br><span class="line">    <span class="comment">// 4. 如果构造函数返回一个对象，那么直接 return 它，否则返回内部创建的新对象</span></span><br><span class="line">    <span class="keyword">return</span> result <span class="keyword">instanceof</span> <span class="built_in">Object</span> ? result : obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> _new(<span class="params">Fn, ...args</span>) </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">is_constructor</span>(<span class="params">f</span>) </span>&#123;</span><br><span class="line">      	<span class="keyword">if</span> (f === <span class="built_in">Symbol</span>) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      	<span class="keyword">try</span> &#123;</span><br><span class="line">        	<span class="built_in">Reflect</span>.construct(<span class="built_in">String</span>, [], f);</span><br><span class="line">      	&#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">        	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      	&#125;</span><br><span class="line">      	<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 1. 参数判断检测</span></span><br><span class="line">    <span class="keyword">let</span> isFunction = <span class="keyword">typeof</span> Fn === <span class="string">'function'</span>;</span><br><span class="line">    <span class="keyword">if</span> (!isFunction || !is_constructor(Fn)) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">TypeError</span>(<span class="string">`<span class="subst">$&#123;Fn.name || Fn&#125;</span> is not a constructor`</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 2. 创建一个继承构造函数.prototype的空对象</span></span><br><span class="line">    <span class="keyword">var</span> obj = <span class="built_in">Object</span>.create(Fn.prototype);</span><br><span class="line">    <span class="comment">// 3. 让空对象作为函数 A 的上下文，并调用 A，同时获取它的返回值</span></span><br><span class="line">    <span class="keyword">let</span> result = Fn.call(obj, ...args);</span><br><span class="line">    <span class="comment">// 4. 如果构造函数返回一个对象，那么直接 return 它，否则返回内部创建的新对象</span></span><br><span class="line">    <span class="keyword">return</span> result <span class="keyword">instanceof</span> <span class="built_in">Object</span> ? result : obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>几个关键点理清就可以写出来了：</p>
 <ul>
@@ -351,7 +568,7 @@
   <entry>
     <title>面试题积累</title>
     <url>/2019/09/16/%E9%9D%A2%E8%AF%95%E9%A2%98/%E9%9D%A2%E8%AF%95%E9%A2%98%E6%94%B6%E9%9B%86%E6%B1%87%E6%80%BB/</url>
-    <content><![CDATA[<h1 id="面试题积累"><a href="#面试题积累" class="headerlink" title="面试题积累"></a>面试题积累</h1><p><strong>update on：2019-10-23</strong></p>
+    <content><![CDATA[<h1 id="面试题积累"><a href="#面试题积累" class="headerlink" title="面试题积累"></a>面试题积累</h1><p><strong>update on：2019-10-30</strong></p>
 <h3 id="CSS"><a href="#CSS" class="headerlink" title="CSS"></a>CSS</h3><ol>
 <li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/CSS/div%E6%B0%B4%E5%B9%B3%E5%9E%82%E7%9B%B4%E5%B1%85%E4%B8%AD.md" target="_blank" rel="noopener">怎么让一个 div 水平垂直居中</a></li>
 <li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/CSS/%E4%BB%8B%E7%BB%8D%E4%B8%8BBFC%E5%8F%8A%E5%85%B6%E5%BA%94%E7%94%A8.md" target="_blank" rel="noopener">介绍下 BFC 及其应用</a></li>
@@ -393,6 +610,8 @@
 <li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/%E6%A8%A1%E6%8B%9F%E5%AE%9E%E7%8E%B0call%E5%92%8Capply.md" target="_blank" rel="noopener">模拟实现 call 和 apply</a></li>
 <li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/%E6%A8%A1%E6%8B%9F%E5%AE%9E%E7%8E%B0bind.md" target="_blank" rel="noopener">模拟实现 bind</a></li>
 <li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/%E6%89%8B%E5%86%99%E9%98%B2%E6%8A%96debounce%E5%92%8C%E8%8A%82%E6%B5%81throttle.md" target="_blank" rel="noopener">手写防抖函数debounce和节流函数throttle</a></li>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/%E6%89%8B%E5%86%99%E5%AE%9E%E7%8E%B0%E6%B7%B1%E6%8B%B7%E8%B4%9D.md" target="_blank" rel="noopener">手写实现深拷贝</a></li>
+<li><a href="https://github.com/woshidasusu/Doc/blob/master/%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%89%8B%E5%86%99/%E6%89%A9%E5%B1%95Object.assign%E5%AE%9E%E7%8E%B0%E6%B7%B1%E8%A6%86%E7%9B%96.md" target="_blank" rel="noopener">扩展Object.assign实现深拷贝</a></li>
 </ol>
 ]]></content>
       <categories>
@@ -2774,6 +2993,68 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
+    <title>前端16-JavaScript执行上下文EC和变量对象VO（进阶）</title>
+    <url>/2018/11/02/%E5%89%8D%E7%AB%AF/%E8%BF%9B%E9%98%B6/%E5%89%8D%E7%AB%AF%E5%85%A5%E9%97%A816-JavaScript%E8%BF%9B%E9%98%B6%E4%B9%8BEC%E5%92%8CVO/</url>
+    <content><![CDATA[<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本系列文章内容全部梳理自以下几个来源：</p>
+<ul>
+<li>《JavaScript权威指南》</li>
+<li><a href="https://developer.mozilla.org/zh-CN/docs/Web" target="_blank" rel="noopener">MDN web docs</a></li>
+<li><a href="https://github.com/smyhvae/Web" target="_blank" rel="noopener">Github:smyhvae/web</a></li>
+<li><a href="https://github.com/goddyZhao/Translation/tree/master/JavaScript" target="_blank" rel="noopener">Github:goddyZhao/Translation/JavaScript</a></li>
+</ul>
+<p>作为一个前端小白，入门跟着这几个来源学习，感谢作者的分享，在其基础上，通过自己的理解，梳理出的知识点，或许有遗漏，或许有些理解是错误的，如有发现，欢迎指点下。</p>
+<p>PS：梳理的内容以《JavaScript权威指南》这本书中的内容为主，因此接下去跟 JavaScript 语法相关的系列文章基本只介绍 ES5 标准规范的内容、ES6 等这系列梳理完再单独来讲讲。</p>
+<h1 id="正文-执行上下文EC和变量对象VO"><a href="#正文-执行上下文EC和变量对象VO" class="headerlink" title="正文-执行上下文EC和变量对象VO"></a>正文-执行上下文EC和变量对象VO</h1><p>EC：Execution Context，中文翻译执行上下文，也有翻译成执行环境的。</p>
+<p>VO：Variable object，中文翻译变量对象。</p>
+<p>这两个概念很重要，涉及到作用域以及作用域链的原理。</p>
+<h3 id="执行上下文-EC"><a href="#执行上下文-EC" class="headerlink" title="执行上下文 EC"></a>执行上下文 EC</h3><p>先说说Android中的上下文： </p>
+<ul>
+<li>Android</li>
+</ul>
+<p>Android 中也有上下文：Context，四大组件都是上下文，还有一个全局的 Application上下文。在 Android 中基本是以四大组件为界限，每创建一个四大组件，都会产生一个上下文，比如每个 Activity 都是独立的上下文。</p>
+<p>在 Android 中，上下文 Context 的作用大体上用于标识各种资源的所属，要加载一张图片、创建一个 View、弹一个 Dialog 等等，你需要告诉系统，这些是谁发出的指令，要挂载到哪个上下文，这些资源依赖于上下文的生命周期。</p>
+<p>所以才会出现，有时弹 Dialog 或者更新某个 View 时抛异常说 Context 已销毁，因为它需要挂载的上下文已经销毁了，那么就没有上下文来统筹管理这些资源了，自然会抛异常。</p>
+<ul>
+<li>JavaScript</li>
+</ul>
+<p>在 JavaScript 中，上下文是指执行上下文，通俗点理解，代码执行的上下文，所以也有翻译成执行环境，可以通俗的把它理解成一个对象，对象名 EC，表示代码的执行上下文。</p>
+<p>既然理解成一个对象，那么就有它创建的时机，在 JavaScript 中，每当要执行不同类型的代码时，就会创建一个执行上下文 EC。</p>
+<p>而代码的类型分三种：</p>
+<ul>
+<li>全局代码</li>
+<li>函数代码</li>
+<li>eval()执行的代码</li>
+</ul>
+<p>最后一种不讨论，全局代码就是指写在函数外的代码，在前端里，当 HTML 加载一个 js 文件时，全局代码就会被执行，那么在全局代码执行前就会先创建一个全局的执行上下文 EC，之后每调用一次函数，要执行函数内的代码时，会再创建一个函数执行上下文 EC。</p>
+<p>也就是说，不讨论 eval 的话，那么在 JavaScript 有两种执行上下文，一种是全局执行上下文，一种是函数执行上下文。</p>
+<p>而每次创建一个执行上下文时，都会将其放入一个栈结构，这个栈就称为执行上下文栈（ECS），也有翻译成执行环境栈。</p>
+<p>所以执行 js 文件代码期间，这个栈底一直是全局执行上下文，直到 js 文件代码执行结束。全局代码执行过程中，每调用一次函数，新创建一个函数执行上下文，就放入栈内。</p>
+<p>因此，栈顶就表示当前执行的代码，如果栈顶是全局执行上下文，表示正在执行全局代码；如果栈顶是函数执行上下文，表示正在执行函数内的代码。当函数执行结束时，这个函数执行上下文就从栈中移出。</p>
+<p>那么执行上下文（EC）有什么用呢？</p>
+<p>用途可多了，跟 Android 不一样，Android 里由于是各种资源的组合使用，但在 JavaScript 中更多的是嵌套函数的变量使用。所以，用途之一就是保存各个变量。</p>
+<p>将 EC 理解成一个对象的话，它有两个属性，一个是变量对象（VO），另一个是作用域链（Scope Chain）。对于全局执行上下文，当 HTML 加载一个 js 文件时，就会创建一个全局 EC，此时会创建它的两个属性：变量对象和作用域链。之后，每调用一次函数，创建这次函数执行的上下文，函数内部的变量的使用就依赖于这个函数执行上下文中的变量对象和作用域链。</p>
+<p>也就是说，内部函数之所以可以使用外部函数内的变量，之所以可以使用全局变量，都是依赖于当前这个内部函数的执行上下文。</p>
+<p>而且，变量之所以会提前声明也是因为执行上下文的因素。这些当讲解了执行上下文 EC 的创建过程就清楚了。</p>
+<h3 id="变量对象-VO"><a href="#变量对象-VO" class="headerlink" title="变量对象 VO"></a>变量对象 VO</h3><p>变量对象只是一个抽象的概念，可以通俗的理解成保存当前上下文所有变量的对象。</p>
+<p>在不同的执行上下文中，它有不同的具体表现。</p>
+<p>在全局执行上下文中，变量对象 VO 的具体表现就是全局对象，因为所有的全局变量其实都是全局对象的属性，而变量对象 VO 的作用是要保存当前上下文中的所有变量，所以此时的变量对象 VO 实际上是指向的全局对象。</p>
+<p>尤其在前端中，全局对象就是 window，所以全局执行上下文的变量对象 VO = window。</p>
+<p>在函数执行上下文中，因为变量对象 VO 是要保存当前上下文中所有的变量，一个函数内的变量包括：形参变量、局部变量、自身函数对象引用变量、arguments、this。</p>
+<p>针对函数执行上下文，为了保存这些变量，特意创建了一个对象，称它为活动对象 AO，函数内所需的变量就都保存在 AO 中，所以在函数执行上下文中，变量对象 VO 的具体表现也就是 AO。</p>
+<p>小结：变量对象 VO 是一个抽象概念，用于保存当前执行上下文中所有的变量。所以在全局执行上下文中，因为全局对象已经保存着当前上下文所有的变量，所以 VO 在这里的具体实现就是全局对象。在函数执行上下文中，由于要保存函数形参、局部变量、自身函数对象引用变量、arguments、this，所以新创建了一个叫活动对象 AO 来保存，此时 VO 的具体实现就是 AO。</p>
+<h3 id="作用域链"><a href="#作用域链" class="headerlink" title="作用域链"></a>作用域链</h3><p>每次函数调用时，都会创建一个函数执行上下文 EC，但其中的变量对象 VO 只保存着当前上下文中的变量而已，那么函数内如果需要使用到外部函数的变量，甚至是使用全局的变量时，此时就需要依赖于执行上下文的另一个属性：作用域链。</p>
+<p>作用域链本质上，其实是将有嵌套层次关系的执行上下文的 VO 拼接起来。</p>
+<p>所以大部分场景作用域链只有两个节点：当前函数执行上下文的 VO –&gt; 全局执行上下文的 VO。所以函数内才可以根据作用域链访问全局内的变量。</p>
+<p>当出现函数内再嵌套函数时，此时作用域链就会比较长：</p>
+<p>内层函数执行上下文的 VO –&gt; 外层函数执行上下文的 VO –&gt; 全局执行上下文 VO。</p>
+<p>至于作用域链是如何将有嵌套层次的执行上下文的 VO 拼接起来，需要借助函数对象的内部属性 [[Scope]]，[[]]表示执行引擎为对象创建的内部属性，我们访问不了，也操作不了。具体原理在作用域链一节中讲解。  </p>
+]]></content>
+      <categories>
+        <category>前端</category>
+        <category>进阶</category>
+      </categories>
+  </entry>
+  <entry>
     <title>前端15-JavaScript原型链（进阶）</title>
     <url>/2018/11/02/%E5%89%8D%E7%AB%AF/%E8%BF%9B%E9%98%B6/%E5%89%8D%E7%AB%AF%E5%85%A5%E9%97%A815-JavaScript%E8%BF%9B%E9%98%B6%E4%B9%8B%E5%8E%9F%E5%9E%8B%E9%93%BE/</url>
     <content><![CDATA[<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本系列文章内容全部梳理自以下几个来源：</p>
@@ -2881,68 +3162,6 @@ b.y; <span class="comment">//1</span>
 <p>而且，建议看这张图时，每次都将某条原型链跟踪到底，再去看另一条，这过程不要过多关注在分支上，否则很容易混乱。</p>
 <p>对于新手，如果能够对这张稍作备注，而不是直接将这张图放出来，我觉得会更好，如下：</p>
 <p><img src="https://upload-images.jianshu.io/upload_images/1924341-ed3572ea96c33df5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt>  </p>
-]]></content>
-      <categories>
-        <category>前端</category>
-        <category>进阶</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>前端16-JavaScript执行上下文EC和变量对象VO（进阶）</title>
-    <url>/2018/11/02/%E5%89%8D%E7%AB%AF/%E8%BF%9B%E9%98%B6/%E5%89%8D%E7%AB%AF%E5%85%A5%E9%97%A816-JavaScript%E8%BF%9B%E9%98%B6%E4%B9%8BEC%E5%92%8CVO/</url>
-    <content><![CDATA[<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本系列文章内容全部梳理自以下几个来源：</p>
-<ul>
-<li>《JavaScript权威指南》</li>
-<li><a href="https://developer.mozilla.org/zh-CN/docs/Web" target="_blank" rel="noopener">MDN web docs</a></li>
-<li><a href="https://github.com/smyhvae/Web" target="_blank" rel="noopener">Github:smyhvae/web</a></li>
-<li><a href="https://github.com/goddyZhao/Translation/tree/master/JavaScript" target="_blank" rel="noopener">Github:goddyZhao/Translation/JavaScript</a></li>
-</ul>
-<p>作为一个前端小白，入门跟着这几个来源学习，感谢作者的分享，在其基础上，通过自己的理解，梳理出的知识点，或许有遗漏，或许有些理解是错误的，如有发现，欢迎指点下。</p>
-<p>PS：梳理的内容以《JavaScript权威指南》这本书中的内容为主，因此接下去跟 JavaScript 语法相关的系列文章基本只介绍 ES5 标准规范的内容、ES6 等这系列梳理完再单独来讲讲。</p>
-<h1 id="正文-执行上下文EC和变量对象VO"><a href="#正文-执行上下文EC和变量对象VO" class="headerlink" title="正文-执行上下文EC和变量对象VO"></a>正文-执行上下文EC和变量对象VO</h1><p>EC：Execution Context，中文翻译执行上下文，也有翻译成执行环境的。</p>
-<p>VO：Variable object，中文翻译变量对象。</p>
-<p>这两个概念很重要，涉及到作用域以及作用域链的原理。</p>
-<h3 id="执行上下文-EC"><a href="#执行上下文-EC" class="headerlink" title="执行上下文 EC"></a>执行上下文 EC</h3><p>先说说Android中的上下文： </p>
-<ul>
-<li>Android</li>
-</ul>
-<p>Android 中也有上下文：Context，四大组件都是上下文，还有一个全局的 Application上下文。在 Android 中基本是以四大组件为界限，每创建一个四大组件，都会产生一个上下文，比如每个 Activity 都是独立的上下文。</p>
-<p>在 Android 中，上下文 Context 的作用大体上用于标识各种资源的所属，要加载一张图片、创建一个 View、弹一个 Dialog 等等，你需要告诉系统，这些是谁发出的指令，要挂载到哪个上下文，这些资源依赖于上下文的生命周期。</p>
-<p>所以才会出现，有时弹 Dialog 或者更新某个 View 时抛异常说 Context 已销毁，因为它需要挂载的上下文已经销毁了，那么就没有上下文来统筹管理这些资源了，自然会抛异常。</p>
-<ul>
-<li>JavaScript</li>
-</ul>
-<p>在 JavaScript 中，上下文是指执行上下文，通俗点理解，代码执行的上下文，所以也有翻译成执行环境，可以通俗的把它理解成一个对象，对象名 EC，表示代码的执行上下文。</p>
-<p>既然理解成一个对象，那么就有它创建的时机，在 JavaScript 中，每当要执行不同类型的代码时，就会创建一个执行上下文 EC。</p>
-<p>而代码的类型分三种：</p>
-<ul>
-<li>全局代码</li>
-<li>函数代码</li>
-<li>eval()执行的代码</li>
-</ul>
-<p>最后一种不讨论，全局代码就是指写在函数外的代码，在前端里，当 HTML 加载一个 js 文件时，全局代码就会被执行，那么在全局代码执行前就会先创建一个全局的执行上下文 EC，之后每调用一次函数，要执行函数内的代码时，会再创建一个函数执行上下文 EC。</p>
-<p>也就是说，不讨论 eval 的话，那么在 JavaScript 有两种执行上下文，一种是全局执行上下文，一种是函数执行上下文。</p>
-<p>而每次创建一个执行上下文时，都会将其放入一个栈结构，这个栈就称为执行上下文栈（ECS），也有翻译成执行环境栈。</p>
-<p>所以执行 js 文件代码期间，这个栈底一直是全局执行上下文，直到 js 文件代码执行结束。全局代码执行过程中，每调用一次函数，新创建一个函数执行上下文，就放入栈内。</p>
-<p>因此，栈顶就表示当前执行的代码，如果栈顶是全局执行上下文，表示正在执行全局代码；如果栈顶是函数执行上下文，表示正在执行函数内的代码。当函数执行结束时，这个函数执行上下文就从栈中移出。</p>
-<p>那么执行上下文（EC）有什么用呢？</p>
-<p>用途可多了，跟 Android 不一样，Android 里由于是各种资源的组合使用，但在 JavaScript 中更多的是嵌套函数的变量使用。所以，用途之一就是保存各个变量。</p>
-<p>将 EC 理解成一个对象的话，它有两个属性，一个是变量对象（VO），另一个是作用域链（Scope Chain）。对于全局执行上下文，当 HTML 加载一个 js 文件时，就会创建一个全局 EC，此时会创建它的两个属性：变量对象和作用域链。之后，每调用一次函数，创建这次函数执行的上下文，函数内部的变量的使用就依赖于这个函数执行上下文中的变量对象和作用域链。</p>
-<p>也就是说，内部函数之所以可以使用外部函数内的变量，之所以可以使用全局变量，都是依赖于当前这个内部函数的执行上下文。</p>
-<p>而且，变量之所以会提前声明也是因为执行上下文的因素。这些当讲解了执行上下文 EC 的创建过程就清楚了。</p>
-<h3 id="变量对象-VO"><a href="#变量对象-VO" class="headerlink" title="变量对象 VO"></a>变量对象 VO</h3><p>变量对象只是一个抽象的概念，可以通俗的理解成保存当前上下文所有变量的对象。</p>
-<p>在不同的执行上下文中，它有不同的具体表现。</p>
-<p>在全局执行上下文中，变量对象 VO 的具体表现就是全局对象，因为所有的全局变量其实都是全局对象的属性，而变量对象 VO 的作用是要保存当前上下文中的所有变量，所以此时的变量对象 VO 实际上是指向的全局对象。</p>
-<p>尤其在前端中，全局对象就是 window，所以全局执行上下文的变量对象 VO = window。</p>
-<p>在函数执行上下文中，因为变量对象 VO 是要保存当前上下文中所有的变量，一个函数内的变量包括：形参变量、局部变量、自身函数对象引用变量、arguments、this。</p>
-<p>针对函数执行上下文，为了保存这些变量，特意创建了一个对象，称它为活动对象 AO，函数内所需的变量就都保存在 AO 中，所以在函数执行上下文中，变量对象 VO 的具体表现也就是 AO。</p>
-<p>小结：变量对象 VO 是一个抽象概念，用于保存当前执行上下文中所有的变量。所以在全局执行上下文中，因为全局对象已经保存着当前上下文所有的变量，所以 VO 在这里的具体实现就是全局对象。在函数执行上下文中，由于要保存函数形参、局部变量、自身函数对象引用变量、arguments、this，所以新创建了一个叫活动对象 AO 来保存，此时 VO 的具体实现就是 AO。</p>
-<h3 id="作用域链"><a href="#作用域链" class="headerlink" title="作用域链"></a>作用域链</h3><p>每次函数调用时，都会创建一个函数执行上下文 EC，但其中的变量对象 VO 只保存着当前上下文中的变量而已，那么函数内如果需要使用到外部函数的变量，甚至是使用全局的变量时，此时就需要依赖于执行上下文的另一个属性：作用域链。</p>
-<p>作用域链本质上，其实是将有嵌套层次关系的执行上下文的 VO 拼接起来。</p>
-<p>所以大部分场景作用域链只有两个节点：当前函数执行上下文的 VO –&gt; 全局执行上下文的 VO。所以函数内才可以根据作用域链访问全局内的变量。</p>
-<p>当出现函数内再嵌套函数时，此时作用域链就会比较长：</p>
-<p>内层函数执行上下文的 VO –&gt; 外层函数执行上下文的 VO –&gt; 全局执行上下文 VO。</p>
-<p>至于作用域链是如何将有嵌套层次的执行上下文的 VO 拼接起来，需要借助函数对象的内部属性 [[Scope]]，[[]]表示执行引擎为对象创建的内部属性，我们访问不了，也操作不了。具体原理在作用域链一节中讲解。  </p>
 ]]></content>
       <categories>
         <category>前端</category>
@@ -6751,189 +6970,6 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
-    <title>封装个-Android-的高斯模糊组件</title>
-    <url>/2018/10/14/Android%E7%BB%84%E4%BB%B6/%E5%B0%81%E8%A3%85%E4%B8%AA-Android-%E7%9A%84%E9%AB%98%E6%96%AF%E6%A8%A1%E7%B3%8A%E7%BB%84%E4%BB%B6/</url>
-    <content><![CDATA[<blockquote>
-<p><strong>本篇文章已授权微信公众号 hongyangAndroid （鸿洋）独家发布</strong>  </p>
-</blockquote>
-<p>最近基于 <a href="https://github.com/kikoso/android-stackblur" target="_blank" rel="noopener">Android StackBlur</a> 开源库，根据自己碰到的需求场景，封装了个高斯模糊组件，顺便记录一下。  </p>
-<p><strong>为什么要自己重复造轮子？</strong>  </p>
-<p>其实也谈不上重头自己造轮子，毕竟是基于大神的开源库，做了二次封装。封装的目的在于，方便外部使用。毕竟有着自己的编程习惯，大神的开源库也只是提供了基础的功能，现实编程中，产品的需求是各种各样的。</p>
-<p>导致每次使用时，都蛮麻烦的，需要额外自己处理蛮多东西。而一旦新的项目又需要接入高斯模糊了，又得重新写一些代码，复制粘贴也麻烦，经常由于各种业务耦合报错。</p>
-<p>既然如此，干脆花时间抽个基础、公用的高斯模糊组件，需要时直接依赖即可。</p>
-<h1 id="基础理论"><a href="#基础理论" class="headerlink" title="基础理论"></a>基础理论</h1><h3 id="高斯模糊"><a href="#高斯模糊" class="headerlink" title="高斯模糊"></a>高斯模糊</h3><p>高斯模糊的原理和算法就不介绍了，我也不懂，没深入，这里就大概讲讲我的粗坯理解：</p>
-<p>我们知道，一张图片，本质上其实是一个个像素点构成的，虽然经过计算机处理后，呈现在我们眼前的是具体的图像。但在计算机中，其实就是一堆数组数据。</p>
-<p>数组中每个单位就是一个个像素点，那么每个像素点是存储什么内容呢，其实也就是 RGB 或者 ARGB 之类格式的数据。</p>
-<p>高斯模糊，大体上就是对这张图片中的每个像素点都重新进行计算，每个像素点的新值等于以它为中心，半径为 r 的周围区域内所有像素点各自按照不同权重相加之和的平均值。</p>
-<p>可以粗坯的理解为，<strong>本来这个像素点是要呈现它自己本身的内容，但经过高斯模糊计算后，掺杂进它周围区域像素点的内容了。就像加水稀释类似的道理，既然都掺杂进周围的内容了，那么它呈现的内容相比最初，肯定就不那么清晰了</strong>。</p>
-<p>而如果掺杂的半径越大，混合进的内容也就越多，那么它本身的内容就越淡了，是不是这个理。所以，这就是为什么每个开源的高斯模糊组件库，使用时基本都需要我们传入一个 radius 半径的参数。而且，半径越大，越模糊。</p>
-<p>这么一粗坯的解释，就理解多了，是吧。</p>
-<p>为什么需要大概掌握这个理论基础呢？</p>
-<p>想想，高斯模糊是遍历所有像素点，对每个像素点都重新计算。那么，这自然是一个耗时的工作，掌握了理论基础，我们要优化时也才有方向去优化。</p>
-<h3 id="性能对比"><a href="#性能对比" class="headerlink" title="性能对比"></a>性能对比</h3><p>大神的开源库中提供了三种高斯模糊方式，而我在 <a href="https://github.com/Blankj/AndroidUtilCode" target="_blank" rel="noopener">Blankj 的 AndroidUtilCode</a> 开源库中发现了另外一种，所以我将他们都整合起来，一共有四种：</p>
-<ul>
-<li>Google 官方提供的 RenderScript 方式 （RSBlur）</li>
-<li>C 编写的高斯算法 blur.c 方式 （NativeBlur）</li>
-<li>Java 编写的高斯算法方式1（JavaBlur）</li>
-<li>Java 编写的高斯算法方式2（StackBlur）</li>
-</ul>
-<p>其实，大体上就三种：Google 官方提供的，大神用 C 写的高斯模糊算法，大神用 Java 写的高斯模糊算法。至于后面两种，看了下，算法的代码不一样，我就把它们当做是两种不同的算法实现了。也许是一样，但我没深入去看，反正代码不一样，我就这么认为了。</p>
-<p>下面我们来做个实验，在如下相同条件下，不同高斯模糊方案的耗时比较：</p>
-<ul>
-<li>radius=10, scale=1, bitmap=200*200(11.69KB)</li>
-</ul>
-<p>ps: radius 表示高斯算法计算过程中的半径取值，scale=1表示对 bitmap 原图进行高斯模糊。这些前提条件需要了解一下，不然你在看网上其他类似性能比对的文章时，发现它们动不动就优化到几 ms 级别的，然而你自己尝试却始终达不到。这是因为也许所使用的这些前提都不一致，不一致的前提下，耗时根本无从比较。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">testBlur</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="keyword">int</span> sum = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">		<span class="keyword">long</span> time = SystemClock.uptimeMillis();</span><br><span class="line">		DBlur.source(<span class="keyword">this</span>, R.drawable.image).modeRs().radius(<span class="number">10</span>).sampling(<span class="number">1</span>).build().doBlurSync();</span><br><span class="line">		<span class="keyword">long</span> end = SystemClock.uptimeMillis();</span><br><span class="line">		sum += (end - time);</span><br><span class="line">	&#125;</span><br><span class="line">    Log.e(<span class="string">"DBlur"</span>, <span class="string">"RSBlur cast "</span> + (sum/<span class="number">100</span>) + <span class="string">"ms"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>代码模板如上，分别运行 100 次后取平均值，四种不同方式的耗时如下表：</p>
-<table>
-<thead>
-<tr>
-<th align="center">前提条件</th>
-<th align="center">RSBlur</th>
-<th align="center">NativeBlur</th>
-<th align="center">JavaBlur</th>
-<th align="center">StackBlur</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">radius=<strong>10</strong>, scale=1, bitmap=200*200</td>
-<td align="center">51ms</td>
-<td align="center">13ms</td>
-<td align="center">162ms</td>
-<td align="center">384ms</td>
-</tr>
-<tr>
-<td align="center">radius=<strong>20</strong>, scale=1, bitmap=200*200</td>
-<td align="center">56ms</td>
-<td align="center">12ms</td>
-<td align="center">164ms</td>
-<td align="center">435ms</td>
-</tr>
-<tr>
-<td align="center">radius=10, scale=<strong>2</strong>, bitmap=200*200</td>
-<td align="center">48ms</td>
-<td align="center">11ms</td>
-<td align="center">75ms</td>
-<td align="center">110ms</td>
-</tr>
-<tr>
-<td align="center">radius=10, scale=<strong>8</strong>, bitmap=200*200</td>
-<td align="center">45ms</td>
-<td align="center">7ms</td>
-<td align="center">14ms</td>
-<td align="center">19ms</td>
-</tr>
-<tr>
-<td align="center">radius=10, scale=8, bitmap=<strong>1920*1180</strong></td>
-<td align="center">183ms</td>
-<td align="center">143ms</td>
-<td align="center">346ms</td>
-<td align="center">460ms</td>
-</tr>
-<tr>
-<td align="center">radius=<strong>20</strong>, scale=8, bitmap=1920*1180</td>
-<td align="center">204ms</td>
-<td align="center">145ms</td>
-<td align="center">353ms</td>
-<td align="center">510ms</td>
-</tr>
-<tr>
-<td align="center">radius=20, scale=<strong>1</strong>, bitmap=1920*1180</td>
-<td align="center">474ms</td>
-<td align="center">444ms</td>
-<td align="center">8663ms</td>
-<td align="center">内存溢出</td>
-</tr>
-</tbody></table>
-<p>100 次样本可能不多，但大体上我们也能比较出不同类型的高斯模糊之前的区别，及其适用场景：</p>
-<ul>
-<li>总体上，NativeBlur 和 RSBlur 的耗时会少于 JavaBlur 和 StackBlur</li>
-<li>JavaBlur 和 StackBlur 方式，如果先对 Bitmap 进行缩小，再高斯模糊，最后再放大，耗时会大大缩短</li>
-<li>radius 增大会增加耗时，但影响不大，但视图呈现效果会越模糊</li>
-<li>scale 对原图缩小倍数越多，耗时越短，但视图呈现效果同样会越模糊</li>
-<li>分辨率越高的图片，高斯模糊的就越耗时</li>
-<li>对于大图而言，如果要使用 JavaBlur 或 StackBlur，最好设置 scale 先缩小再模糊，否则将非常耗时且容易内存溢出</li>
-<li>如果已经通过 scale 方式进行优化，那么最好 radius 值可以相对小一点，否则两者的值都大会对图片的模糊效果特别强烈，也许会过了头</li>
-</ul>
-<h3 id="性能优化"><a href="#性能优化" class="headerlink" title="性能优化"></a>性能优化</h3><p>高斯模糊的优化考虑点，其实就三个：</p>
-<ul>
-<li>选择不同的高斯模糊方式</li>
-<li>通过 scale 对原图先缩小，再模糊，最后再放大方式</li>
-<li>优化高斯模糊算法</li>
-</ul>
-<p>最后一点就不考虑了，毕竟难度太大。那么，其实就剩下两种，要么是从高斯模糊的方案上选择，要么从待模糊的图片上做手脚。</p>
-<p>虽然有四种高斯模糊方案，但每种都有各自优缺点：</p>
-<ul>
-<li>RSBlur 在低端机上可能无法兼容</li>
-<li>NativeBlur 需要生成对应 CPU 架构的 so 文件支持</li>
-<li>JavaBlur 和 StackBlur 耗时会较长</li>
-</ul>
-<p>优化的考虑点大体上这几种：</p>
-<ul>
-<li>大体上，使用 NativeBlur 或者 RSBlur 即可，如果出现一些问题，那么此时可考虑切到 JavaBlur 或 StackBlur 方案，但记得结合 scale 方式优化处理。</li>
-<li>如果高斯模糊的图片有实时性要求，要求模糊得同步进行处理，主线程后续的工作需要等待高斯模糊后才能够处理的话，那么尽量选择 scale 方式进行优化，减少耗时。</li>
-<li>如果对实时性没要求，但对图片模糊程度有要求，那其实，只要后台异步去进行高斯模糊即可，此时 scale 可不用缩小太多，而利用 radius 来控制模糊效果，以达到理想的要求。</li>
-<li>如果两者都有要求，那就自行尝试寻找折中点吧。</li>
-</ul>
-<p>最后说一点，因为已经封装成组件库了，RSBlur 也是引入的 support 包，so 文件也打包好了，那么使用这两种方案足够满足绝大部分场景了，所以，没有特意指定，组件默认的方案为 RSBlur。</p>
-<h1 id="二次封装"><a href="#二次封装" class="headerlink" title="二次封装"></a>二次封装</h1><h3 id="需求场景"><a href="#需求场景" class="headerlink" title="需求场景"></a>需求场景</h3><p>为什么要二次封装？那肯定是因为有自己的各种需求场景的，我的需求如下：</p>
-<ul>
-<li>要能够对当前页面（Activity）截图后，进行模糊</li>
-<li>要能够对 drawable 资源图片进行模糊、或者对指定 View 的视图进行模糊</li>
-<li>模糊完成后，要能够自动以淡入的动画方式显示在指定的控件上</li>
-<li>存在这种需求场景：对当前界面截图、并且模糊，模糊后的图片展示的时机可能在其他界面，因此需要支持缓存功能，可以根据指定 cacheKey 值获取缓存</li>
-<li>当然，可以根据各种配置使用高斯模糊，当不指定配置时，有默认配置</li>
-</ul>
-<p>总结一下，其实封装要做的事也就是要实现：</p>
-<ul>
-<li>截图、缓存、淡入动画、默认配置</li>
-<li>可以的话，组件最好可以达到，其他人在不看文档，不看源码前提下，以最少的成本接入直接上手使用</li>
-</ul>
-<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>截图、缓存、动画这些都属于纯功能代码的封装了，具体就不说了。</p>
-<p>这里想来讲讲，如何设计，可以让其他人以最少的成本接入直接上手使用。</p>
-<p>我的想法是，利用 AndroidStudio 的代码提示功能，具体的说就是，你只需要了解组件的入口是 DBlur 即可，至于后续怎么使用，全靠 AndroidStudio 来提示，跟着 AndroidStudio 走就行。</p>
-<p>例如：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/1924341-7eb4707f967a5577.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="DBlur入口.png">  </p>
-<p>当敲完 DBlur. 时，会弹出代码提示框，入口很少，是吧，就两个，看命名也能猜到作用：<code>getCacheBitmap()</code> 明显是用来取缓存的，那么要高斯模糊自然是另外一个入口 <code>source()</code>，这个方法有多个重载函数，看参数，其实也能知道，这就对应着要模糊的图片的不同来源类型，如：</p>
-<ul>
-<li>直接传入 Bitmap 对其进行模糊</li>
-<li>传入 Activity/View，内部会对这个界面/控件进行截图后再模糊</li>
-<li>传入 resId，对 drawable 资源图片进行模糊</li>
-</ul>
-<p>那么，可能想问了，哪里进行高斯模糊配置，哪里设置同步或异步，哪里注册回调等等。别急，既然只给你开了一个入口，那么就跟着入口走下去，自然会一步步引导你走到最后。如：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/1924341-9efa2fb81a12cd2d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BlurConfigBuilder入口.png">  </p>
-<p>第一步、第二步该做什么，我都给你规定好了，你也只能按照步骤一步步来。想要设置高斯模糊配置，你得先指定图片来源，才能进入第二步，在这里，可以进行的配置也都给你列出来了，想要哪个，直接设置即可。如：</p>
-<ul>
-<li><code>mode()</code>，<code>modeRs()</code>，<code>modeNative()</code> 等等类似 mode 开头的方法，用于指定要使用哪种高斯模糊方案，一共四种，每种内部都有提供对应的常量标志，但如果你不知道哪里找，那么直接调用 modeXXX 方法即可。</li>
-<li><code>radius()</code> 用于设置高斯模糊计算的半径，内部默认为 4。</li>
-<li><code>sampling()</code> 用于设置对原图的缩小比例，内部默认为 8，即默认先缩小 8 倍，再模糊，最后再放大。</li>
-<li><code>cache()</code> 用于设置缓存此次模糊后的图片，没有调用默认不缓存。</li>
-<li><code>animAlpha()</code> 用于设置使用淡入动画，需要结合 <code>intoTarget()</code> 使用，否则不生效。</li>
-<li><code>intoTarget()</code> 用于设置模糊完成后，自动显示到指定控件上。</li>
-</ul>
-<p>另外，看每个方法返回的类名，其实这个过程都是在设置配置项，如果有对 Builder 模式了解的话，应该清楚，这个大多用来解决构造函数参数过多的场景，最后一般都会有一个 <code>build()</code> 或者 <code>create()</code> 类型的方法。参考的是 Android 源码中 AlertDialog。</p>
-<p>也就是说，要进入下一个步骤，需要调用 <code>build()</code> 方法，如：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/1924341-96ce20f8a2154350.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="doblur.png">  </p>
-<p>显然，已经到最后一个步骤了，这里就是发起高斯模糊工作的地方了。</p>
-<ul>
-<li><code>doBlur()</code> 会指定此次高斯模糊工作异步进行，所以需要注册回调的在这里传入。</li>
-<li><code>doBlurSync()</code> 指定高斯模糊同步进行，模糊后的 Bitmap 直接返回。</li>
-</ul>
-<p>至此，接入结束。</p>
-<p>使用这个高斯模糊的组件，只需要知道 DBlur 入口，其他都跟随着 AndroidStudio 代码提示一步步往下走即可，当然你也可以直接看源码，注释里也写得蛮清楚的了。</p>
-<p>这个就是我的想法，能力不足，只能想出这种方案，如果有哪里需要改进，哪里不合理，或者有其他思路，欢迎指点一下。</p>
-<h3 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">compile <span class="string">'com.dasu.image:blur:0.0.4'</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//使用默认配置，最短调用链</span></span><br><span class="line">Bitmap bitmap = DBlur.source(MainActivity.<span class="keyword">this</span>).build().doBlurSync();</span><br><span class="line"></span><br><span class="line"><span class="comment">//同步模糊，将imageView控制的视图进行模糊，完成后自动显示到 imageView1 控件上，以淡入动画方式</span></span><br><span class="line">DBlur.source(imageView).intoTarget(imageView1).animAlpha().build().doBlurSync();</span><br><span class="line"></span><br><span class="line"><span class="comment">//异步模糊，将drawable资源文件中的图片以 NATIVE 方式进行模糊，注册回调，完成时手动显示到 imageView1 控件上</span></span><br><span class="line">DBlur.source(<span class="keyword">this</span>, R.drawable.background).mode(BlurConfig.MODE_NATIVE).build()</span><br><span class="line">      .doBlur(<span class="keyword">new</span> OnBlurListener() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBlurSuccess</span><span class="params">(Bitmap bitmap)</span> </span>&#123;</span><br><span class="line">                imageView1.setImageBitmap(bitmap);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBlurFailed</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="comment">//do something</span></span><br><span class="line">            &#125;&#125;);</span><br></pre></td></tr></table></figure>
-
-<h3 id="Github"><a href="#Github" class="headerlink" title="Github"></a><a href="https://github.com/woshidasusu/base-module/tree/master/blur" target="_blank" rel="noopener">Github</a></h3><p><a href="https://github.com/woshidasusu/base-module/tree/master/blur" target="_blank" rel="noopener">DBlur 的 Github 链接：https://github.com/woshidasusu/base-module/tree/master/blur</a>  </p>
-]]></content>
-      <categories>
-        <category>Android组件</category>
-      </categories>
-  </entry>
-  <entry>
     <title>Android中一张图片占据的内存大小是如何计算</title>
     <url>/2018/10/14/Android%E7%9F%A5%E8%AF%86/Android%E4%B8%AD%E4%B8%80%E5%BC%A0%E5%9B%BE%E7%89%87%E5%8D%A0%E6%8D%AE%E7%9A%84%E5%86%85%E5%AD%98%E5%A4%A7%E5%B0%8F%E6%98%AF%E5%A6%82%E4%BD%95%E8%AE%A1%E7%AE%97/</url>
     <content><![CDATA[<blockquote>
@@ -7234,6 +7270,189 @@ b.y; <span class="comment">//1</span>
 ]]></content>
       <categories>
         <category>Android知识</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>封装个-Android-的高斯模糊组件</title>
+    <url>/2018/10/14/Android%E7%BB%84%E4%BB%B6/%E5%B0%81%E8%A3%85%E4%B8%AA-Android-%E7%9A%84%E9%AB%98%E6%96%AF%E6%A8%A1%E7%B3%8A%E7%BB%84%E4%BB%B6/</url>
+    <content><![CDATA[<blockquote>
+<p><strong>本篇文章已授权微信公众号 hongyangAndroid （鸿洋）独家发布</strong>  </p>
+</blockquote>
+<p>最近基于 <a href="https://github.com/kikoso/android-stackblur" target="_blank" rel="noopener">Android StackBlur</a> 开源库，根据自己碰到的需求场景，封装了个高斯模糊组件，顺便记录一下。  </p>
+<p><strong>为什么要自己重复造轮子？</strong>  </p>
+<p>其实也谈不上重头自己造轮子，毕竟是基于大神的开源库，做了二次封装。封装的目的在于，方便外部使用。毕竟有着自己的编程习惯，大神的开源库也只是提供了基础的功能，现实编程中，产品的需求是各种各样的。</p>
+<p>导致每次使用时，都蛮麻烦的，需要额外自己处理蛮多东西。而一旦新的项目又需要接入高斯模糊了，又得重新写一些代码，复制粘贴也麻烦，经常由于各种业务耦合报错。</p>
+<p>既然如此，干脆花时间抽个基础、公用的高斯模糊组件，需要时直接依赖即可。</p>
+<h1 id="基础理论"><a href="#基础理论" class="headerlink" title="基础理论"></a>基础理论</h1><h3 id="高斯模糊"><a href="#高斯模糊" class="headerlink" title="高斯模糊"></a>高斯模糊</h3><p>高斯模糊的原理和算法就不介绍了，我也不懂，没深入，这里就大概讲讲我的粗坯理解：</p>
+<p>我们知道，一张图片，本质上其实是一个个像素点构成的，虽然经过计算机处理后，呈现在我们眼前的是具体的图像。但在计算机中，其实就是一堆数组数据。</p>
+<p>数组中每个单位就是一个个像素点，那么每个像素点是存储什么内容呢，其实也就是 RGB 或者 ARGB 之类格式的数据。</p>
+<p>高斯模糊，大体上就是对这张图片中的每个像素点都重新进行计算，每个像素点的新值等于以它为中心，半径为 r 的周围区域内所有像素点各自按照不同权重相加之和的平均值。</p>
+<p>可以粗坯的理解为，<strong>本来这个像素点是要呈现它自己本身的内容，但经过高斯模糊计算后，掺杂进它周围区域像素点的内容了。就像加水稀释类似的道理，既然都掺杂进周围的内容了，那么它呈现的内容相比最初，肯定就不那么清晰了</strong>。</p>
+<p>而如果掺杂的半径越大，混合进的内容也就越多，那么它本身的内容就越淡了，是不是这个理。所以，这就是为什么每个开源的高斯模糊组件库，使用时基本都需要我们传入一个 radius 半径的参数。而且，半径越大，越模糊。</p>
+<p>这么一粗坯的解释，就理解多了，是吧。</p>
+<p>为什么需要大概掌握这个理论基础呢？</p>
+<p>想想，高斯模糊是遍历所有像素点，对每个像素点都重新计算。那么，这自然是一个耗时的工作，掌握了理论基础，我们要优化时也才有方向去优化。</p>
+<h3 id="性能对比"><a href="#性能对比" class="headerlink" title="性能对比"></a>性能对比</h3><p>大神的开源库中提供了三种高斯模糊方式，而我在 <a href="https://github.com/Blankj/AndroidUtilCode" target="_blank" rel="noopener">Blankj 的 AndroidUtilCode</a> 开源库中发现了另外一种，所以我将他们都整合起来，一共有四种：</p>
+<ul>
+<li>Google 官方提供的 RenderScript 方式 （RSBlur）</li>
+<li>C 编写的高斯算法 blur.c 方式 （NativeBlur）</li>
+<li>Java 编写的高斯算法方式1（JavaBlur）</li>
+<li>Java 编写的高斯算法方式2（StackBlur）</li>
+</ul>
+<p>其实，大体上就三种：Google 官方提供的，大神用 C 写的高斯模糊算法，大神用 Java 写的高斯模糊算法。至于后面两种，看了下，算法的代码不一样，我就把它们当做是两种不同的算法实现了。也许是一样，但我没深入去看，反正代码不一样，我就这么认为了。</p>
+<p>下面我们来做个实验，在如下相同条件下，不同高斯模糊方案的耗时比较：</p>
+<ul>
+<li>radius=10, scale=1, bitmap=200*200(11.69KB)</li>
+</ul>
+<p>ps: radius 表示高斯算法计算过程中的半径取值，scale=1表示对 bitmap 原图进行高斯模糊。这些前提条件需要了解一下，不然你在看网上其他类似性能比对的文章时，发现它们动不动就优化到几 ms 级别的，然而你自己尝试却始终达不到。这是因为也许所使用的这些前提都不一致，不一致的前提下，耗时根本无从比较。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">testBlur</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="keyword">int</span> sum = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">		<span class="keyword">long</span> time = SystemClock.uptimeMillis();</span><br><span class="line">		DBlur.source(<span class="keyword">this</span>, R.drawable.image).modeRs().radius(<span class="number">10</span>).sampling(<span class="number">1</span>).build().doBlurSync();</span><br><span class="line">		<span class="keyword">long</span> end = SystemClock.uptimeMillis();</span><br><span class="line">		sum += (end - time);</span><br><span class="line">	&#125;</span><br><span class="line">    Log.e(<span class="string">"DBlur"</span>, <span class="string">"RSBlur cast "</span> + (sum/<span class="number">100</span>) + <span class="string">"ms"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>代码模板如上，分别运行 100 次后取平均值，四种不同方式的耗时如下表：</p>
+<table>
+<thead>
+<tr>
+<th align="center">前提条件</th>
+<th align="center">RSBlur</th>
+<th align="center">NativeBlur</th>
+<th align="center">JavaBlur</th>
+<th align="center">StackBlur</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">radius=<strong>10</strong>, scale=1, bitmap=200*200</td>
+<td align="center">51ms</td>
+<td align="center">13ms</td>
+<td align="center">162ms</td>
+<td align="center">384ms</td>
+</tr>
+<tr>
+<td align="center">radius=<strong>20</strong>, scale=1, bitmap=200*200</td>
+<td align="center">56ms</td>
+<td align="center">12ms</td>
+<td align="center">164ms</td>
+<td align="center">435ms</td>
+</tr>
+<tr>
+<td align="center">radius=10, scale=<strong>2</strong>, bitmap=200*200</td>
+<td align="center">48ms</td>
+<td align="center">11ms</td>
+<td align="center">75ms</td>
+<td align="center">110ms</td>
+</tr>
+<tr>
+<td align="center">radius=10, scale=<strong>8</strong>, bitmap=200*200</td>
+<td align="center">45ms</td>
+<td align="center">7ms</td>
+<td align="center">14ms</td>
+<td align="center">19ms</td>
+</tr>
+<tr>
+<td align="center">radius=10, scale=8, bitmap=<strong>1920*1180</strong></td>
+<td align="center">183ms</td>
+<td align="center">143ms</td>
+<td align="center">346ms</td>
+<td align="center">460ms</td>
+</tr>
+<tr>
+<td align="center">radius=<strong>20</strong>, scale=8, bitmap=1920*1180</td>
+<td align="center">204ms</td>
+<td align="center">145ms</td>
+<td align="center">353ms</td>
+<td align="center">510ms</td>
+</tr>
+<tr>
+<td align="center">radius=20, scale=<strong>1</strong>, bitmap=1920*1180</td>
+<td align="center">474ms</td>
+<td align="center">444ms</td>
+<td align="center">8663ms</td>
+<td align="center">内存溢出</td>
+</tr>
+</tbody></table>
+<p>100 次样本可能不多，但大体上我们也能比较出不同类型的高斯模糊之前的区别，及其适用场景：</p>
+<ul>
+<li>总体上，NativeBlur 和 RSBlur 的耗时会少于 JavaBlur 和 StackBlur</li>
+<li>JavaBlur 和 StackBlur 方式，如果先对 Bitmap 进行缩小，再高斯模糊，最后再放大，耗时会大大缩短</li>
+<li>radius 增大会增加耗时，但影响不大，但视图呈现效果会越模糊</li>
+<li>scale 对原图缩小倍数越多，耗时越短，但视图呈现效果同样会越模糊</li>
+<li>分辨率越高的图片，高斯模糊的就越耗时</li>
+<li>对于大图而言，如果要使用 JavaBlur 或 StackBlur，最好设置 scale 先缩小再模糊，否则将非常耗时且容易内存溢出</li>
+<li>如果已经通过 scale 方式进行优化，那么最好 radius 值可以相对小一点，否则两者的值都大会对图片的模糊效果特别强烈，也许会过了头</li>
+</ul>
+<h3 id="性能优化"><a href="#性能优化" class="headerlink" title="性能优化"></a>性能优化</h3><p>高斯模糊的优化考虑点，其实就三个：</p>
+<ul>
+<li>选择不同的高斯模糊方式</li>
+<li>通过 scale 对原图先缩小，再模糊，最后再放大方式</li>
+<li>优化高斯模糊算法</li>
+</ul>
+<p>最后一点就不考虑了，毕竟难度太大。那么，其实就剩下两种，要么是从高斯模糊的方案上选择，要么从待模糊的图片上做手脚。</p>
+<p>虽然有四种高斯模糊方案，但每种都有各自优缺点：</p>
+<ul>
+<li>RSBlur 在低端机上可能无法兼容</li>
+<li>NativeBlur 需要生成对应 CPU 架构的 so 文件支持</li>
+<li>JavaBlur 和 StackBlur 耗时会较长</li>
+</ul>
+<p>优化的考虑点大体上这几种：</p>
+<ul>
+<li>大体上，使用 NativeBlur 或者 RSBlur 即可，如果出现一些问题，那么此时可考虑切到 JavaBlur 或 StackBlur 方案，但记得结合 scale 方式优化处理。</li>
+<li>如果高斯模糊的图片有实时性要求，要求模糊得同步进行处理，主线程后续的工作需要等待高斯模糊后才能够处理的话，那么尽量选择 scale 方式进行优化，减少耗时。</li>
+<li>如果对实时性没要求，但对图片模糊程度有要求，那其实，只要后台异步去进行高斯模糊即可，此时 scale 可不用缩小太多，而利用 radius 来控制模糊效果，以达到理想的要求。</li>
+<li>如果两者都有要求，那就自行尝试寻找折中点吧。</li>
+</ul>
+<p>最后说一点，因为已经封装成组件库了，RSBlur 也是引入的 support 包，so 文件也打包好了，那么使用这两种方案足够满足绝大部分场景了，所以，没有特意指定，组件默认的方案为 RSBlur。</p>
+<h1 id="二次封装"><a href="#二次封装" class="headerlink" title="二次封装"></a>二次封装</h1><h3 id="需求场景"><a href="#需求场景" class="headerlink" title="需求场景"></a>需求场景</h3><p>为什么要二次封装？那肯定是因为有自己的各种需求场景的，我的需求如下：</p>
+<ul>
+<li>要能够对当前页面（Activity）截图后，进行模糊</li>
+<li>要能够对 drawable 资源图片进行模糊、或者对指定 View 的视图进行模糊</li>
+<li>模糊完成后，要能够自动以淡入的动画方式显示在指定的控件上</li>
+<li>存在这种需求场景：对当前界面截图、并且模糊，模糊后的图片展示的时机可能在其他界面，因此需要支持缓存功能，可以根据指定 cacheKey 值获取缓存</li>
+<li>当然，可以根据各种配置使用高斯模糊，当不指定配置时，有默认配置</li>
+</ul>
+<p>总结一下，其实封装要做的事也就是要实现：</p>
+<ul>
+<li>截图、缓存、淡入动画、默认配置</li>
+<li>可以的话，组件最好可以达到，其他人在不看文档，不看源码前提下，以最少的成本接入直接上手使用</li>
+</ul>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>截图、缓存、动画这些都属于纯功能代码的封装了，具体就不说了。</p>
+<p>这里想来讲讲，如何设计，可以让其他人以最少的成本接入直接上手使用。</p>
+<p>我的想法是，利用 AndroidStudio 的代码提示功能，具体的说就是，你只需要了解组件的入口是 DBlur 即可，至于后续怎么使用，全靠 AndroidStudio 来提示，跟着 AndroidStudio 走就行。</p>
+<p>例如：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-7eb4707f967a5577.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="DBlur入口.png">  </p>
+<p>当敲完 DBlur. 时，会弹出代码提示框，入口很少，是吧，就两个，看命名也能猜到作用：<code>getCacheBitmap()</code> 明显是用来取缓存的，那么要高斯模糊自然是另外一个入口 <code>source()</code>，这个方法有多个重载函数，看参数，其实也能知道，这就对应着要模糊的图片的不同来源类型，如：</p>
+<ul>
+<li>直接传入 Bitmap 对其进行模糊</li>
+<li>传入 Activity/View，内部会对这个界面/控件进行截图后再模糊</li>
+<li>传入 resId，对 drawable 资源图片进行模糊</li>
+</ul>
+<p>那么，可能想问了，哪里进行高斯模糊配置，哪里设置同步或异步，哪里注册回调等等。别急，既然只给你开了一个入口，那么就跟着入口走下去，自然会一步步引导你走到最后。如：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-9efa2fb81a12cd2d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BlurConfigBuilder入口.png">  </p>
+<p>第一步、第二步该做什么，我都给你规定好了，你也只能按照步骤一步步来。想要设置高斯模糊配置，你得先指定图片来源，才能进入第二步，在这里，可以进行的配置也都给你列出来了，想要哪个，直接设置即可。如：</p>
+<ul>
+<li><code>mode()</code>，<code>modeRs()</code>，<code>modeNative()</code> 等等类似 mode 开头的方法，用于指定要使用哪种高斯模糊方案，一共四种，每种内部都有提供对应的常量标志，但如果你不知道哪里找，那么直接调用 modeXXX 方法即可。</li>
+<li><code>radius()</code> 用于设置高斯模糊计算的半径，内部默认为 4。</li>
+<li><code>sampling()</code> 用于设置对原图的缩小比例，内部默认为 8，即默认先缩小 8 倍，再模糊，最后再放大。</li>
+<li><code>cache()</code> 用于设置缓存此次模糊后的图片，没有调用默认不缓存。</li>
+<li><code>animAlpha()</code> 用于设置使用淡入动画，需要结合 <code>intoTarget()</code> 使用，否则不生效。</li>
+<li><code>intoTarget()</code> 用于设置模糊完成后，自动显示到指定控件上。</li>
+</ul>
+<p>另外，看每个方法返回的类名，其实这个过程都是在设置配置项，如果有对 Builder 模式了解的话，应该清楚，这个大多用来解决构造函数参数过多的场景，最后一般都会有一个 <code>build()</code> 或者 <code>create()</code> 类型的方法。参考的是 Android 源码中 AlertDialog。</p>
+<p>也就是说，要进入下一个步骤，需要调用 <code>build()</code> 方法，如：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-96ce20f8a2154350.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="doblur.png">  </p>
+<p>显然，已经到最后一个步骤了，这里就是发起高斯模糊工作的地方了。</p>
+<ul>
+<li><code>doBlur()</code> 会指定此次高斯模糊工作异步进行，所以需要注册回调的在这里传入。</li>
+<li><code>doBlurSync()</code> 指定高斯模糊同步进行，模糊后的 Bitmap 直接返回。</li>
+</ul>
+<p>至此，接入结束。</p>
+<p>使用这个高斯模糊的组件，只需要知道 DBlur 入口，其他都跟随着 AndroidStudio 代码提示一步步往下走即可，当然你也可以直接看源码，注释里也写得蛮清楚的了。</p>
+<p>这个就是我的想法，能力不足，只能想出这种方案，如果有哪里需要改进，哪里不合理，或者有其他思路，欢迎指点一下。</p>
+<h3 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">compile <span class="string">'com.dasu.image:blur:0.0.4'</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//使用默认配置，最短调用链</span></span><br><span class="line">Bitmap bitmap = DBlur.source(MainActivity.<span class="keyword">this</span>).build().doBlurSync();</span><br><span class="line"></span><br><span class="line"><span class="comment">//同步模糊，将imageView控制的视图进行模糊，完成后自动显示到 imageView1 控件上，以淡入动画方式</span></span><br><span class="line">DBlur.source(imageView).intoTarget(imageView1).animAlpha().build().doBlurSync();</span><br><span class="line"></span><br><span class="line"><span class="comment">//异步模糊，将drawable资源文件中的图片以 NATIVE 方式进行模糊，注册回调，完成时手动显示到 imageView1 控件上</span></span><br><span class="line">DBlur.source(<span class="keyword">this</span>, R.drawable.background).mode(BlurConfig.MODE_NATIVE).build()</span><br><span class="line">      .doBlur(<span class="keyword">new</span> OnBlurListener() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBlurSuccess</span><span class="params">(Bitmap bitmap)</span> </span>&#123;</span><br><span class="line">                imageView1.setImageBitmap(bitmap);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBlurFailed</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="comment">//do something</span></span><br><span class="line">            &#125;&#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="Github"><a href="#Github" class="headerlink" title="Github"></a><a href="https://github.com/woshidasusu/base-module/tree/master/blur" target="_blank" rel="noopener">Github</a></h3><p><a href="https://github.com/woshidasusu/base-module/tree/master/blur" target="_blank" rel="noopener">DBlur 的 Github 链接：https://github.com/woshidasusu/base-module/tree/master/blur</a>  </p>
+]]></content>
+      <categories>
+        <category>Android组件</category>
       </categories>
   </entry>
   <entry>
@@ -12324,6 +12543,44 @@ public abstract class ViewPagerFragment extends Fragment {
       </categories>
   </entry>
   <entry>
+    <title>小码农的故事05</title>
+    <url>/2016/09/08/%E7%9E%8E%E6%89%AF%E6%89%AF/%E5%B0%8F%E7%A0%81%E5%86%9C%E7%9A%84%E6%95%85%E4%BA%8B05/</url>
+    <content><![CDATA[<hr>
+<p>前言：这应该是最后一章了，故事虽然到这就结束了，但现实里还要继续下去，希望在很久的以后来回顾时，能因自己学生时代有这样的经历而欣慰。<br>说明：故事中的人物均是化名，故事情节经过些许加工，故事情节并没有针对任何人，仅以此纪念自己的成长。<br>回顾上一章：<a href="http://www.jianshu.com/p/59273956629f" target="_blank" rel="noopener">详情请猛戳</a></p>
+<hr>
+<p>##第四章：Beta收官</p>
+<hr>
+<p>　　三个多周的Alpha冲刺，一个周左右的休息调整时间。紧接着也就是Beta阶段的冲刺了。</p>
+<p>　　在Alpha版本中，虽然你们预期的功能基本都实现了，但仍然有很多不足。比如界面太丑，代码模块化太烂等等。瓜哥跟你在那一周的休息调整时间里都表示过，要在Beta阶段大干一场，好好的将这些问题都解决掉。然而，现实总是残酷了，当然，这是后话，暂且不提。</p>
+<p>　　在Alpha结束后，你写了篇总结。也就是总结了下在Alpha阶段的一些感想，里面你提到了你们的项目因准备不足而陷入各种难题，提到了队友因意见不合而不断争吵的问题。总之，这三周过来，或多或少都学到了很多。</p>
+<p>　　在Alpha刚开始的编程时，你记得懂哥说项目要学会使用在框架的基础上进行开发，而不是所有代码都自己来书写。带着这种观念，你在写界面的时候引入了一大堆第三方库。需要一个点击效果，好，引入。需要一个弹窗效果，好，引入。然而你并没有真正的深入去学习你所引入的第三方库，导致很多库之间其实已经有冗余的功能了。</p>
+<p>　　更糟糕的是，队友因为你引入这么多库，从而导致在编译项目时花费了大量时间。因此，你打算在Beta阶段时将多余的库都删除掉。</p>
+<p>　　另一个项目的问题是，当初因为没认真考虑，而引入了一个不熟悉的数据库框架。到后面进行开发时，才发现你们需要的很多功能那个框架都实现不了，但已经有很多基础的数据库功能是基于那个框架上面编写的，如果要换掉那个框架，将是一个工作量巨大的任务。但如果不换掉，想要的功能又没办法实现。</p>
+<p>　　为了解决这个问题，你查了各种资料，做了各种尝试，熬到了半夜两三点。最后用一种特别暴力的方法去暂时的解决掉，搞定后你特别想去睡一觉，这种活简直了！日后需要怎么做再留给瓜哥去头疼吧。</p>
+<p>　　Beta期间也有两三周的时间，但懂哥只要求进行七次会议记录而已。瓜哥为了能让项目保持一种稳定，平均的进展，安排了每过两三四天开一次会议。但计划总是赶不上变化。</p>
+<p>　　第一周还好，因为大家第一周里面都没有什么考试，进展也还算顺利，一些Alpha遗留的问题也渐渐的解决了。但到了第二周时，有的队员有考试，而且是接连两三场考试，基于此，瓜哥最后表示，这周就先把项目放一边，大家好好复习，准备考试，等最后一周再来继续项目。</p>
+<p>　　本来以为，放一周的时间去调整，不做项目可以让大家到最后一周时能更有干劲。但事实却是，一周没碰过项目，导致大家对于项目的热情大大的降低了。不仅如此，对于项目很多地方都渐渐的感到陌生了，更可怕的是，你居然忘记了某块有合作的代码当初到底是不是你编写的。</p>
+<p>　　日后瓜哥也提过，当初因为放了一周，导致他也对于项目的进展掌握出现了很多问题。当然，这是后话，暂且不提。第二周的Beta过去了，大家都在忙着复习，确确实实都把项目扔一边去了。等到了第三周时，第一次会议上，大家甚至都不知道要说什么话。</p>
+<p>　　离最后的时间也就只剩下一周左右了，你突然觉得来不及了。自己无聊时不断地手工测试你们的软件，你发现似乎还存在一大堆问题，但就是不知道怎么把这个问题描述出来。你觉得队友应该也会自己去手工测试，然后发现相同的问题，但事实上队友基本没提过你发现的问题。</p>
+<p>　　在一次会议上，你直接表示出了厌烦，你表示说这样下去项目根本做不出来，现在仍然存在很多问题。瓜哥要你说出具体有哪些问题，但你又说不出来，你说自己跑一遍就会发现一堆问题了，但瓜哥却表示，你说有问题却又不把问题说清楚。这样，在Alpha阶段发生的一次冲突到现在又出现了一次。只是这次你没有继续接话下去，因为你突然很不想说话了。</p>
+<p>　　甚至，你出现了厌工。你总觉得，软件只有你一个人在测试，在找Bug，但事实上很多Bug都被你因为自己的心情烦躁而放大了。你不知道这是不是因为情绪不好，还是因为时间快临近截止，还是因为缺少跟队友的沟通，从而导致了你对于项目厌工的心情。</p>
+<p>　　你甚至出现过，你不做了的想法，放一边去，反正等最后验收时没办法完成作品那责任也不是你自己去担。</p>
+<p>　　然而，就在你自己胡思乱想，乱发脾气时。瓜哥又对总仓库进行了一次提交，你去看了下瓜哥的提交代码。你发现，瓜哥居然把你一直很苦恼的一些BUG解决了。瞬间，你冷静下来了。每个人都在为这个项目不断的熬夜，不断的努力。在别人埋头修BUG的时候，你却在抱怨，却在厌工。</p>
+<p>　　那天你没敲什么代码，就只是早早结束熬夜，提前上床。你想平静下自己，想让自己恢复到Alpha阶段时的状态。你觉得如果你继续以这种情绪下去的话，特别对不起瓜哥。当初是你把瓜哥拉进队伍里来的，瓜哥对于项目也一直很负责，你不能只是因为自己的情绪不好就厌工。这对项目，对瓜哥，对队员都很不公平。</p>
+<p>　　调整了状态后，你继续做项目下去。每次的会议上，你也很少再带有情绪，而是静静的听着瓜哥的安排。然后根据瓜哥安排的任务，尽可能的保证在规定时间内完成。</p>
+<p>　　Beta阶段的主要任务是实现跟网页端小组的项目的互联互通。使用同一个数据库，对数据库中表的设计，字段的设计，瓜哥都去找网页端的负责人讨论，然后再把结果告诉你们。但实现的过程中仍然碰到很多问题，为了解决这些问题，基本都把时间放在上面。</p>
+<p>　　导致了你们一开始计划在Beta阶段对界面进行大修改，对项目进行大重构的安排完全被丢到一边去了。</p>
+<p>　　在Beta的演示验收上面，又出现了各种问题，更奇葩的是这问题竟不带重复的。Alpha阶段演示验收时你们就碰上了无网络，服务器崩了，数据线连接没反应等问题导致被迫下台，先让下一组演示。而这一次的演示上，居然碰上了服务器连接不上，重启不了，演示时漏掉演示某部分功能~~</p>
+<p>　　Beta的演示验收是由各小组互评加懂哥点评结合完成的。其他小组对于你们的项目看法基本都是功能太单一了，太简单了！好吧，其实是没演示。</p>
+<p>　　演示验收完毕，这学期的软工实践算是告一段落了。也是时候再写篇总结了。</p>
+<p>　　不同于以往的数据库实践之类的课程，这门课确实让你经历了很多。见客户、每日会议、分工开发、Github团队合作、争吵讨论、编码规范、写文档等等。懂哥说过，他最大的希望就是通过这门课程，可以让他的学生能有能力接私活。你突然很期待起来，好想自己接一次私活看看。那么，就再继续充实自己吧，让自己可以拥有接私活的能力。加油吧。</p>
+<p>　　<strong>（完结。再次向懂哥，范老师表示致敬）</strong></p>
+]]></content>
+      <categories>
+        <category>谈人生</category>
+      </categories>
+  </entry>
+  <entry>
     <title>【Android】属性动画的使用理解</title>
     <url>/2016/09/08/Android%E7%9F%A5%E8%AF%86/%E3%80%90Android%E3%80%91%E5%B1%9E%E6%80%A7%E5%8A%A8%E7%94%BB%E7%9A%84%E4%BD%BF%E7%94%A8%E7%90%86%E8%A7%A3/</url>
     <content><![CDATA[<blockquote>
@@ -12421,44 +12678,6 @@ animator.start();
 ]]></content>
       <categories>
         <category>Android知识</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>小码农的故事05</title>
-    <url>/2016/09/08/%E7%9E%8E%E6%89%AF%E6%89%AF/%E5%B0%8F%E7%A0%81%E5%86%9C%E7%9A%84%E6%95%85%E4%BA%8B05/</url>
-    <content><![CDATA[<hr>
-<p>前言：这应该是最后一章了，故事虽然到这就结束了，但现实里还要继续下去，希望在很久的以后来回顾时，能因自己学生时代有这样的经历而欣慰。<br>说明：故事中的人物均是化名，故事情节经过些许加工，故事情节并没有针对任何人，仅以此纪念自己的成长。<br>回顾上一章：<a href="http://www.jianshu.com/p/59273956629f" target="_blank" rel="noopener">详情请猛戳</a></p>
-<hr>
-<p>##第四章：Beta收官</p>
-<hr>
-<p>　　三个多周的Alpha冲刺，一个周左右的休息调整时间。紧接着也就是Beta阶段的冲刺了。</p>
-<p>　　在Alpha版本中，虽然你们预期的功能基本都实现了，但仍然有很多不足。比如界面太丑，代码模块化太烂等等。瓜哥跟你在那一周的休息调整时间里都表示过，要在Beta阶段大干一场，好好的将这些问题都解决掉。然而，现实总是残酷了，当然，这是后话，暂且不提。</p>
-<p>　　在Alpha结束后，你写了篇总结。也就是总结了下在Alpha阶段的一些感想，里面你提到了你们的项目因准备不足而陷入各种难题，提到了队友因意见不合而不断争吵的问题。总之，这三周过来，或多或少都学到了很多。</p>
-<p>　　在Alpha刚开始的编程时，你记得懂哥说项目要学会使用在框架的基础上进行开发，而不是所有代码都自己来书写。带着这种观念，你在写界面的时候引入了一大堆第三方库。需要一个点击效果，好，引入。需要一个弹窗效果，好，引入。然而你并没有真正的深入去学习你所引入的第三方库，导致很多库之间其实已经有冗余的功能了。</p>
-<p>　　更糟糕的是，队友因为你引入这么多库，从而导致在编译项目时花费了大量时间。因此，你打算在Beta阶段时将多余的库都删除掉。</p>
-<p>　　另一个项目的问题是，当初因为没认真考虑，而引入了一个不熟悉的数据库框架。到后面进行开发时，才发现你们需要的很多功能那个框架都实现不了，但已经有很多基础的数据库功能是基于那个框架上面编写的，如果要换掉那个框架，将是一个工作量巨大的任务。但如果不换掉，想要的功能又没办法实现。</p>
-<p>　　为了解决这个问题，你查了各种资料，做了各种尝试，熬到了半夜两三点。最后用一种特别暴力的方法去暂时的解决掉，搞定后你特别想去睡一觉，这种活简直了！日后需要怎么做再留给瓜哥去头疼吧。</p>
-<p>　　Beta期间也有两三周的时间，但懂哥只要求进行七次会议记录而已。瓜哥为了能让项目保持一种稳定，平均的进展，安排了每过两三四天开一次会议。但计划总是赶不上变化。</p>
-<p>　　第一周还好，因为大家第一周里面都没有什么考试，进展也还算顺利，一些Alpha遗留的问题也渐渐的解决了。但到了第二周时，有的队员有考试，而且是接连两三场考试，基于此，瓜哥最后表示，这周就先把项目放一边，大家好好复习，准备考试，等最后一周再来继续项目。</p>
-<p>　　本来以为，放一周的时间去调整，不做项目可以让大家到最后一周时能更有干劲。但事实却是，一周没碰过项目，导致大家对于项目的热情大大的降低了。不仅如此，对于项目很多地方都渐渐的感到陌生了，更可怕的是，你居然忘记了某块有合作的代码当初到底是不是你编写的。</p>
-<p>　　日后瓜哥也提过，当初因为放了一周，导致他也对于项目的进展掌握出现了很多问题。当然，这是后话，暂且不提。第二周的Beta过去了，大家都在忙着复习，确确实实都把项目扔一边去了。等到了第三周时，第一次会议上，大家甚至都不知道要说什么话。</p>
-<p>　　离最后的时间也就只剩下一周左右了，你突然觉得来不及了。自己无聊时不断地手工测试你们的软件，你发现似乎还存在一大堆问题，但就是不知道怎么把这个问题描述出来。你觉得队友应该也会自己去手工测试，然后发现相同的问题，但事实上队友基本没提过你发现的问题。</p>
-<p>　　在一次会议上，你直接表示出了厌烦，你表示说这样下去项目根本做不出来，现在仍然存在很多问题。瓜哥要你说出具体有哪些问题，但你又说不出来，你说自己跑一遍就会发现一堆问题了，但瓜哥却表示，你说有问题却又不把问题说清楚。这样，在Alpha阶段发生的一次冲突到现在又出现了一次。只是这次你没有继续接话下去，因为你突然很不想说话了。</p>
-<p>　　甚至，你出现了厌工。你总觉得，软件只有你一个人在测试，在找Bug，但事实上很多Bug都被你因为自己的心情烦躁而放大了。你不知道这是不是因为情绪不好，还是因为时间快临近截止，还是因为缺少跟队友的沟通，从而导致了你对于项目厌工的心情。</p>
-<p>　　你甚至出现过，你不做了的想法，放一边去，反正等最后验收时没办法完成作品那责任也不是你自己去担。</p>
-<p>　　然而，就在你自己胡思乱想，乱发脾气时。瓜哥又对总仓库进行了一次提交，你去看了下瓜哥的提交代码。你发现，瓜哥居然把你一直很苦恼的一些BUG解决了。瞬间，你冷静下来了。每个人都在为这个项目不断的熬夜，不断的努力。在别人埋头修BUG的时候，你却在抱怨，却在厌工。</p>
-<p>　　那天你没敲什么代码，就只是早早结束熬夜，提前上床。你想平静下自己，想让自己恢复到Alpha阶段时的状态。你觉得如果你继续以这种情绪下去的话，特别对不起瓜哥。当初是你把瓜哥拉进队伍里来的，瓜哥对于项目也一直很负责，你不能只是因为自己的情绪不好就厌工。这对项目，对瓜哥，对队员都很不公平。</p>
-<p>　　调整了状态后，你继续做项目下去。每次的会议上，你也很少再带有情绪，而是静静的听着瓜哥的安排。然后根据瓜哥安排的任务，尽可能的保证在规定时间内完成。</p>
-<p>　　Beta阶段的主要任务是实现跟网页端小组的项目的互联互通。使用同一个数据库，对数据库中表的设计，字段的设计，瓜哥都去找网页端的负责人讨论，然后再把结果告诉你们。但实现的过程中仍然碰到很多问题，为了解决这些问题，基本都把时间放在上面。</p>
-<p>　　导致了你们一开始计划在Beta阶段对界面进行大修改，对项目进行大重构的安排完全被丢到一边去了。</p>
-<p>　　在Beta的演示验收上面，又出现了各种问题，更奇葩的是这问题竟不带重复的。Alpha阶段演示验收时你们就碰上了无网络，服务器崩了，数据线连接没反应等问题导致被迫下台，先让下一组演示。而这一次的演示上，居然碰上了服务器连接不上，重启不了，演示时漏掉演示某部分功能~~</p>
-<p>　　Beta的演示验收是由各小组互评加懂哥点评结合完成的。其他小组对于你们的项目看法基本都是功能太单一了，太简单了！好吧，其实是没演示。</p>
-<p>　　演示验收完毕，这学期的软工实践算是告一段落了。也是时候再写篇总结了。</p>
-<p>　　不同于以往的数据库实践之类的课程，这门课确实让你经历了很多。见客户、每日会议、分工开发、Github团队合作、争吵讨论、编码规范、写文档等等。懂哥说过，他最大的希望就是通过这门课程，可以让他的学生能有能力接私活。你突然很期待起来，好想自己接一次私活看看。那么，就再继续充实自己吧，让自己可以拥有接私活的能力。加油吧。</p>
-<p>　　<strong>（完结。再次向懂哥，范老师表示致敬）</strong></p>
-]]></content>
-      <categories>
-        <category>谈人生</category>
       </categories>
   </entry>
   <entry>
