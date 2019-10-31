@@ -5656,7 +5656,7 @@ b.y; <span class="comment">//1</span>
 </ul>
 <p>在 HTML 中的  &lt;head&gt; 内使用  &lt;style&gt; 标签，在某些情况下很有用，比如当你不能直接修改 CSS 文件时。</p>
 <p>示例：</p>
-<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span></span><br><span class="line">    a &#123;</span><br><span class="line">        background: gray;</span><br><span class="line">        color: #6a90d9;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span></span><br><span class="line">    a &#123;</span><br><span class="line">        background: gray;</span><br><span class="line"><span class="css">        <span class="selector-tag">color</span>: <span class="selector-id">#6a90d9</span>;</span></span><br><span class="line">    &#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br></pre></td></tr></table></figure>
 
 <ul>
 <li><strong>外部样式表</strong></li>
