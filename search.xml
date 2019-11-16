@@ -1,6 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>node-sass 安装的填坑记录</title>
+    <url>/2019/11/16/%E5%9F%8B%E5%9D%91%E8%AE%B0%E5%BD%95/node-sass%E5%AE%89%E8%A3%85%E7%9A%84%E5%A1%AB%E5%9D%91%E8%AE%B0%E5%BD%95/</url>
+    <content><![CDATA[<h1 id="node-sass-埋坑记录"><a href="#node-sass-埋坑记录" class="headerlink" title="node-sass 埋坑记录"></a>node-sass 埋坑记录</h1><h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>原有项目、环境：</p>
+<p>node：v8.16.2</p>
+<p>npm：v6.4.1</p>
+<p>node-sass:：v4.8.0</p>
+<p>Angular-CLI：v6.x</p>
+<p>本机没有安装 Visual Studio</p>
+<p>以上是涉及到的工具的版本，可正常使用，项目运行良好。</p>
+<p>后来，接手的新项目中：</p>
+<p>Angular-CLI：v8.x</p>
+<p>由于升级了 Angular 版本，同样也升级了 Angular-CLI 版本，导致 v8.x 版本的 node 已经无法编译 angular 项目，至少需要使用 node v10.x 版本。</p>
+<p>无奈，升级了 node 版本，随之而来的就是 node-sass v4.8.0 版本无法使用，又导致构建失败，所以又得安装新版本 node-sass。</p>
+<p>但 node-sass 新版本安装过程却又报找不到 Python 环境错误，导致 install 失败。</p>
+<p>好不容易在本地安装了 Python 环境，又报了个 MSB4132：无法识别工具版本 2.0 的错误。</p>
+<p>在网上查了半天，跟着改，却又出现新错误 MSB4019：Microsoft.Cpp.Default.props 找不到的错误。</p>
+<p>找了下，发现是因为本机没有 VS C++ 的编辑工具，可以借助：</p>
+<p><code>npm install -g --production windows.build.tools</code> </p>
+<p>来下载安装，试了下，发现是需要联网才行，办公网络没外网。</p>
+<p>官网看了半天，找到了下载离线安装包方式、结果却是 2019 版本，太新，项目仍旧报错。</p>
+<p>(what the fuck!</p>
+<h3 id="相关异常"><a href="#相关异常" class="headerlink" title="相关异常"></a>相关异常</h3><ul>
+<li><strong>error MSB4019</strong></li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line">gyp info spawn xxx</span><br><span class="line">error MSB4019：未找到导入的项目 <span class="string">"E:\Microsoft.Cpp.Default.props"</span>。请确认 &lt;Import&gt; 声明中的路径正确，且磁盘上存在该文件</span><br><span class="line"></span><br><span class="line">gyp ERR! stack Error <span class="meta">`C:\Windows\Microsoft.NET\Framework\v4.0.30319\msbuild.exe` failed with exit code: 1</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>error MSB4132</strong></li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line">gyp verb Not using VS2017: Could <span class="keyword">not</span> <span class="keyword">use</span> PowerShell to find VS2017</span><br><span class="line">...</span><br><span class="line">gyp verb could <span class="keyword">not</span> find <span class="string">"msbuild.exe"</span> in PATH - finding location in registry</span><br><span class="line">...</span><br><span class="line">MSBUILD : error MSB4132: 无法识别工具版本“<span class="number">2</span><span class="variable">.0</span>”。可用的工具版本为 <span class="string">"4.0"</span>。</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>python not found</strong></li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line">gyp verb check python checking <span class="keyword">for</span> Python executable <span class="string">"python2"</span> in the PATH</span><br><span class="line">gyp verb <span class="meta">`which` failed Error: not found: python2</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>a bug in node-gyp</strong></li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="code"><pre><span class="line">gyp ERR! This is a bug in <span class="meta">`node-gyp`.</span></span><br><span class="line">gyp ERR! Try to update node-gyp <span class="keyword">and</span> file an Issue <span class="keyword">if</span> it does <span class="keyword">not</span> help</span><br></pre></td></tr></table></figure>
+
+<h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><p>归根结底，就是因为办公网络被限制访问外网导致。</p>
+<p>毕竟升级了 angular 大版本，随之而来的一些依赖库也需要跟着升级，这无可厚非，可以理解，所以当让我也升级 node-sass 时，我没啥反感。</p>
+<p>但谁知道，node-sass 新版的下载需要依赖 C++ 的编译环境、需要依赖 python 环境，虽然到这里有点烦了，但还好，网上也很多人出现这问题，解决方案不难，如下：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">npm install --global --production windows-build-tools</span><br></pre></td></tr></table></figure>
+
+<p>windows-build-tools 的介绍可以看看官方网站：</p>
+<p><a href="https://www.npmjs.com/package/windows-build-tools" target="_blank" rel="noopener">https://www.npmjs.com/package/windows-build-tools</a></p>
+<p>这条命令，其实就是会自动去联网下载 Visual C++ Build Tools 和安装 Python 2.7 环境，一键式命令。</p>
+<p>但，我的办公网络无法访问外网啊！</p>
+<p>虽然有内网的 Npm 仓库，但也只下载了 windows-build-tools 这个包，这包里是一堆去访问外网下载东西的脚本啊，对我来说，这解决方案没用啊！</p>
+<p>无奈下，只能自己安装，Python 还好，网上搜一下，安装 + 配置环境变量即可。</p>
+<p>问题就在于 Visual C++ Build Tools，这个 Mircosoft 的东西，要搞离线安装，是真的麻烦。</p>
+<p>这里有官方的教程（虽然没怎么看懂），以及网上大佬的教程，链接都贴出来，我这里就大概讲讲，感兴趣，自行查阅：</p>
+<ul>
+<li><a href="https://docs.microsoft.com/zh-cn/visualstudio/install/create-a-network-installation-of-visual-studio?view=vs-2019" target="_blank" rel="noopener">创建 Visual Studio 的网络安装</a></li>
+<li><a href="https://feidao-edu.gitee.io/dingzk/201811291736" target="_blank" rel="noopener">node 安装 windows-build-tools</a></li>
+</ul>
+<h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><p>之所以以前正常，新项目出现种种问题，原因在于各环境的版本升级，所以，需要明确，各个环境、框架之间都是有依赖关系的，不是任意版本组合就可以的，比如：</p>
+<p>angular v8 版本就需要依赖 angular-cli 到 v8.x 版本；</p>
+<p>angular-cli v8.x 版本就需要依赖 node 到 v10.x 版本；</p>
+<p>node-sass v4.8 只支持到 node v9 版本；</p>
+<p>所以，当需要升级 angular 版本时，请注意这些事项，具体的依赖关系，请到各自的官网中查看说明。</p>
+<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><h4 id="能联网"><a href="#能联网" class="headerlink" title="能联网"></a>能联网</h4><ol>
+<li>先升级 angular 版本，再升级 angular-cli 版本</li>
+<li>构建失败时，会提示请升级 node 版本，按提示升级，可通过 nvm 或手动下载新版本 node</li>
+<li>继续构建时，node-sass 下载失败<ol>
+<li>请先确认是否是镜像问题，可以手动在浏览器地址栏输入 node-sass 下载的地址（可在 package.json.lock 中查看），看是否能够找到对应版本的 node-sass</li>
+<li>出现文章开头说过的几种 node-sass 编译错误时，注意日志，根据不同错误，搜索相关关键词，按网上教程解决，通常来说就是没有 python 环境、没有 c++ 编译工具、vs 版本过高等问题，可以试试通过 npm 安装 windows-build-tools 来自动下载安装这些工具试试</li>
+</ol>
+</li>
+</ol>
+<p>建议多去相关库的 github 的 issue 里找找，通常都能找到你遇到的问题</p>
+<h4 id="不能联网"><a href="#不能联网" class="headerlink" title="不能联网"></a>不能联网</h4><p>办公网络通常无法访问外网，但都会有自己内部的镜像仓库，所以下载基本的 node 之类的库是没有问题的，上面的解决步骤也一样可以参考执行。</p>
+<p>不能访问外网最重要的一点就是，windows 的东西没法下载，比如上面的 windows-build-tools 自动去下载 vs c++ 的编译工具就下载不了。</p>
+<p>这时候，如果需要，那就只能在能访问外网的机子上，将 vs studio 相关东西先下载下来，再用离线方式进行安装。</p>
+<p>其实，我最后即使离线安装了 vs studio 2019 的版本之后，node-sass 仍旧还是下载失败，最后，实在没时间去研究了，干脆在能访问外网的机子上面，也安装同版本的 node，然后成功下载好 node-sass 之后，将这个 node-sass 包直接拷贝到办公机子上面使用了。</p>
+<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3><p>以下是很多很多的链接，有的有提出解决方案，有的没有，自取：</p>
+<ul>
+<li><a href="https://github.com/sass/node-sass/issues/2700" target="_blank" rel="noopener">Cannot compile node-sass with Visual Studio 2019 installed</a></li>
+<li><a href="https://github.com/nodejs/node-gyp/issues/1960" target="_blank" rel="noopener">Error in build npm install node-sass</a></li>
+<li><a href="https://www.jianshu.com/p/92afe92db99f" target="_blank" rel="noopener">node-sass 安装失败的各种坑</a></li>
+<li><a href="https://github.com/mapbox/node-sqlite3/issues/548" target="_blank" rel="noopener">MSBUILD : error MSB4132: 无法识别工具版本“2.0”。可用的工具版本为 “14.0”, “4.0”。 what‘s wrong?</a></li>
+<li><a href="https://feidao-edu.gitee.io/dingzk/201811291736" target="_blank" rel="noopener">node 安装 windows-build-tools</a></li>
+<li><a href="https://docs.microsoft.com/zh-cn/visualstudio/install/create-an-offline-installation-of-visual-studio?view=vs-2019#use-the-command-line-to-create-a-local-cache" target="_blank" rel="noopener">创建 Visual Studio 的脱机安装</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>埋坑记录</category>
+      </categories>
+  </entry>
+  <entry>
     <title>记 Maven 本地仓库埋坑之依赖包不能用</title>
     <url>/2019/11/09/%E5%9F%8B%E5%9D%91%E8%AE%B0%E5%BD%95/Maven%E6%9C%AC%E5%9C%B0%E4%BB%93%E5%BA%93%E5%9F%8B%E5%9D%91-Verifying%20Availability/</url>
     <content><![CDATA[<h1 id="记一次-Maven-本地仓库埋坑之-Verifying-Availability"><a href="#记一次-Maven-本地仓库埋坑之-Verifying-Availability" class="headerlink" title="记一次 Maven 本地仓库埋坑之 Verifying Availability"></a>记一次 Maven 本地仓库埋坑之 Verifying Availability</h1><h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>某 Java 后端项目使用 maven 构建，因为某些原因，某些依赖库下载不了，直接找其它人索要了他电脑上的 maven 本地仓库里的依赖包。</p>
@@ -5707,7 +5799,7 @@ b.y; <span class="comment">//1</span>
 </ul>
 <p>在 HTML 中的  &lt;head&gt; 内使用  &lt;style&gt; 标签，在某些情况下很有用，比如当你不能直接修改 CSS 文件时。</p>
 <p>示例：</p>
-<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span></span><br><span class="line">    a &#123;</span><br><span class="line">        background: gray;</span><br><span class="line">        color: #6a90d9;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span></span><br><span class="line">    a &#123;</span><br><span class="line">        background: gray;</span><br><span class="line"><span class="css">        <span class="selector-tag">color</span>: <span class="selector-id">#6a90d9</span>;</span></span><br><span class="line">    &#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br></pre></td></tr></table></figure>
 
 <ul>
 <li><strong>外部样式表</strong></li>
@@ -7021,189 +7113,6 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
-    <title>封装个-Android-的高斯模糊组件</title>
-    <url>/2018/10/14/Android%E7%BB%84%E4%BB%B6/%E5%B0%81%E8%A3%85%E4%B8%AA-Android-%E7%9A%84%E9%AB%98%E6%96%AF%E6%A8%A1%E7%B3%8A%E7%BB%84%E4%BB%B6/</url>
-    <content><![CDATA[<blockquote>
-<p><strong>本篇文章已授权微信公众号 hongyangAndroid （鸿洋）独家发布</strong>  </p>
-</blockquote>
-<p>最近基于 <a href="https://github.com/kikoso/android-stackblur" target="_blank" rel="noopener">Android StackBlur</a> 开源库，根据自己碰到的需求场景，封装了个高斯模糊组件，顺便记录一下。  </p>
-<p><strong>为什么要自己重复造轮子？</strong>  </p>
-<p>其实也谈不上重头自己造轮子，毕竟是基于大神的开源库，做了二次封装。封装的目的在于，方便外部使用。毕竟有着自己的编程习惯，大神的开源库也只是提供了基础的功能，现实编程中，产品的需求是各种各样的。</p>
-<p>导致每次使用时，都蛮麻烦的，需要额外自己处理蛮多东西。而一旦新的项目又需要接入高斯模糊了，又得重新写一些代码，复制粘贴也麻烦，经常由于各种业务耦合报错。</p>
-<p>既然如此，干脆花时间抽个基础、公用的高斯模糊组件，需要时直接依赖即可。</p>
-<h1 id="基础理论"><a href="#基础理论" class="headerlink" title="基础理论"></a>基础理论</h1><h3 id="高斯模糊"><a href="#高斯模糊" class="headerlink" title="高斯模糊"></a>高斯模糊</h3><p>高斯模糊的原理和算法就不介绍了，我也不懂，没深入，这里就大概讲讲我的粗坯理解：</p>
-<p>我们知道，一张图片，本质上其实是一个个像素点构成的，虽然经过计算机处理后，呈现在我们眼前的是具体的图像。但在计算机中，其实就是一堆数组数据。</p>
-<p>数组中每个单位就是一个个像素点，那么每个像素点是存储什么内容呢，其实也就是 RGB 或者 ARGB 之类格式的数据。</p>
-<p>高斯模糊，大体上就是对这张图片中的每个像素点都重新进行计算，每个像素点的新值等于以它为中心，半径为 r 的周围区域内所有像素点各自按照不同权重相加之和的平均值。</p>
-<p>可以粗坯的理解为，<strong>本来这个像素点是要呈现它自己本身的内容，但经过高斯模糊计算后，掺杂进它周围区域像素点的内容了。就像加水稀释类似的道理，既然都掺杂进周围的内容了，那么它呈现的内容相比最初，肯定就不那么清晰了</strong>。</p>
-<p>而如果掺杂的半径越大，混合进的内容也就越多，那么它本身的内容就越淡了，是不是这个理。所以，这就是为什么每个开源的高斯模糊组件库，使用时基本都需要我们传入一个 radius 半径的参数。而且，半径越大，越模糊。</p>
-<p>这么一粗坯的解释，就理解多了，是吧。</p>
-<p>为什么需要大概掌握这个理论基础呢？</p>
-<p>想想，高斯模糊是遍历所有像素点，对每个像素点都重新计算。那么，这自然是一个耗时的工作，掌握了理论基础，我们要优化时也才有方向去优化。</p>
-<h3 id="性能对比"><a href="#性能对比" class="headerlink" title="性能对比"></a>性能对比</h3><p>大神的开源库中提供了三种高斯模糊方式，而我在 <a href="https://github.com/Blankj/AndroidUtilCode" target="_blank" rel="noopener">Blankj 的 AndroidUtilCode</a> 开源库中发现了另外一种，所以我将他们都整合起来，一共有四种：</p>
-<ul>
-<li>Google 官方提供的 RenderScript 方式 （RSBlur）</li>
-<li>C 编写的高斯算法 blur.c 方式 （NativeBlur）</li>
-<li>Java 编写的高斯算法方式1（JavaBlur）</li>
-<li>Java 编写的高斯算法方式2（StackBlur）</li>
-</ul>
-<p>其实，大体上就三种：Google 官方提供的，大神用 C 写的高斯模糊算法，大神用 Java 写的高斯模糊算法。至于后面两种，看了下，算法的代码不一样，我就把它们当做是两种不同的算法实现了。也许是一样，但我没深入去看，反正代码不一样，我就这么认为了。</p>
-<p>下面我们来做个实验，在如下相同条件下，不同高斯模糊方案的耗时比较：</p>
-<ul>
-<li>radius=10, scale=1, bitmap=200*200(11.69KB)</li>
-</ul>
-<p>ps: radius 表示高斯算法计算过程中的半径取值，scale=1表示对 bitmap 原图进行高斯模糊。这些前提条件需要了解一下，不然你在看网上其他类似性能比对的文章时，发现它们动不动就优化到几 ms 级别的，然而你自己尝试却始终达不到。这是因为也许所使用的这些前提都不一致，不一致的前提下，耗时根本无从比较。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">testBlur</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="keyword">int</span> sum = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">		<span class="keyword">long</span> time = SystemClock.uptimeMillis();</span><br><span class="line">		DBlur.source(<span class="keyword">this</span>, R.drawable.image).modeRs().radius(<span class="number">10</span>).sampling(<span class="number">1</span>).build().doBlurSync();</span><br><span class="line">		<span class="keyword">long</span> end = SystemClock.uptimeMillis();</span><br><span class="line">		sum += (end - time);</span><br><span class="line">	&#125;</span><br><span class="line">    Log.e(<span class="string">"DBlur"</span>, <span class="string">"RSBlur cast "</span> + (sum/<span class="number">100</span>) + <span class="string">"ms"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>代码模板如上，分别运行 100 次后取平均值，四种不同方式的耗时如下表：</p>
-<table>
-<thead>
-<tr>
-<th align="center">前提条件</th>
-<th align="center">RSBlur</th>
-<th align="center">NativeBlur</th>
-<th align="center">JavaBlur</th>
-<th align="center">StackBlur</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">radius=<strong>10</strong>, scale=1, bitmap=200*200</td>
-<td align="center">51ms</td>
-<td align="center">13ms</td>
-<td align="center">162ms</td>
-<td align="center">384ms</td>
-</tr>
-<tr>
-<td align="center">radius=<strong>20</strong>, scale=1, bitmap=200*200</td>
-<td align="center">56ms</td>
-<td align="center">12ms</td>
-<td align="center">164ms</td>
-<td align="center">435ms</td>
-</tr>
-<tr>
-<td align="center">radius=10, scale=<strong>2</strong>, bitmap=200*200</td>
-<td align="center">48ms</td>
-<td align="center">11ms</td>
-<td align="center">75ms</td>
-<td align="center">110ms</td>
-</tr>
-<tr>
-<td align="center">radius=10, scale=<strong>8</strong>, bitmap=200*200</td>
-<td align="center">45ms</td>
-<td align="center">7ms</td>
-<td align="center">14ms</td>
-<td align="center">19ms</td>
-</tr>
-<tr>
-<td align="center">radius=10, scale=8, bitmap=<strong>1920*1180</strong></td>
-<td align="center">183ms</td>
-<td align="center">143ms</td>
-<td align="center">346ms</td>
-<td align="center">460ms</td>
-</tr>
-<tr>
-<td align="center">radius=<strong>20</strong>, scale=8, bitmap=1920*1180</td>
-<td align="center">204ms</td>
-<td align="center">145ms</td>
-<td align="center">353ms</td>
-<td align="center">510ms</td>
-</tr>
-<tr>
-<td align="center">radius=20, scale=<strong>1</strong>, bitmap=1920*1180</td>
-<td align="center">474ms</td>
-<td align="center">444ms</td>
-<td align="center">8663ms</td>
-<td align="center">内存溢出</td>
-</tr>
-</tbody></table>
-<p>100 次样本可能不多，但大体上我们也能比较出不同类型的高斯模糊之前的区别，及其适用场景：</p>
-<ul>
-<li>总体上，NativeBlur 和 RSBlur 的耗时会少于 JavaBlur 和 StackBlur</li>
-<li>JavaBlur 和 StackBlur 方式，如果先对 Bitmap 进行缩小，再高斯模糊，最后再放大，耗时会大大缩短</li>
-<li>radius 增大会增加耗时，但影响不大，但视图呈现效果会越模糊</li>
-<li>scale 对原图缩小倍数越多，耗时越短，但视图呈现效果同样会越模糊</li>
-<li>分辨率越高的图片，高斯模糊的就越耗时</li>
-<li>对于大图而言，如果要使用 JavaBlur 或 StackBlur，最好设置 scale 先缩小再模糊，否则将非常耗时且容易内存溢出</li>
-<li>如果已经通过 scale 方式进行优化，那么最好 radius 值可以相对小一点，否则两者的值都大会对图片的模糊效果特别强烈，也许会过了头</li>
-</ul>
-<h3 id="性能优化"><a href="#性能优化" class="headerlink" title="性能优化"></a>性能优化</h3><p>高斯模糊的优化考虑点，其实就三个：</p>
-<ul>
-<li>选择不同的高斯模糊方式</li>
-<li>通过 scale 对原图先缩小，再模糊，最后再放大方式</li>
-<li>优化高斯模糊算法</li>
-</ul>
-<p>最后一点就不考虑了，毕竟难度太大。那么，其实就剩下两种，要么是从高斯模糊的方案上选择，要么从待模糊的图片上做手脚。</p>
-<p>虽然有四种高斯模糊方案，但每种都有各自优缺点：</p>
-<ul>
-<li>RSBlur 在低端机上可能无法兼容</li>
-<li>NativeBlur 需要生成对应 CPU 架构的 so 文件支持</li>
-<li>JavaBlur 和 StackBlur 耗时会较长</li>
-</ul>
-<p>优化的考虑点大体上这几种：</p>
-<ul>
-<li>大体上，使用 NativeBlur 或者 RSBlur 即可，如果出现一些问题，那么此时可考虑切到 JavaBlur 或 StackBlur 方案，但记得结合 scale 方式优化处理。</li>
-<li>如果高斯模糊的图片有实时性要求，要求模糊得同步进行处理，主线程后续的工作需要等待高斯模糊后才能够处理的话，那么尽量选择 scale 方式进行优化，减少耗时。</li>
-<li>如果对实时性没要求，但对图片模糊程度有要求，那其实，只要后台异步去进行高斯模糊即可，此时 scale 可不用缩小太多，而利用 radius 来控制模糊效果，以达到理想的要求。</li>
-<li>如果两者都有要求，那就自行尝试寻找折中点吧。</li>
-</ul>
-<p>最后说一点，因为已经封装成组件库了，RSBlur 也是引入的 support 包，so 文件也打包好了，那么使用这两种方案足够满足绝大部分场景了，所以，没有特意指定，组件默认的方案为 RSBlur。</p>
-<h1 id="二次封装"><a href="#二次封装" class="headerlink" title="二次封装"></a>二次封装</h1><h3 id="需求场景"><a href="#需求场景" class="headerlink" title="需求场景"></a>需求场景</h3><p>为什么要二次封装？那肯定是因为有自己的各种需求场景的，我的需求如下：</p>
-<ul>
-<li>要能够对当前页面（Activity）截图后，进行模糊</li>
-<li>要能够对 drawable 资源图片进行模糊、或者对指定 View 的视图进行模糊</li>
-<li>模糊完成后，要能够自动以淡入的动画方式显示在指定的控件上</li>
-<li>存在这种需求场景：对当前界面截图、并且模糊，模糊后的图片展示的时机可能在其他界面，因此需要支持缓存功能，可以根据指定 cacheKey 值获取缓存</li>
-<li>当然，可以根据各种配置使用高斯模糊，当不指定配置时，有默认配置</li>
-</ul>
-<p>总结一下，其实封装要做的事也就是要实现：</p>
-<ul>
-<li>截图、缓存、淡入动画、默认配置</li>
-<li>可以的话，组件最好可以达到，其他人在不看文档，不看源码前提下，以最少的成本接入直接上手使用</li>
-</ul>
-<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>截图、缓存、动画这些都属于纯功能代码的封装了，具体就不说了。</p>
-<p>这里想来讲讲，如何设计，可以让其他人以最少的成本接入直接上手使用。</p>
-<p>我的想法是，利用 AndroidStudio 的代码提示功能，具体的说就是，你只需要了解组件的入口是 DBlur 即可，至于后续怎么使用，全靠 AndroidStudio 来提示，跟着 AndroidStudio 走就行。</p>
-<p>例如：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/1924341-7eb4707f967a5577.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="DBlur入口.png">  </p>
-<p>当敲完 DBlur. 时，会弹出代码提示框，入口很少，是吧，就两个，看命名也能猜到作用：<code>getCacheBitmap()</code> 明显是用来取缓存的，那么要高斯模糊自然是另外一个入口 <code>source()</code>，这个方法有多个重载函数，看参数，其实也能知道，这就对应着要模糊的图片的不同来源类型，如：</p>
-<ul>
-<li>直接传入 Bitmap 对其进行模糊</li>
-<li>传入 Activity/View，内部会对这个界面/控件进行截图后再模糊</li>
-<li>传入 resId，对 drawable 资源图片进行模糊</li>
-</ul>
-<p>那么，可能想问了，哪里进行高斯模糊配置，哪里设置同步或异步，哪里注册回调等等。别急，既然只给你开了一个入口，那么就跟着入口走下去，自然会一步步引导你走到最后。如：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/1924341-9efa2fb81a12cd2d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BlurConfigBuilder入口.png">  </p>
-<p>第一步、第二步该做什么，我都给你规定好了，你也只能按照步骤一步步来。想要设置高斯模糊配置，你得先指定图片来源，才能进入第二步，在这里，可以进行的配置也都给你列出来了，想要哪个，直接设置即可。如：</p>
-<ul>
-<li><code>mode()</code>，<code>modeRs()</code>，<code>modeNative()</code> 等等类似 mode 开头的方法，用于指定要使用哪种高斯模糊方案，一共四种，每种内部都有提供对应的常量标志，但如果你不知道哪里找，那么直接调用 modeXXX 方法即可。</li>
-<li><code>radius()</code> 用于设置高斯模糊计算的半径，内部默认为 4。</li>
-<li><code>sampling()</code> 用于设置对原图的缩小比例，内部默认为 8，即默认先缩小 8 倍，再模糊，最后再放大。</li>
-<li><code>cache()</code> 用于设置缓存此次模糊后的图片，没有调用默认不缓存。</li>
-<li><code>animAlpha()</code> 用于设置使用淡入动画，需要结合 <code>intoTarget()</code> 使用，否则不生效。</li>
-<li><code>intoTarget()</code> 用于设置模糊完成后，自动显示到指定控件上。</li>
-</ul>
-<p>另外，看每个方法返回的类名，其实这个过程都是在设置配置项，如果有对 Builder 模式了解的话，应该清楚，这个大多用来解决构造函数参数过多的场景，最后一般都会有一个 <code>build()</code> 或者 <code>create()</code> 类型的方法。参考的是 Android 源码中 AlertDialog。</p>
-<p>也就是说，要进入下一个步骤，需要调用 <code>build()</code> 方法，如：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/1924341-96ce20f8a2154350.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="doblur.png">  </p>
-<p>显然，已经到最后一个步骤了，这里就是发起高斯模糊工作的地方了。</p>
-<ul>
-<li><code>doBlur()</code> 会指定此次高斯模糊工作异步进行，所以需要注册回调的在这里传入。</li>
-<li><code>doBlurSync()</code> 指定高斯模糊同步进行，模糊后的 Bitmap 直接返回。</li>
-</ul>
-<p>至此，接入结束。</p>
-<p>使用这个高斯模糊的组件，只需要知道 DBlur 入口，其他都跟随着 AndroidStudio 代码提示一步步往下走即可，当然你也可以直接看源码，注释里也写得蛮清楚的了。</p>
-<p>这个就是我的想法，能力不足，只能想出这种方案，如果有哪里需要改进，哪里不合理，或者有其他思路，欢迎指点一下。</p>
-<h3 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">compile <span class="string">'com.dasu.image:blur:0.0.4'</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//使用默认配置，最短调用链</span></span><br><span class="line">Bitmap bitmap = DBlur.source(MainActivity.<span class="keyword">this</span>).build().doBlurSync();</span><br><span class="line"></span><br><span class="line"><span class="comment">//同步模糊，将imageView控制的视图进行模糊，完成后自动显示到 imageView1 控件上，以淡入动画方式</span></span><br><span class="line">DBlur.source(imageView).intoTarget(imageView1).animAlpha().build().doBlurSync();</span><br><span class="line"></span><br><span class="line"><span class="comment">//异步模糊，将drawable资源文件中的图片以 NATIVE 方式进行模糊，注册回调，完成时手动显示到 imageView1 控件上</span></span><br><span class="line">DBlur.source(<span class="keyword">this</span>, R.drawable.background).mode(BlurConfig.MODE_NATIVE).build()</span><br><span class="line">      .doBlur(<span class="keyword">new</span> OnBlurListener() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBlurSuccess</span><span class="params">(Bitmap bitmap)</span> </span>&#123;</span><br><span class="line">                imageView1.setImageBitmap(bitmap);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBlurFailed</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="comment">//do something</span></span><br><span class="line">            &#125;&#125;);</span><br></pre></td></tr></table></figure>
-
-<h3 id="Github"><a href="#Github" class="headerlink" title="Github"></a><a href="https://github.com/woshidasusu/base-module/tree/master/blur" target="_blank" rel="noopener">Github</a></h3><p><a href="https://github.com/woshidasusu/base-module/tree/master/blur" target="_blank" rel="noopener">DBlur 的 Github 链接：https://github.com/woshidasusu/base-module/tree/master/blur</a>  </p>
-]]></content>
-      <categories>
-        <category>Android组件</category>
-      </categories>
-  </entry>
-  <entry>
     <title>Android中一张图片占据的内存大小是如何计算</title>
     <url>/2018/10/14/Android%E7%9F%A5%E8%AF%86/Android%E4%B8%AD%E4%B8%80%E5%BC%A0%E5%9B%BE%E7%89%87%E5%8D%A0%E6%8D%AE%E7%9A%84%E5%86%85%E5%AD%98%E5%A4%A7%E5%B0%8F%E6%98%AF%E5%A6%82%E4%BD%95%E8%AE%A1%E7%AE%97/</url>
     <content><![CDATA[<blockquote>
@@ -7504,6 +7413,189 @@ b.y; <span class="comment">//1</span>
 ]]></content>
       <categories>
         <category>Android知识</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>封装个-Android-的高斯模糊组件</title>
+    <url>/2018/10/14/Android%E7%BB%84%E4%BB%B6/%E5%B0%81%E8%A3%85%E4%B8%AA-Android-%E7%9A%84%E9%AB%98%E6%96%AF%E6%A8%A1%E7%B3%8A%E7%BB%84%E4%BB%B6/</url>
+    <content><![CDATA[<blockquote>
+<p><strong>本篇文章已授权微信公众号 hongyangAndroid （鸿洋）独家发布</strong>  </p>
+</blockquote>
+<p>最近基于 <a href="https://github.com/kikoso/android-stackblur" target="_blank" rel="noopener">Android StackBlur</a> 开源库，根据自己碰到的需求场景，封装了个高斯模糊组件，顺便记录一下。  </p>
+<p><strong>为什么要自己重复造轮子？</strong>  </p>
+<p>其实也谈不上重头自己造轮子，毕竟是基于大神的开源库，做了二次封装。封装的目的在于，方便外部使用。毕竟有着自己的编程习惯，大神的开源库也只是提供了基础的功能，现实编程中，产品的需求是各种各样的。</p>
+<p>导致每次使用时，都蛮麻烦的，需要额外自己处理蛮多东西。而一旦新的项目又需要接入高斯模糊了，又得重新写一些代码，复制粘贴也麻烦，经常由于各种业务耦合报错。</p>
+<p>既然如此，干脆花时间抽个基础、公用的高斯模糊组件，需要时直接依赖即可。</p>
+<h1 id="基础理论"><a href="#基础理论" class="headerlink" title="基础理论"></a>基础理论</h1><h3 id="高斯模糊"><a href="#高斯模糊" class="headerlink" title="高斯模糊"></a>高斯模糊</h3><p>高斯模糊的原理和算法就不介绍了，我也不懂，没深入，这里就大概讲讲我的粗坯理解：</p>
+<p>我们知道，一张图片，本质上其实是一个个像素点构成的，虽然经过计算机处理后，呈现在我们眼前的是具体的图像。但在计算机中，其实就是一堆数组数据。</p>
+<p>数组中每个单位就是一个个像素点，那么每个像素点是存储什么内容呢，其实也就是 RGB 或者 ARGB 之类格式的数据。</p>
+<p>高斯模糊，大体上就是对这张图片中的每个像素点都重新进行计算，每个像素点的新值等于以它为中心，半径为 r 的周围区域内所有像素点各自按照不同权重相加之和的平均值。</p>
+<p>可以粗坯的理解为，<strong>本来这个像素点是要呈现它自己本身的内容，但经过高斯模糊计算后，掺杂进它周围区域像素点的内容了。就像加水稀释类似的道理，既然都掺杂进周围的内容了，那么它呈现的内容相比最初，肯定就不那么清晰了</strong>。</p>
+<p>而如果掺杂的半径越大，混合进的内容也就越多，那么它本身的内容就越淡了，是不是这个理。所以，这就是为什么每个开源的高斯模糊组件库，使用时基本都需要我们传入一个 radius 半径的参数。而且，半径越大，越模糊。</p>
+<p>这么一粗坯的解释，就理解多了，是吧。</p>
+<p>为什么需要大概掌握这个理论基础呢？</p>
+<p>想想，高斯模糊是遍历所有像素点，对每个像素点都重新计算。那么，这自然是一个耗时的工作，掌握了理论基础，我们要优化时也才有方向去优化。</p>
+<h3 id="性能对比"><a href="#性能对比" class="headerlink" title="性能对比"></a>性能对比</h3><p>大神的开源库中提供了三种高斯模糊方式，而我在 <a href="https://github.com/Blankj/AndroidUtilCode" target="_blank" rel="noopener">Blankj 的 AndroidUtilCode</a> 开源库中发现了另外一种，所以我将他们都整合起来，一共有四种：</p>
+<ul>
+<li>Google 官方提供的 RenderScript 方式 （RSBlur）</li>
+<li>C 编写的高斯算法 blur.c 方式 （NativeBlur）</li>
+<li>Java 编写的高斯算法方式1（JavaBlur）</li>
+<li>Java 编写的高斯算法方式2（StackBlur）</li>
+</ul>
+<p>其实，大体上就三种：Google 官方提供的，大神用 C 写的高斯模糊算法，大神用 Java 写的高斯模糊算法。至于后面两种，看了下，算法的代码不一样，我就把它们当做是两种不同的算法实现了。也许是一样，但我没深入去看，反正代码不一样，我就这么认为了。</p>
+<p>下面我们来做个实验，在如下相同条件下，不同高斯模糊方案的耗时比较：</p>
+<ul>
+<li>radius=10, scale=1, bitmap=200*200(11.69KB)</li>
+</ul>
+<p>ps: radius 表示高斯算法计算过程中的半径取值，scale=1表示对 bitmap 原图进行高斯模糊。这些前提条件需要了解一下，不然你在看网上其他类似性能比对的文章时，发现它们动不动就优化到几 ms 级别的，然而你自己尝试却始终达不到。这是因为也许所使用的这些前提都不一致，不一致的前提下，耗时根本无从比较。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">testBlur</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="keyword">int</span> sum = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">		<span class="keyword">long</span> time = SystemClock.uptimeMillis();</span><br><span class="line">		DBlur.source(<span class="keyword">this</span>, R.drawable.image).modeRs().radius(<span class="number">10</span>).sampling(<span class="number">1</span>).build().doBlurSync();</span><br><span class="line">		<span class="keyword">long</span> end = SystemClock.uptimeMillis();</span><br><span class="line">		sum += (end - time);</span><br><span class="line">	&#125;</span><br><span class="line">    Log.e(<span class="string">"DBlur"</span>, <span class="string">"RSBlur cast "</span> + (sum/<span class="number">100</span>) + <span class="string">"ms"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>代码模板如上，分别运行 100 次后取平均值，四种不同方式的耗时如下表：</p>
+<table>
+<thead>
+<tr>
+<th align="center">前提条件</th>
+<th align="center">RSBlur</th>
+<th align="center">NativeBlur</th>
+<th align="center">JavaBlur</th>
+<th align="center">StackBlur</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">radius=<strong>10</strong>, scale=1, bitmap=200*200</td>
+<td align="center">51ms</td>
+<td align="center">13ms</td>
+<td align="center">162ms</td>
+<td align="center">384ms</td>
+</tr>
+<tr>
+<td align="center">radius=<strong>20</strong>, scale=1, bitmap=200*200</td>
+<td align="center">56ms</td>
+<td align="center">12ms</td>
+<td align="center">164ms</td>
+<td align="center">435ms</td>
+</tr>
+<tr>
+<td align="center">radius=10, scale=<strong>2</strong>, bitmap=200*200</td>
+<td align="center">48ms</td>
+<td align="center">11ms</td>
+<td align="center">75ms</td>
+<td align="center">110ms</td>
+</tr>
+<tr>
+<td align="center">radius=10, scale=<strong>8</strong>, bitmap=200*200</td>
+<td align="center">45ms</td>
+<td align="center">7ms</td>
+<td align="center">14ms</td>
+<td align="center">19ms</td>
+</tr>
+<tr>
+<td align="center">radius=10, scale=8, bitmap=<strong>1920*1180</strong></td>
+<td align="center">183ms</td>
+<td align="center">143ms</td>
+<td align="center">346ms</td>
+<td align="center">460ms</td>
+</tr>
+<tr>
+<td align="center">radius=<strong>20</strong>, scale=8, bitmap=1920*1180</td>
+<td align="center">204ms</td>
+<td align="center">145ms</td>
+<td align="center">353ms</td>
+<td align="center">510ms</td>
+</tr>
+<tr>
+<td align="center">radius=20, scale=<strong>1</strong>, bitmap=1920*1180</td>
+<td align="center">474ms</td>
+<td align="center">444ms</td>
+<td align="center">8663ms</td>
+<td align="center">内存溢出</td>
+</tr>
+</tbody></table>
+<p>100 次样本可能不多，但大体上我们也能比较出不同类型的高斯模糊之前的区别，及其适用场景：</p>
+<ul>
+<li>总体上，NativeBlur 和 RSBlur 的耗时会少于 JavaBlur 和 StackBlur</li>
+<li>JavaBlur 和 StackBlur 方式，如果先对 Bitmap 进行缩小，再高斯模糊，最后再放大，耗时会大大缩短</li>
+<li>radius 增大会增加耗时，但影响不大，但视图呈现效果会越模糊</li>
+<li>scale 对原图缩小倍数越多，耗时越短，但视图呈现效果同样会越模糊</li>
+<li>分辨率越高的图片，高斯模糊的就越耗时</li>
+<li>对于大图而言，如果要使用 JavaBlur 或 StackBlur，最好设置 scale 先缩小再模糊，否则将非常耗时且容易内存溢出</li>
+<li>如果已经通过 scale 方式进行优化，那么最好 radius 值可以相对小一点，否则两者的值都大会对图片的模糊效果特别强烈，也许会过了头</li>
+</ul>
+<h3 id="性能优化"><a href="#性能优化" class="headerlink" title="性能优化"></a>性能优化</h3><p>高斯模糊的优化考虑点，其实就三个：</p>
+<ul>
+<li>选择不同的高斯模糊方式</li>
+<li>通过 scale 对原图先缩小，再模糊，最后再放大方式</li>
+<li>优化高斯模糊算法</li>
+</ul>
+<p>最后一点就不考虑了，毕竟难度太大。那么，其实就剩下两种，要么是从高斯模糊的方案上选择，要么从待模糊的图片上做手脚。</p>
+<p>虽然有四种高斯模糊方案，但每种都有各自优缺点：</p>
+<ul>
+<li>RSBlur 在低端机上可能无法兼容</li>
+<li>NativeBlur 需要生成对应 CPU 架构的 so 文件支持</li>
+<li>JavaBlur 和 StackBlur 耗时会较长</li>
+</ul>
+<p>优化的考虑点大体上这几种：</p>
+<ul>
+<li>大体上，使用 NativeBlur 或者 RSBlur 即可，如果出现一些问题，那么此时可考虑切到 JavaBlur 或 StackBlur 方案，但记得结合 scale 方式优化处理。</li>
+<li>如果高斯模糊的图片有实时性要求，要求模糊得同步进行处理，主线程后续的工作需要等待高斯模糊后才能够处理的话，那么尽量选择 scale 方式进行优化，减少耗时。</li>
+<li>如果对实时性没要求，但对图片模糊程度有要求，那其实，只要后台异步去进行高斯模糊即可，此时 scale 可不用缩小太多，而利用 radius 来控制模糊效果，以达到理想的要求。</li>
+<li>如果两者都有要求，那就自行尝试寻找折中点吧。</li>
+</ul>
+<p>最后说一点，因为已经封装成组件库了，RSBlur 也是引入的 support 包，so 文件也打包好了，那么使用这两种方案足够满足绝大部分场景了，所以，没有特意指定，组件默认的方案为 RSBlur。</p>
+<h1 id="二次封装"><a href="#二次封装" class="headerlink" title="二次封装"></a>二次封装</h1><h3 id="需求场景"><a href="#需求场景" class="headerlink" title="需求场景"></a>需求场景</h3><p>为什么要二次封装？那肯定是因为有自己的各种需求场景的，我的需求如下：</p>
+<ul>
+<li>要能够对当前页面（Activity）截图后，进行模糊</li>
+<li>要能够对 drawable 资源图片进行模糊、或者对指定 View 的视图进行模糊</li>
+<li>模糊完成后，要能够自动以淡入的动画方式显示在指定的控件上</li>
+<li>存在这种需求场景：对当前界面截图、并且模糊，模糊后的图片展示的时机可能在其他界面，因此需要支持缓存功能，可以根据指定 cacheKey 值获取缓存</li>
+<li>当然，可以根据各种配置使用高斯模糊，当不指定配置时，有默认配置</li>
+</ul>
+<p>总结一下，其实封装要做的事也就是要实现：</p>
+<ul>
+<li>截图、缓存、淡入动画、默认配置</li>
+<li>可以的话，组件最好可以达到，其他人在不看文档，不看源码前提下，以最少的成本接入直接上手使用</li>
+</ul>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>截图、缓存、动画这些都属于纯功能代码的封装了，具体就不说了。</p>
+<p>这里想来讲讲，如何设计，可以让其他人以最少的成本接入直接上手使用。</p>
+<p>我的想法是，利用 AndroidStudio 的代码提示功能，具体的说就是，你只需要了解组件的入口是 DBlur 即可，至于后续怎么使用，全靠 AndroidStudio 来提示，跟着 AndroidStudio 走就行。</p>
+<p>例如：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-7eb4707f967a5577.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="DBlur入口.png">  </p>
+<p>当敲完 DBlur. 时，会弹出代码提示框，入口很少，是吧，就两个，看命名也能猜到作用：<code>getCacheBitmap()</code> 明显是用来取缓存的，那么要高斯模糊自然是另外一个入口 <code>source()</code>，这个方法有多个重载函数，看参数，其实也能知道，这就对应着要模糊的图片的不同来源类型，如：</p>
+<ul>
+<li>直接传入 Bitmap 对其进行模糊</li>
+<li>传入 Activity/View，内部会对这个界面/控件进行截图后再模糊</li>
+<li>传入 resId，对 drawable 资源图片进行模糊</li>
+</ul>
+<p>那么，可能想问了，哪里进行高斯模糊配置，哪里设置同步或异步，哪里注册回调等等。别急，既然只给你开了一个入口，那么就跟着入口走下去，自然会一步步引导你走到最后。如：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-9efa2fb81a12cd2d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BlurConfigBuilder入口.png">  </p>
+<p>第一步、第二步该做什么，我都给你规定好了，你也只能按照步骤一步步来。想要设置高斯模糊配置，你得先指定图片来源，才能进入第二步，在这里，可以进行的配置也都给你列出来了，想要哪个，直接设置即可。如：</p>
+<ul>
+<li><code>mode()</code>，<code>modeRs()</code>，<code>modeNative()</code> 等等类似 mode 开头的方法，用于指定要使用哪种高斯模糊方案，一共四种，每种内部都有提供对应的常量标志，但如果你不知道哪里找，那么直接调用 modeXXX 方法即可。</li>
+<li><code>radius()</code> 用于设置高斯模糊计算的半径，内部默认为 4。</li>
+<li><code>sampling()</code> 用于设置对原图的缩小比例，内部默认为 8，即默认先缩小 8 倍，再模糊，最后再放大。</li>
+<li><code>cache()</code> 用于设置缓存此次模糊后的图片，没有调用默认不缓存。</li>
+<li><code>animAlpha()</code> 用于设置使用淡入动画，需要结合 <code>intoTarget()</code> 使用，否则不生效。</li>
+<li><code>intoTarget()</code> 用于设置模糊完成后，自动显示到指定控件上。</li>
+</ul>
+<p>另外，看每个方法返回的类名，其实这个过程都是在设置配置项，如果有对 Builder 模式了解的话，应该清楚，这个大多用来解决构造函数参数过多的场景，最后一般都会有一个 <code>build()</code> 或者 <code>create()</code> 类型的方法。参考的是 Android 源码中 AlertDialog。</p>
+<p>也就是说，要进入下一个步骤，需要调用 <code>build()</code> 方法，如：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-96ce20f8a2154350.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="doblur.png">  </p>
+<p>显然，已经到最后一个步骤了，这里就是发起高斯模糊工作的地方了。</p>
+<ul>
+<li><code>doBlur()</code> 会指定此次高斯模糊工作异步进行，所以需要注册回调的在这里传入。</li>
+<li><code>doBlurSync()</code> 指定高斯模糊同步进行，模糊后的 Bitmap 直接返回。</li>
+</ul>
+<p>至此，接入结束。</p>
+<p>使用这个高斯模糊的组件，只需要知道 DBlur 入口，其他都跟随着 AndroidStudio 代码提示一步步往下走即可，当然你也可以直接看源码，注释里也写得蛮清楚的了。</p>
+<p>这个就是我的想法，能力不足，只能想出这种方案，如果有哪里需要改进，哪里不合理，或者有其他思路，欢迎指点一下。</p>
+<h3 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">compile <span class="string">'com.dasu.image:blur:0.0.4'</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//使用默认配置，最短调用链</span></span><br><span class="line">Bitmap bitmap = DBlur.source(MainActivity.<span class="keyword">this</span>).build().doBlurSync();</span><br><span class="line"></span><br><span class="line"><span class="comment">//同步模糊，将imageView控制的视图进行模糊，完成后自动显示到 imageView1 控件上，以淡入动画方式</span></span><br><span class="line">DBlur.source(imageView).intoTarget(imageView1).animAlpha().build().doBlurSync();</span><br><span class="line"></span><br><span class="line"><span class="comment">//异步模糊，将drawable资源文件中的图片以 NATIVE 方式进行模糊，注册回调，完成时手动显示到 imageView1 控件上</span></span><br><span class="line">DBlur.source(<span class="keyword">this</span>, R.drawable.background).mode(BlurConfig.MODE_NATIVE).build()</span><br><span class="line">      .doBlur(<span class="keyword">new</span> OnBlurListener() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBlurSuccess</span><span class="params">(Bitmap bitmap)</span> </span>&#123;</span><br><span class="line">                imageView1.setImageBitmap(bitmap);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBlurFailed</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="comment">//do something</span></span><br><span class="line">            &#125;&#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="Github"><a href="#Github" class="headerlink" title="Github"></a><a href="https://github.com/woshidasusu/base-module/tree/master/blur" target="_blank" rel="noopener">Github</a></h3><p><a href="https://github.com/woshidasusu/base-module/tree/master/blur" target="_blank" rel="noopener">DBlur 的 Github 链接：https://github.com/woshidasusu/base-module/tree/master/blur</a>  </p>
+]]></content>
+      <categories>
+        <category>Android组件</category>
       </categories>
   </entry>
   <entry>
@@ -8858,6 +8950,15 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
+    <title>Android技能树</title>
+    <url>/2018/05/27/%E6%8A%80%E8%83%BD%E6%A0%91/Android%E6%8A%80%E8%83%BD%E6%A0%91/</url>
+    <content><![CDATA[<p><img src="https://upload-images.jianshu.io/upload_images/1924341-d23f4ef9f50304cc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Android技能树.png"></p>
+]]></content>
+      <categories>
+        <category>技能树</category>
+      </categories>
+  </entry>
+  <entry>
     <title>Gradle 系列博客梳理</title>
     <url>/2018/05/27/Gradle/Gradle-%E7%B3%BB%E5%88%97%E5%8D%9A%E5%AE%A2%E6%A2%B3%E7%90%86/</url>
     <content><![CDATA[<blockquote>
@@ -8929,15 +9030,6 @@ b.y; <span class="comment">//1</span>
 ]]></content>
       <categories>
         <category>Gradle</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>Android技能树</title>
-    <url>/2018/05/27/%E6%8A%80%E8%83%BD%E6%A0%91/Android%E6%8A%80%E8%83%BD%E6%A0%91/</url>
-    <content><![CDATA[<p><img src="https://upload-images.jianshu.io/upload_images/1924341-d23f4ef9f50304cc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Android技能树.png"></p>
-]]></content>
-      <categories>
-        <category>技能树</category>
       </categories>
   </entry>
   <entry>
@@ -9896,30 +9988,6 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
-    <title>如何用Android Studio查看build.gradle源码</title>
-    <url>/2018/03/31/Gradle/%E5%A6%82%E4%BD%95%E7%94%A8Android-Studio%E6%9F%A5%E7%9C%8Bbuild-gradle%E6%BA%90%E7%A0%81/</url>
-    <content><![CDATA[<blockquote>
-<p><strong>本篇文章已授权微信公众号 dasu_Android（大苏）独家发布</strong>  </p>
-</blockquote>
-<p><strong>2019-7-30 更新：</strong><br>感谢评论区指出，gradle源码下载地址：<a href="http://services.gradle.org/distributions/" target="_blank" rel="noopener">http://services.gradle.org/distributions/</a></p>
-<hr>
-<p>上一篇博客里讲过 build.gradle 里的每一行代码基本都是在调用一个方法，既然是这样，我们就可以用 android studio(下面简称as) 去查看它源码的方法注释说明，这样就可以理解每个方法是做什么的了，就算是在大神的 build.gradle 遇见一些没看懂的代码，也可以点进去看方法介绍来理解。就像我们在查看 SDK 里的各种方法一样。    </p>
-<p>但是有个问题，应该也有小伙伴跟我一样吧，每次在大神的 build.gradle 看到一堆不懂的代码时，按住 <code>Ctrl</code> 键后，鼠标移到代码上时有个跳转的手势时总是很开心，总是心想原来可以看源码啊，那就点进去看看介绍，看这个是干嘛的吧。可是每次一点进去，打开的却是 class 代码文件，顶多就只有方法名，一点注释都没有，而且方法参数命名还混淆过，也猜不出来是干嘛的。又不懂怎么去官方文档里查找，只能去网上用关键字查找，找出来的又跟自己碰到的问题不一样，越找越气干脆不找了，放一边去，以后再说。  </p>
-<p>是吧，如果可以直接通过 as 看源码的注释该多好。好了，废话到这，下面开始正文。    </p>
-<hr>
-<h1 id="系列索引"><a href="#系列索引" class="headerlink" title="系列索引"></a>系列索引</h1><p>build.gradle系列一：<a href="http://www.jianshu.com/p/a3805905a5c7" target="_blank" rel="noopener">看不懂的build.gradle代码</a><br>build.gradle系列二：<a href="http://www.jianshu.com/p/501726c979b1" target="_blank" rel="noopener">学点Groovy来理解build.gradle代码</a><br>build.gradle系列三：<a href>如何用Adnroid Studio查看build.gradle源码</a><br>…  </p>
-<hr>
-<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>我们来举个例子，就像系列一的博客里介绍的 build.gradle 里有这样一段代码：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-d46a0d67f548a7aa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="build.gradle"><br>咦！这代码是第一次在 build.gradle 里看见过，是什么意思呢？不怕，我有绝招：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-5d5db8368916117f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Ctrl + 左键"><br>Android Studio大法—看源码，还有什么是不能通过看源码注释解决的么<br><img src="http://upload-images.jianshu.io/upload_images/1924341-4b6cd41069f7fa21.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.class"><br>是跳到源码了，可是为什么没有方法的注释说明呢，这方法是什么鬼谁知道啊。再仔细看看 as 的提示，原来打开的是个 class 文件啊。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-c55417ff2530580f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="as提示"><br>as 的提示那里应该会有个下载和选择源码位置的按钮的啊，搞不懂为什么不出现。  </p>
-<p>另外，我们知道，as 一般会默认先打开 xxx-sources.jar 也就是 xxx 的 java 文件源码，如果没有源码文件，才会打开 xxx.jar 的 class 代码。我们看一下，打开的是什么文件。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-9692f8b22bf2eda3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle-2.3.0.jar"><br>没错，as 打开的是 gradle-2.3.0.jar，说明 as 没有找到 gradle-2.3.0-sources.jar 源码文件，我们看一下到底是不是这样<br><img src="http://upload-images.jianshu.io/upload_images/1924341-53c68923912bf799.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="as标题栏"><br>as 标题栏会显示你当前打开的文件的具体位置，好了，知道了 gradle-2.3.0.jar 在电脑里的位置了，我们到那个目录下看看<br><img src="http://upload-images.jianshu.io/upload_images/1924341-f9da8ad2908b540e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle-2.3.0.jar本地路径"><br>只有一个 gradle-2.3.0.jar 文件和一个 pom 文件，正常的话应该还要有个 xxx-sources.jar 文件才对，就像下面这样<br><img src="http://upload-images.jianshu.io/upload_images/1924341-f7700195cd081102.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="三个文件"><br>因为这里没有 gradle-2.3.0-sources.jar 文件，所以 as 没办法打开带有方法注释的源码文件了。既然知道问题，那么就好解决了，as 的提示条也没有下载的按钮，那我们就自己去下载好了<br><img src="http://upload-images.jianshu.io/upload_images/1924341-ac54a39b3846d1d4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="seach.maven.org"><br>打开 maven 网站，在这里可以下载 gradle 插件。在搜索框中输入 <code>com.android.tools.build</code>，为什么输入这个，你打开 project 下的 build.gradle 文件看看就知道了<br><img src="http://upload-images.jianshu.io/upload_images/1924341-4796f2199f748565.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="com.android.tools.build"><br><img src="http://upload-images.jianshu.io/upload_images/1924341-374001fbc95ace5c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="search result"><br>这些就是 gradle 插件，我们在根目录下的 build.gradle 配置的 gradle 版本其实就是来这里下载的，应该是吧。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-b9b6f2c35d82ede4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="下载的文件"><br>下载后得到的就是这些文件了，接下去就是找到相应文件的位置，复制一份过去<br><img src="http://upload-images.jianshu.io/upload_images/1924341-139f310de6d6dfc5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle的本地路径"><br>打开相应的插件文件夹，选择相应的版本，最后将下载的 xxx-sources.jar 复制一份进去，最后的样子如下<br><img src="http://upload-images.jianshu.io/upload_images/1924341-9dbac486701a27fa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="三个文件"><br>好了，大功告成，我们再打开 as，记得 ReBuild 一下，然后再试试查看 build.gradle 源码会是什么样子<br><img src="http://upload-images.jianshu.io/upload_images/1924341-327042d04c7edab6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.java"><br><img src="http://upload-images.jianshu.io/upload_images/1924341-5723f731293b39a7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="LintOptions.java"><br>翻译一下英文大概就是说， lintOptions.abortOnError = false 是设置即使 lint 检查时发现错误也不停止构建程序的运行。  </p>
-<p>这种方法比去官方的 api 文档里查阅方便多了吧。再来看看几个效果。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-19e3e3f8353694db.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.java"><br>这里就可以看到源码里介绍 Plugin 的值都有哪些，分别对应哪个类，该去哪个类看它的作用是什么，干什么的。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-3024eb6a6819fd42.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="AndroidConfig.java"><br>借助 as，我们甚至可以很容易的查到 <code>android{...}</code> 这个括号里能使用的方法都有哪些，如果要看各自的作用是干什么的，再继续点进去查看注释就行了。是不是发现，我们在 build.gradle 里的 <code>android{...}</code> 使用过的标签名原来都在这里的啊。  </p>
-<p>以后就算是再碰到大神的 build.gradle 文件里各种没看见过的标签名，不用再担心看不懂了。不懂就看源码注释嘛，so easy!  </p>
-<p>当然，大神的 build.gradle 文件里还是会出现一些 groovy 代码或者是 task 之类的，这些就不是 gradle 源码里能够查到的了，需要稍微了解一下 groovy 和 gradle 语言的基础，有兴趣的可以继续阅读下我写的这个系列里的相关博客，当然能力不够，如果你希望更好的学习，网上资料也很多。   </p>
-]]></content>
-      <categories>
-        <category>Gradle</category>
-      </categories>
-  </entry>
-  <entry>
     <title>分享两个提高效率的AndroidStudio小技巧</title>
     <url>/2018/03/31/%E6%95%99%E7%A8%8B%E7%B1%BB/%E5%88%86%E4%BA%AB%E4%B8%A4%E4%B8%AA%E6%8F%90%E9%AB%98%E6%95%88%E7%8E%87%E7%9A%84AndroidStudio%E5%B0%8F%E6%8A%80%E5%B7%A7/</url>
     <content><![CDATA[<blockquote>
@@ -10012,6 +10080,30 @@ b.y; <span class="comment">//1</span>
 ]]></content>
       <categories>
         <category>教程类</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>如何用Android Studio查看build.gradle源码</title>
+    <url>/2018/03/31/Gradle/%E5%A6%82%E4%BD%95%E7%94%A8Android-Studio%E6%9F%A5%E7%9C%8Bbuild-gradle%E6%BA%90%E7%A0%81/</url>
+    <content><![CDATA[<blockquote>
+<p><strong>本篇文章已授权微信公众号 dasu_Android（大苏）独家发布</strong>  </p>
+</blockquote>
+<p><strong>2019-7-30 更新：</strong><br>感谢评论区指出，gradle源码下载地址：<a href="http://services.gradle.org/distributions/" target="_blank" rel="noopener">http://services.gradle.org/distributions/</a></p>
+<hr>
+<p>上一篇博客里讲过 build.gradle 里的每一行代码基本都是在调用一个方法，既然是这样，我们就可以用 android studio(下面简称as) 去查看它源码的方法注释说明，这样就可以理解每个方法是做什么的了，就算是在大神的 build.gradle 遇见一些没看懂的代码，也可以点进去看方法介绍来理解。就像我们在查看 SDK 里的各种方法一样。    </p>
+<p>但是有个问题，应该也有小伙伴跟我一样吧，每次在大神的 build.gradle 看到一堆不懂的代码时，按住 <code>Ctrl</code> 键后，鼠标移到代码上时有个跳转的手势时总是很开心，总是心想原来可以看源码啊，那就点进去看看介绍，看这个是干嘛的吧。可是每次一点进去，打开的却是 class 代码文件，顶多就只有方法名，一点注释都没有，而且方法参数命名还混淆过，也猜不出来是干嘛的。又不懂怎么去官方文档里查找，只能去网上用关键字查找，找出来的又跟自己碰到的问题不一样，越找越气干脆不找了，放一边去，以后再说。  </p>
+<p>是吧，如果可以直接通过 as 看源码的注释该多好。好了，废话到这，下面开始正文。    </p>
+<hr>
+<h1 id="系列索引"><a href="#系列索引" class="headerlink" title="系列索引"></a>系列索引</h1><p>build.gradle系列一：<a href="http://www.jianshu.com/p/a3805905a5c7" target="_blank" rel="noopener">看不懂的build.gradle代码</a><br>build.gradle系列二：<a href="http://www.jianshu.com/p/501726c979b1" target="_blank" rel="noopener">学点Groovy来理解build.gradle代码</a><br>build.gradle系列三：<a href>如何用Adnroid Studio查看build.gradle源码</a><br>…  </p>
+<hr>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>我们来举个例子，就像系列一的博客里介绍的 build.gradle 里有这样一段代码：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-d46a0d67f548a7aa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="build.gradle"><br>咦！这代码是第一次在 build.gradle 里看见过，是什么意思呢？不怕，我有绝招：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-5d5db8368916117f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Ctrl + 左键"><br>Android Studio大法—看源码，还有什么是不能通过看源码注释解决的么<br><img src="http://upload-images.jianshu.io/upload_images/1924341-4b6cd41069f7fa21.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.class"><br>是跳到源码了，可是为什么没有方法的注释说明呢，这方法是什么鬼谁知道啊。再仔细看看 as 的提示，原来打开的是个 class 文件啊。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-c55417ff2530580f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="as提示"><br>as 的提示那里应该会有个下载和选择源码位置的按钮的啊，搞不懂为什么不出现。  </p>
+<p>另外，我们知道，as 一般会默认先打开 xxx-sources.jar 也就是 xxx 的 java 文件源码，如果没有源码文件，才会打开 xxx.jar 的 class 代码。我们看一下，打开的是什么文件。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-9692f8b22bf2eda3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle-2.3.0.jar"><br>没错，as 打开的是 gradle-2.3.0.jar，说明 as 没有找到 gradle-2.3.0-sources.jar 源码文件，我们看一下到底是不是这样<br><img src="http://upload-images.jianshu.io/upload_images/1924341-53c68923912bf799.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="as标题栏"><br>as 标题栏会显示你当前打开的文件的具体位置，好了，知道了 gradle-2.3.0.jar 在电脑里的位置了，我们到那个目录下看看<br><img src="http://upload-images.jianshu.io/upload_images/1924341-f9da8ad2908b540e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle-2.3.0.jar本地路径"><br>只有一个 gradle-2.3.0.jar 文件和一个 pom 文件，正常的话应该还要有个 xxx-sources.jar 文件才对，就像下面这样<br><img src="http://upload-images.jianshu.io/upload_images/1924341-f7700195cd081102.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="三个文件"><br>因为这里没有 gradle-2.3.0-sources.jar 文件，所以 as 没办法打开带有方法注释的源码文件了。既然知道问题，那么就好解决了，as 的提示条也没有下载的按钮，那我们就自己去下载好了<br><img src="http://upload-images.jianshu.io/upload_images/1924341-ac54a39b3846d1d4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="seach.maven.org"><br>打开 maven 网站，在这里可以下载 gradle 插件。在搜索框中输入 <code>com.android.tools.build</code>，为什么输入这个，你打开 project 下的 build.gradle 文件看看就知道了<br><img src="http://upload-images.jianshu.io/upload_images/1924341-4796f2199f748565.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="com.android.tools.build"><br><img src="http://upload-images.jianshu.io/upload_images/1924341-374001fbc95ace5c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="search result"><br>这些就是 gradle 插件，我们在根目录下的 build.gradle 配置的 gradle 版本其实就是来这里下载的，应该是吧。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-b9b6f2c35d82ede4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="下载的文件"><br>下载后得到的就是这些文件了，接下去就是找到相应文件的位置，复制一份过去<br><img src="http://upload-images.jianshu.io/upload_images/1924341-139f310de6d6dfc5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle的本地路径"><br>打开相应的插件文件夹，选择相应的版本，最后将下载的 xxx-sources.jar 复制一份进去，最后的样子如下<br><img src="http://upload-images.jianshu.io/upload_images/1924341-9dbac486701a27fa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="三个文件"><br>好了，大功告成，我们再打开 as，记得 ReBuild 一下，然后再试试查看 build.gradle 源码会是什么样子<br><img src="http://upload-images.jianshu.io/upload_images/1924341-327042d04c7edab6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.java"><br><img src="http://upload-images.jianshu.io/upload_images/1924341-5723f731293b39a7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="LintOptions.java"><br>翻译一下英文大概就是说， lintOptions.abortOnError = false 是设置即使 lint 检查时发现错误也不停止构建程序的运行。  </p>
+<p>这种方法比去官方的 api 文档里查阅方便多了吧。再来看看几个效果。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-19e3e3f8353694db.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.java"><br>这里就可以看到源码里介绍 Plugin 的值都有哪些，分别对应哪个类，该去哪个类看它的作用是什么，干什么的。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-3024eb6a6819fd42.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="AndroidConfig.java"><br>借助 as，我们甚至可以很容易的查到 <code>android{...}</code> 这个括号里能使用的方法都有哪些，如果要看各自的作用是干什么的，再继续点进去查看注释就行了。是不是发现，我们在 build.gradle 里的 <code>android{...}</code> 使用过的标签名原来都在这里的啊。  </p>
+<p>以后就算是再碰到大神的 build.gradle 文件里各种没看见过的标签名，不用再担心看不懂了。不懂就看源码注释嘛，so easy!  </p>
+<p>当然，大神的 build.gradle 文件里还是会出现一些 groovy 代码或者是 task 之类的，这些就不是 gradle 源码里能够查到的了，需要稍微了解一下 groovy 和 gradle 语言的基础，有兴趣的可以继续阅读下我写的这个系列里的相关博客，当然能力不够，如果你希望更好的学习，网上资料也很多。   </p>
+]]></content>
+      <categories>
+        <category>Gradle</category>
       </categories>
   </entry>
   <entry>
