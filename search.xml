@@ -1,6 +1,380 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>shell 基本语法</title>
+    <url>/2019/11/23/shell%E8%84%9A%E6%9C%AC/shell%E8%AF%AD%E6%B3%95/</url>
+    <content><![CDATA[<h1 id="shell-基本语法"><a href="#shell-基本语法" class="headerlink" title="shell 基本语法"></a>shell 基本语法</h1><p>jenkins 上构建项目时，经常需要借助 shell 脚本，最近也经常跟服务器打交道，顺便记录些常用命令，方便查阅  </p>
+<h3 id="语法-变量"><a href="#语法-变量" class="headerlink" title="语法-变量"></a>语法-变量</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 定义变量</span></span><br><span class="line">name='dasu'</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 使用变量</span></span><br><span class="line">echo $name  # dasu</span><br><span class="line">echo "I am $&#123;name&#125;."  # I am dasu.</span><br></pre></td></tr></table></figure>
+
+<h4 id="xxx-39-dasu-39"><a href="#xxx-39-dasu-39" class="headerlink" title="xxx=&#39;dasu&#39;"></a><code>xxx=&#39;dasu&#39;</code></h4><p>用 <code>key=value</code> 形式定义变量，<code>=</code> 等号两边不能有空格</p>
+<h4 id="xxx-或-xxx"><a href="#xxx-或-xxx" class="headerlink" title="$xxx 或 ${xxx}"></a><code>$xxx 或 ${xxx}</code></h4><p>变量名前加个 <code>$</code> 使用变量，大括号省略也可以</p>
+<h3 id="语法-字符串"><a href="#语法-字符串" class="headerlink" title="语法-字符串"></a>语法-字符串</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 字符串使用</span></span><br><span class="line">name='dasu'</span><br><span class="line">name2="dasu"</span><br><span class="line">name3=dasu</span><br><span class="line">echo "$name $name2 $name3"  # dasu dasu dasu</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 字符串长度</span></span><br><span class="line">echo $&#123;#name&#125; #4</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 注意，shell 里都是命令</span></span><br><span class="line">'dasu' # dasu: command not found</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 获取子字符串</span></span><br><span class="line">echo $&#123;name:0:2&#125; # da</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 寻找字符</span></span><br><span class="line">echo `expr index $name s` # 3   下标从1开始</span><br></pre></td></tr></table></figure>
+
+<h4 id="39-dasu-39-quot-dasu-quot-dasu"><a href="#39-dasu-39-quot-dasu-quot-dasu" class="headerlink" title="&#39;dasu&#39; &quot;dasu&quot; dasu"></a><code>&#39;dasu&#39;</code> <code>&quot;dasu&quot;</code> <code>dasu</code></h4><p><strong>单引号</strong>、<strong>双引号</strong>、甚至<strong>不加引号</strong>都会被作为字符串使用</p>
+<p>单引号里的字符串不做任何处理工作，是什么就原样输出</p>
+<p>双引号里如果有表达式、有转义符，有变量，会先进行处理，最后再输出，所以字符串的拼接，可以放在双引号内</p>
+<p>注意，shell 里都是命令，所以只有当在命令参数、或表达式右值时，字符串才会被当做字符串处理，否则都会被认为命令，从而报找不到 xxx 命令错误</p>
+<h4 id="xxx-1-2"><a href="#xxx-1-2" class="headerlink" title="${xxx:1:2}"></a><code>${xxx:1:2}</code></h4><p>用来截取子字符串</p>
+<h4 id="i-expr-index-quot-xxx-quot-x"><a href="#i-expr-index-quot-xxx-quot-x" class="headerlink" title="i=`expr index &quot;$xxx&quot; x`"></a><code>i=`expr index &quot;$xxx&quot; x`</code></h4><p>用来查找子字符，expr 表示后面跟着的是表达式，因为 shell 默认每一行都是命令，所以本身不支持表达式  </p>
+<p>index 用来查找，后面跟着接收两个参数：原字符串，查找的字符</p>
+<p>注意，只找字符，不是找子字符串</p>
+<h4 id="xxx-和-xxx"><a href="#xxx-和-xxx" class="headerlink" title="`xxx` 和 $(xxx)"></a><code>`xxx`</code> 和 <code>$(xxx)</code></h4><p>因为不加引号也可以被认为是字符串处理，所以在某些场景，需要让脚本解释器知道，这是一串命令，而不是字符串，此时就需要通过 <code>`</code> 反引号，或者 <code>$()</code> 来实现</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo ls  # ls，被认为是字符串</span><br><span class="line">echo `ls` # 执行 ls 命令，并将结果输出</span><br><span class="line">echo $(ls) # 执行 ls 命令，并将结果输出</span><br></pre></td></tr></table></figure>
+
+<p><code>`</code> 反引号内部是一个命令，<code>$()</code> 美元符合加小括号形式，括号内也是表示一个命令</p>
+<p>注意，<code>`</code> 或 <code>$()</code> 内部的命令执行之后的结果，会再次作为输入，被当做下一行 shell 脚本命令执行，所以需要注意这个结果是否可以作为命令被执行</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">`whoami` # root: command not found</span><br></pre></td></tr></table></figure>
+
+<p>因为 <code>whoami</code> 命令执行输出 root，root 又被作为命令执行，就报错了</p>
+<p>如果有需求是要将命令执行结果，作为日志输出，这种场景就很适用了</p>
+<h3 id="语法-表达式"><a href="#语法-表达式" class="headerlink" title="语法-表达式"></a>语法-表达式</h3><p>编程语言都可以通过各种运算符来实现一个个表达式，如算术表达式、赋值表达式等</p>
+<p>但由于在 shell 内，都被当做命令来处理，所以正常的运算符无法直接使用，需要借助其他命令或语法实现</p>
+<h4 id="expr"><a href="#expr" class="headerlink" title="expr"></a>expr</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">a=2 + 2   # +: command not found</span><br><span class="line">a=2+2     # 2+2被认为字符串了</span><br><span class="line">a=`expr 2 + 2`  # a=4</span><br></pre></td></tr></table></figure>
+
+<p><code>`</code> 反引号内的会被当做一个命令来执行，因为上面例子是将 expr 命令放在 <code>=</code> 号右侧，如果不加反引号，expr 会被当做字符串处理</p>
+<p>有些算术运算符需要加转义符，如乘号 *，大于 &gt;，小于 &lt; 等</p>
+<p>算术运算符跟两侧的变量基本都需要以空格隔开，这样才能辨别是字符串还是表达式</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">expr 2 + 2  # 4，加法运算</span><br><span class="line">expr 2+2    # 2+2，整个被当做字符串处理</span><br><span class="line">expr 2 - 2  # 0，减法运算</span><br><span class="line">expr 2 \* 2 # 4，乘法运算，需要加转义</span><br><span class="line">expr 2 / 2  # 1，除法运算</span><br><span class="line">expr 2 % 2  # 0，取余运算</span><br><span class="line"></span><br><span class="line">expr 2 \&gt; 1 # 1，比较运算，需要加转义</span><br><span class="line">expr 2 \&lt; 1 # 0，比较运算，需要加转义</span><br><span class="line">expr 2 == 2 # 1</span><br></pre></td></tr></table></figure>
+
+<h4 id="和"><a href="#和" class="headerlink" title="(()) 和 $(())"></a>(()) 和 $(())</h4><p><code>(())</code> 双括号内，可以执行表达式，多个表达式之间以 <code>,</code> 逗号隔开，最后一个表达式会被作为 <code>(())</code> 运算的结果，可以通过在前面加个 <code>$</code> 提取结果</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo $((a=2+2,$a+2))  # 6</span><br><span class="line">echo $a   # 4</span><br><span class="line">((b=$a*2)) # 8, * 号不用加转义符</span><br></pre></td></tr></table></figure>
+
+<p><code>(())</code> 和 expr 有各自优缺点：</p>
+<ul>
+<li><code>(())</code> 支持语句，即形如 <code>((a=2+2))</code>，但 expr 只支持表达式，<code>expr 2 + 2</code></li>
+<li><code>(())</code> 里的乘号，大于号等不需要加转义符，expr 需要加转义符</li>
+<li><code>(())</code> 只支持整数的运算，不支持字符串、小数的计算，expr 支持</li>
+<li>等等其他未遇到的场景</li>
+</ul>
+<h4 id><a href="#" class="headerlink" title="$[]"></a>$[]</h4><p>简单的算术表达式还有一种写法：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">a=$[2+2]  # a=4</span><br><span class="line">a=$[2*2]  # a=4,不需要加转义符</span><br></pre></td></tr></table></figure>
+
+<p>跟 expr 相比，<code>$[]</code> 好处就是一些运算符无需加转义符</p>
+<p><code>$[]</code> 跟 <code>$(())</code> 很像，一样支持语句，一样支持多个表达式，通过 <code>,</code> 逗号隔开，一样会将最后一个表达式的值返回，但 <code>$[]</code> 前的 <code>$</code> 符合不能省略</p>
+<p><strong>注意：</strong>关于 <code>$[]</code> 和 <code>$(())</code> 的理解可能不是很正确，基本没用过，只是在看资料时遇到，顺手测了些数据梳理出来的知识点，以后有使用到，发现错误的地方再来修改。</p>
+<p>而且，目前碰到的 shell 脚本的需求场景，更多的是参数的获取、变量的使用，因为需要动态生成命令来执行，这种场景比较多，关于表达式运算的场景比较少，所以先不必过多关注。</p>
+<h3 id="语法-条件判断-if"><a href="#语法-条件判断-if" class="headerlink" title="语法-条件判断 if"></a>语法-条件判断 if</h3><p>if 的语法：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">if condition </span><br><span class="line">then</span><br><span class="line">  command</span><br><span class="line">  ...</span><br><span class="line">elif condition; then</span><br><span class="line">  command</span><br><span class="line">  ...</span><br><span class="line">else  </span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
+
+<p><strong>如果想让 then 和 if 同行，那么需要用 <code>;</code> 分号隔开，同理，fi 如果想跟 else 或 then 同行，也需要 <code>;</code> 分号隔开，否则会有语法错误</strong></p>
+<p>if 的本质其实是检测命令的退出状态，虽然我们经常可以看到这种写法：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">if [ 2 -eq 2 ]</span><br><span class="line">if [[ 2 == 1 ]]</span><br><span class="line">if (( 1 == 1 ))</span><br></pre></td></tr></table></figure>
+
+<p>以上三种，不管是中括号，双中括号，双小括号，其本质都是在运行数学计算命令，既然是命令，就都会有命令的退出状态</p>
+<p>命令退出状态有两种，0 是正常，非 0 是异常，同时，可以用 <code>$?</code> 来获取上个命令的执行退出状态，所以可以来试试看：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[ 2 -eq 2 ]</span><br><span class="line">echo $?  # 0，正常</span><br><span class="line"></span><br><span class="line">[ 2 == 1 ]</span><br><span class="line">echo $?  # 1，非正常</span><br><span class="line"></span><br><span class="line">[[ abc == abc ]]</span><br><span class="line">echo $?  # 0，正常</span><br><span class="line"></span><br><span class="line">[[ ab == abc ]]</span><br><span class="line">echo $?  # 1，非正常</span><br><span class="line"></span><br><span class="line">(( 1 == 1 &amp;&amp; 1 &gt; 0 ))</span><br><span class="line">echo $?  # 0，正常</span><br><span class="line"></span><br><span class="line">(( 1 == 1 &amp;&amp; 1 &gt; 1 ))</span><br><span class="line">echo $?  # 1，非正常</span><br></pre></td></tr></table></figure>
+
+<p>明白了吗？</p>
+<p>其实， if 检测的是命令的退出状态，这也就意味着，if 后面跟随着的 condition 只要是命令就是符合语法的，不必像其他编程语言那样，必须是类似 <code>if ()</code> 这种语法结构，这也就是为什么，你可能看到别人写的很奇怪的 if 代码，比如:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> <span class="built_in">test</span> 1 -eq 1; <span class="keyword">then</span> <span class="built_in">echo</span> <span class="literal">true</span>; <span class="keyword">fi</span>  <span class="comment"># true</span></span><br><span class="line"><span class="keyword">if</span> whoami; <span class="keyword">then</span> <span class="built_in">echo</span> <span class="literal">true</span>; <span class="keyword">fi</span> <span class="comment"># root true</span></span><br></pre></td></tr></table></figure>
+
+<p>这样一来，即使再看到别人写的 if 代码很奇葩，至少你也知道，它的执行原理是啥了吧，至少也能看懂他那代码的意图了吧</p>
+<p>好，虽然清楚了 if 检测的本质其实是命令的退出状态，但最好还是使用良好的编程风格，使用阅读性较好的写法</p>
+<h4 id="关系运算符-eq-ne-gt-lt-ge-le"><a href="#关系运算符-eq-ne-gt-lt-ge-le" class="headerlink" title="关系运算符 -eq -ne -gt -lt -ge -le"></a>关系运算符 -eq -ne -gt -lt -ge -le</h4><ul>
+<li>等价于 <strong>== != &gt; &lt; &gt;= &lt;=</strong></li>
+</ul>
+<p><strong>这些运算符只能用于比较数值类型的数据，且只能用于 <code>[]</code>， <code>[[]]</code> 这两种</strong>，<code>(())</code> 不能使用这种运算符。</p>
+<p>但使用 <code>[]</code> 和 <code>[[]]</code> 这种语法形式时，有个很重要的点，就是中括号内部两侧必须有空格，然后运算符两侧也需要有空格，否则可能就不是预期的行为了：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> [ 1 -eq 1 ]; <span class="keyword">then</span> <span class="built_in">echo</span> <span class="literal">true</span>; <span class="keyword">else</span> <span class="built_in">echo</span> <span class="literal">false</span>; <span class="keyword">fi</span>  <span class="comment"># true </span></span><br><span class="line"><span class="keyword">if</span> [ 1-eq2 ]; <span class="keyword">then</span> <span class="built_in">echo</span> <span class="literal">true</span>; <span class="keyword">else</span> <span class="built_in">echo</span> <span class="literal">false</span>; <span class="keyword">fi</span>  <span class="comment"># true，因为 1-eq2 被当做字符串了，运算符左右需要有空格</span></span><br><span class="line"><span class="keyword">if</span> [ 1==2 ]; <span class="keyword">then</span> <span class="built_in">echo</span> <span class="literal">true</span>; <span class="keyword">else</span> <span class="built_in">echo</span> <span class="literal">false</span>; <span class="keyword">fi</span> <span class="comment"># true，因为 1==2 被当做字符串了，运算符左右需要有空格</span></span><br></pre></td></tr></table></figure>
+
+<p><code>[]</code> 和 <code>[[]]</code> 内部既可以用类似 <code>-eq</code> 这种形式，也可以直接使用 <code>==</code> 这种方式，后者可以用于比较字符串，前者不能</p>
+<h4 id="布尔运算符-o-a"><a href="#布尔运算符-o-a" class="headerlink" title="布尔运算符 ! -o -a"></a>布尔运算符 ! -o -a</h4><ul>
+<li>分别对应：非运算，或运算，与运算</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">if [ 1 -eq 1 -a 1 -gt 1 ]; then echo true; else echo false; fi # false</span><br><span class="line">if [ 1 -eq 1 -o 1 -gt 1 ]; then echo true; else echo false; fi # true</span><br></pre></td></tr></table></figure>
+
+<p><strong>这些运算符只能适用于 <code>[]</code>，且只能跟关系运算符（-eq, -ne …）使用</strong></p>
+<p><code>[[]]</code> 以及 <code>(())</code> 都不能使用，且如果类似这样使用 <code>==</code> 和 <code>-o</code>，也是不起作用的：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">if [ 1 &gt; 2 -a 1 == 1 ]; then echo true; else echo false; fi # true，1 &gt; 2 明明不符合，却返回 true 了，所以 -a 这种运算符不能喝 &gt; 这类运算符合用，但使用 -gt 就是正常的了</span><br><span class="line"></span><br><span class="line">if [[ 1 -eq 1 -o 1 -gt 2 ]]; then echo true; else echo false; fi </span><br><span class="line"><span class="meta">#</span><span class="bash">sh: syntax error <span class="keyword">in</span> conditional expression</span></span><br><span class="line"><span class="meta">#</span><span class="bash">sh: syntax error near `-o<span class="string">'</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash">异常，[[]] 不支持使用布尔运算符</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="逻辑运算符-amp-amp"><a href="#逻辑运算符-amp-amp" class="headerlink" title="逻辑运算符 &amp;&amp; ||"></a>逻辑运算符 &amp;&amp; ||</h4><ul>
+<li>逻辑的 AND 和逻辑的 OR</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">if [[ 1 == 1 &amp;&amp; 1 &gt; 2 ]]; then echo true; else echo false; fi # false</span><br></pre></td></tr></table></figure>
+
+<p><strong>这种运算符只能适用于 <code>[[]]</code></strong>，此时不管是使用 <code>==</code> 这类运算符，还是 <code>-eq</code> 这类，都是允许的</p>
+<p><code>[]</code> 和 <code>(())</code> 都不适用</p>
+<p>当需要有嵌套的判断时，可以拆开，比如：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">if [[ 1 == 1 ]] &amp;&amp; [[ 1 &gt; 3 || 1 &gt; 0 ]]; then echo true; else echo false; fi # true</span><br><span class="line"><span class="meta">#</span><span class="bash"> 相当于 <span class="keyword">if</span> ((1==1) &amp;&amp; ((1&gt;3)||(1&gt;0)))</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="字符运算符-z-n"><a href="#字符运算符-z-n" class="headerlink" title="字符运算符 = != -z -n $"></a>字符运算符 = != -z -n $</h4><ul>
+<li>= != 用于判断字符串是否相等</li>
+<li>-z 用于判断字符串长度是否为 0，是的话，返回 true</li>
+<li>-n 用于判断字符串长度是否为 0，不是的话，返回 true</li>
+<li>$xxx 用于判断 xxx 字符串是否为空，不为空返回 true</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">a='abc'</span><br><span class="line">if [ $a == absc ]; then echo true; else echo false; fi  # true </span><br><span class="line">if [ -n $a ]; then echo true; else echo false; fi  # true ，因为长度不为0</span><br><span class="line">if [ -z $a ]; then echo true; else echo false; fi  # false，因为长度不为0</span><br><span class="line">if [ $a ]; then echo true; else echo false; fi  # true</span><br></pre></td></tr></table></figure>
+
+<p><strong>这种运算符适用于 <code>[]</code> 和 <code>[[]]</code> 这两种</strong>，不适用于 <code>(())</code></p>
+<h4 id="文件测试运算符-d-r-w-x-s-e"><a href="#文件测试运算符-d-r-w-x-s-e" class="headerlink" title="文件测试运算符 -d -r -w -x -s -e"></a>文件测试运算符 -d -r -w -x -s -e</h4><ul>
+<li><p>-f 检测文件是否是普通文件（既不是目录，也不是设备文件）</p>
+</li>
+<li><p>-r 检测文件是否可读</p>
+</li>
+<li><p>-w 检测文件是否可写</p>
+</li>
+<li><p>-x 检测文件是否可执行</p>
+</li>
+<li><p>-s 检测文件是否为空</p>
+</li>
+<li><p>-e 检测文件是否存在</p>
+</li>
+<li><p>-d 检测文件是否是目录</p>
+</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">a=test.sh</span><br><span class="line">if [ -e $a ]; then echo true; else echo false; fi # 检测 test.sh 文件是否存在</span><br><span class="line">if [ -d $a ]; then echo true; else echo false; fi # 检测 test.sh 是否存在且是否是目录</span><br></pre></td></tr></table></figure>
+
+<p><strong>这类运算符适用于 <code>[]</code> 和 <code>[[]]</code> 这两种</strong>，不适用于 <code>(())</code></p>
+<h4 id="涉及计算的判断条件"><a href="#涉及计算的判断条件" class="headerlink" title="涉及计算的判断条件"></a>涉及计算的判断条件</h4><p>大部分场景下，if 的条件判断，使用上述的运算符结合 <code>[[]]</code> 使用就可以了，但有某些场景，比如先进行算术运算之后，再判断结果：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">if ((1+1&gt;2)); then echo true; else echo false; fi # false</span><br></pre></td></tr></table></figure>
+
+<p>如果想使用 <code>[[]]</code> 实现，可以是可以，但有些麻烦：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">if [[ $[1+1] &gt; 2 ]]; then echo true; else echo false; fi # false</span><br></pre></td></tr></table></figure>
+
+<p>就是需要先让 1+1 当做表达式计算结束，并获取结果，然后再来做判断</p>
+<p><code>(())</code> 有一点需要注意，它只能进行整数运算，不能对小数或字符串进行运算</p>
+<h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><p>脚本中使用到 if 条件判断的场景肯定也很多，绝大多数情况下，使用 <code>[[]]</code> 就足够覆盖需求场景了</p>
+<p>不管是需要对文件的（目录、存在、大小）判断，还是需要对字符串或命令执行结果的判断，使用 <code>[[]]</code> 都可以实现了</p>
+<p>其实，<code>[[]]</code> 可以说是 <code>[]</code> 的强化版，后者能办到的，前者都行，而对于 <code>(())</code>，更多是整数运算表达式的使用场景，拿来结合 if 使用，纯粹是因为刚好遇见而已，并不是专门给 if 设计的，毕竟 if 只检测命令执行结果，只要是命令，都可以跟它搭</p>
+<h3 id="语法-函数和参数"><a href="#语法-函数和参数" class="headerlink" title="语法-函数和参数"></a>语法-函数和参数</h3><ul>
+<li>函调定义</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="function"><span class="title">add</span></span>() &#123;</span><br><span class="line">	// ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 省略 function 关键字</span></span><br><span class="line"><span class="function"><span class="title">add</span></span>()&#123;</span><br><span class="line">	<span class="built_in">echo</span> $*</span><br><span class="line">    <span class="built_in">echo</span> <span class="variable">$&#123;12&#125;</span></span><br><span class="line">	<span class="built_in">return</span> 1</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>函数调用</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">add 1 2 #sh 1 2</span><br></pre></td></tr></table></figure>
+
+<p>函数调用时，直接函数名即可，如果需要参数，跟其他编程语言不同，定义时不能指明参数，而是函数内部直接通过 $n 来获取参数，需要第几个，n 就是第几</p>
+<p>函数调用时，当需要传参时，直接跟在函数名后面，以空格隔开，函数名不需要带括号</p>
+<h4 id="参数-n-0"><a href="#参数-n-0" class="headerlink" title="参数 $n $0 $* $#"></a>参数 <code>$n</code> <code>$0</code> <code>$*</code> <code>$#</code></h4><p>读取参数，参数可以是执行脚本时传递的参数，也可以是执行函数时传递的参数</p>
+<ul>
+<li><p><code>$1</code> 表示第一个参数，以此类推</p>
+</li>
+<li><p><code>${10}</code> 当参数个数超过 9 个后，需要用大括号来获取</p>
+</li>
+<li><p><code>$*</code> 或 <code>$@</code> 输出所有参数</p>
+</li>
+<li><p><code>$0</code> 输出脚本文件名</p>
+</li>
+<li><p><code>$#</code> 输出参数个数</p>
+</li>
+</ul>
+<p>所以，脚本内部开始，可以用 <code>echo $0 $*</code> 来输出外部使用该脚本时，传递的参数</p>
+<h3 id="语法-脚本文件的-source-和执行"><a href="#语法-脚本文件的-source-和执行" class="headerlink" title="语法-脚本文件的 source 和执行"></a>语法-脚本文件的 source 和执行</h3><p>当前 shell 脚本内，可以导入其他脚本文件，也可以直接执行其他脚本文件</p>
+<h4 id="source"><a href="#source" class="headerlink" title="source"></a>source</h4><p>当某个脚本被其他脚本导入时，其实相当于从其他文件拷贝脚本代码过来当前脚本环境内执行，导入有两种命令：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">. filename <span class="comment"># 注意点号 . 和文件名中间有空格</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#或者</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">source</span> filename</span><br></pre></td></tr></table></figure>
+
+<p>被导入的脚本文件不需要是可执行类型的，毕竟执行环境还是当前脚本启动的 shell 进程，只是执行的代码无需再写一遍，直接从其他地方拷贝过来一条条执行而已</p>
+<h4 id="执行"><a href="#执行" class="headerlink" title="执行"></a>执行</h4><p>在当前脚本内，也可以直接执行其他脚本文件，同样有两种类型，如：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sh ./test.sh</span><br><span class="line">echo $?  # 脚本执行的退出状态</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">或者</span></span><br><span class="line"></span><br><span class="line">./test.sh</span><br></pre></td></tr></table></figure>
+
+<p>两种的区别就在于：</p>
+<ul>
+<li>前者不需要被执行的脚本是可执行类型的，因为已经手动指定 sh 来作为脚本解释器了，脚本内部开头的 <code>#!</code> 声明也会失效掉</li>
+<li>后者的话，纯粹就是执行一个可执行文件的方式，那就需要这个脚本文件是可执行类型的，同时脚本的解释器由脚本文件内部开头的 <code>#!</code> 声明</li>
+</ul>
+<p>我们通常都会将不同工作职责写在不同脚本文件中，然后某个脚本文件内，来控制其他脚本文件的执行流程，那么，这时候，就需要知道每个流程的脚本是否执行正常，这时候，就可以借助脚本的 exit 命令和 <code>$?</code> 来实现</p>
+<p>每个脚本，如果正常执行结束，那么脚本内部最后应该通过 <code>exit 0</code> 来退出，表示当前脚本正常执行，如果执行过程出异常了，那么应该执行 <code>exit 1</code> 只要是非 0 即可，来表示当前脚本执行异常</p>
+<p>那么，调用执行这个脚本的，就可以通过 <code>$?</code> 来获取脚本执行结果，如：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sh ./test.sh</span><br><span class="line">if [[ $? -ne 0 ]]; then</span><br><span class="line">  echo '异常'</span><br><span class="line">  exit 1</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
+
+<p>这样就可以来控制脚本执行流程</p>
+<h3 id="语法-其他"><a href="#语法-其他" class="headerlink" title="语法-其他"></a>语法-其他</h3><h4 id="注释"><a href="#注释" class="headerlink" title="注释"></a>注释</h4><ul>
+<li><strong><code>#xxxx</code></strong></li>
+</ul>
+<p>单个 <code>#</code> 用来注释后面内容</p>
+<h4 id="bin-sh"><a href="#bin-sh" class="headerlink" title="#!/bin/sh"></a><code>#!/bin/sh</code></h4><p>脚本文件的顶行，告诉系统，应该去哪里用哪个解释器执行该脚本；</p>
+<p>但如果该脚本不是直接执行，而是作为参数传递给某个解释器，如：</p>
+<p><code>/bin/sh xxx.sh</code>，那，文件顶头的 <code>#!</code> 声明就会被忽视，毕竟已经明确指定解释器了</p>
+<h4 id="for-循环"><a href="#for-循环" class="headerlink" title="for 循环"></a>for 循环</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> loop <span class="keyword">in</span> 1 3 4 5 6</span><br><span class="line"><span class="keyword">do</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="-1"><a href="#-1" class="headerlink" title="$?"></a>$?</h4><p>用来获取上个命令的执行之后的退出状态，或者获取上个函数执行的返回值，0 表示正常，非0 表示不正常</p>
+<p>所以，脚本如期结束时，脚本内最后应该 exit 0 来退出命令（每个脚本的执行其实就是执行命令）</p>
+<h4 id="read-xxx"><a href="#read-xxx" class="headerlink" title="read xxx"></a>read xxx</h4><p>从标准输入中读取一行，并赋值给 xxx 变量</p>
+<h4 id="printf"><a href="#printf" class="headerlink" title="printf"></a>printf</h4><p>输出格式化</p>
+<p><a href="https://www.runoob.com/linux/linux-shell-printf.html" target="_blank" rel="noopener">Shell printf 命令</a></p>
+<h4 id="输入输出"><a href="#输入输出" class="headerlink" title="输入输出"></a>输入输出</h4><p>默认的输入输出都是终端，但可通过 <code>&gt;</code> <code>&lt;</code> 来进行修改，比如</p>
+<ul>
+<li><code>ls &gt; file</code></li>
+</ul>
+<p>将输出写入到文件中，覆盖写入</p>
+<ul>
+<li><code>ls &gt;&gt; file</code></li>
+</ul>
+<p>将输出写入到文件中，追加写入</p>
+<ul>
+<li><code>xxx.sh &lt; file</code></li>
+</ul>
+<p>本来是从键盘输入到终端，转移到从文件读取内容</p>
+<ul>
+<li><code>&lt;&lt;EOF</code></li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">xxx.sh&lt;&lt;EOF</span><br><span class="line">....</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+
+<p>将两个 EOF 之间的内容作为输入</p>
+<ul>
+<li><code>ls &gt; /dev/null</code></li>
+</ul>
+<p>如果希望执行某个命令，但又不希望在屏幕上显示，那么可以将输出重定向到 <code>/dev/null</code></p>
+<p>写入 <code>/dev/null</code> 中的内容会被丢弃</p>
+<h3 id="语法-易混淆"><a href="#语法-易混淆" class="headerlink" title="语法-易混淆"></a>语法-易混淆</h3><p>有些语法很容易混淆，在这里列一列：</p>
+<h4 id="和-和-和"><a href="#和-和-和" class="headerlink" title="${} 和 $[] 和 $() 和 $(())"></a>${} 和 $[] 和 $() 和 $(())</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">name=dasu</span><br><span class="line">echo $&#123;name&#125;  # dasu，变量的使用</span><br><span class="line"></span><br><span class="line">echo $[2+2]       # 4，执行算术表达式，可认为作用跟 expr 类似，但两者有各自局限，expr 支持字符串的关系运算等</span><br><span class="line">echo `expr 2 + 2` # 4</span><br><span class="line"></span><br><span class="line">echo $((2+2))     # 4，执行整数的算术表达式，可认为作用跟 expr 类似，但两者有各自局限，expr 支持字符串的关系运算等</span><br><span class="line">echo `expr 2 + 2` # 4</span><br><span class="line"></span><br><span class="line">echo $(whoami)    # root，执行命令，可认为作用跟 `` 反引号类似</span><br><span class="line">echo `whoami`     # root</span><br></pre></td></tr></table></figure>
+
+<p>虽然 <code>$</code> 后面可以跟随各种各样符号，来实现不同用途，但其实，都可以归纳为 <code>$</code> 的作用是，提取后面的结果，然后将其作为输入，再次让 shell 解释器处理。</p>
+<p>比如说 <code>${xxx}</code>，就是将读取变量 xxx 的值，然后输入给解释器：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">name=dasu</span><br><span class="line"><span class="meta">$</span><span class="bash">&#123;name&#125; <span class="comment"># dasu: command not found</span></span></span><br><span class="line">echo $&#123;name&#125; dasu</span><br></pre></td></tr></table></figure>
+
+<p>是吧，就是提取，然后再输入给解释器，其实也就是变量值的替换，将变量替换为实际的值</p>
+<p>那么，这么理解的话，<code>()</code> 小括号内的其实就是在执行命令，<code>$()</code> 就是将命令执行结果替换命令；<code>(())</code> 两个小括号内的其实就是在执行表达式，<code>$(())</code> 就是将表达式执行结果替换掉表达式；<code>$[]</code> 同理；</p>
+<p>那么，可能你就会有疑问了：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[1+1] # [1+1]: command not found</span><br><span class="line">((1+1)) # 无报错也无输出</span><br></pre></td></tr></table></figure>
+
+<p>知道为什么吗？</p>
+<p>因为 <code>(())</code> 是 shell 解释器可以识别的语法，它知道这不是字符串</p>
+<p>但 <code>[1+1]</code> 却被解释器当做一整个字符串了，自然就找不到这个命令，shell 解释器能识别的 <code>[]</code> 语法应该是，中括号内部两侧需要有空格，此时就不会认为它是字符串了，如：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[ 1+1 ] # 无报错也无输出</span><br></pre></td></tr></table></figure>
+
+<p>当有 <code>$</code> 时，就无需区分字符串的场景了，自然也就可以省略掉空格了，但保留好习惯，都留着空格也是很好的做法</p>
+<h4 id="命令和表达式"><a href="#命令和表达式" class="headerlink" title="命令和表达式"></a>命令和表达式</h4><ul>
+<li>命令是指 shell 支持的命令，比如 ls，pwd，whoami 等等</li>
+<li>表达式是指通过运算符组合成的各种表达式，如算术表达式，赋值表达式，关系表达式等等</li>
+</ul>
+<p>shell 内的每一行代码都是在执行命令，所以直接在 shell 内书写表达式是会执行异常，因为表达式不是命令</p>
+<p>一些命令跟传入参数，如 echo xxx，echo 后跟随着会被当做字符串处理，如果想让 xxx 这串被作为命令执行，那需要将 xxx 放置于 <code>`xxx`</code> 反引号或者 <code>$(xxx)</code> 内</p>
+<p>如果想让 xxx 被当做表达式处理，则需要借助一些命令，如 expr；</p>
+<p>如果表达式是算术表达式，那可通过 <code>((xxx))</code> 包裹这些表达式，但需要获取表达式结果时，通过 <code>$((xxx))</code> 在前面加个 <code>$</code> 实现</p>
+<hr>
+<p>本篇就先介绍一些基础语法吧，当然并不全面，但足够看懂基本的 shell 脚本代码了</p>
+<p>下一篇会介绍一些常用命令，如 expect，scp，ssh，以及再拿个 jenkins 上构建项目的实例脚本来讲讲</p>
+]]></content>
+      <categories>
+        <category>shell脚本</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>shell 常用命令</title>
+    <url>/2019/11/23/shell%E8%84%9A%E6%9C%AC/shell%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/</url>
+    <content><![CDATA[<h1 id="shell-常用命令"><a href="#shell-常用命令" class="headerlink" title="shell 常用命令"></a>shell 常用命令</h1><h3 id="expect"><a href="#expect" class="headerlink" title="expect"></a>expect</h3><p>expect 命令是用来实现自动化交互通信的，比如当你在脚本中通过某些命令登录、连接、上传、下载等和远程服务器的交互时，可能需要让你输入一些账号、密码等信息</p>
+<p>如果这个过程是人工手动在终端执行的，那没啥问题，需要交互时，你手动输入即可</p>
+<p>但如果这个过程是交由脚本来自动执行的，难不成每次脚本执行时，还需要你在旁边等着来输密码吗？</p>
+<p>所以，就可以借助 expect 来实现这个交互过程</p>
+<p>可以先用 <code>whereis</code> 命令查找看看，是否支持 expect 命令，否则需要自行安装</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">whereis expect</span><br><span class="line"><span class="meta">#</span> expect: /usr/bin/expect /usr/share/man/man1/expect.1.gz</span><br></pre></td></tr></table></figure>
+
+<h4 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span> Centos 系统的安装，其余的自行查阅</span><br><span class="line"><span class="meta">#</span>先下载 tcl，expect 依赖 tcl</span><br><span class="line">yum -y install tcl</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span>再下载 tcl</span><br><span class="line">yum -y install expect</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span>安装完执行 expect，查看是否安装成功，失败原因请自行查阅</span><br><span class="line">[root@VM_0_15_centos test]# expect</span><br><span class="line">expect1.1&gt;</span><br></pre></td></tr></table></figure>
+
+<h4 id="基本命令"><a href="#基本命令" class="headerlink" title="基本命令"></a>基本命令</h4><ul>
+<li><p><strong>spawn</strong>：用于启动一个子进程来执行后续命令</p>
+</li>
+<li><p><strong>expect eof</strong>：用来退出 spawn 启动的子进程，返回到当前进程环境，与 spawn 成对出现</p>
+</li>
+<li><p><strong>expect</strong>：用于接收进程的输出信息（输出重定向到 expect），如果接收的字符串与期待的不匹配，则一直阻塞，直到匹配上或者超过才继续往下执行</p>
+</li>
+<li><p><strong>send</strong>：用于向进程发送输入信息（输入重定向到 send），通常需要以 <code>\n</code> 结尾</p>
+</li>
+<li><p><strong>set timeout 1</strong>：用于设置 expect 命令的超时时间，单位 s，输入 -1 时表示无限长，默认为 10s</p>
+</li>
+<li><p><strong>[lindex $argv n]</strong>：用于获取传入给脚本的参数，n 表示第几个参数，下标从 0 开始</p>
+</li>
+<li><p><strong>set key value</strong>：用于设置变量，通常在脚本文件开头结合上面获取参数使用，来给参数赋值个有意义的变量，如 <code>set ip [lindex $argv 0]</code></p>
+</li>
+<li><p><strong>exp_continue</strong>：用于 expect 中需要复用匹配</p>
+</li>
+<li><p><strong>send_user</strong>：用于打印输出，相当于 echo</p>
+</li>
+<li><p><strong>interact</strong>：结束自动化交互，转入人工交互，如果脚本是纯自动化场景，那么不应该有这条命令，脚本执行结束则退出。如果是半自动化场景，如自动输入账号密码，连接登录操作，登录之后交由人工交互，那可以使用该命令</p>
+<p>expect 命令后面可跟随字符串或对象，如：</p>
+</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">expect "password"</span><br><span class="line">send "xxx"</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 或者</span><br><span class="line"></span><br><span class="line">expect &#123;</span><br><span class="line">  "yes" &#123;</span><br><span class="line">  	send "yes\n"</span><br><span class="line">  	exp_continue</span><br><span class="line">  &#125;</span><br><span class="line">  "password" &#123;</span><br><span class="line">  	send "xxx"</span><br><span class="line">  	expect "xxx"</span><br><span class="line">  	send "xxx"</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span>!/usr/bin/expect</span><br><span class="line"><span class="meta">#</span> 使用 expect 结合 ssh 登录远程服务器</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 将传给脚本的参数赋值给变量</span><br><span class="line">set sshPort [lindex $argv 0]</span><br><span class="line">set user [lindex $argv 1]</span><br><span class="line">set ip [lindex $argv 2]</span><br><span class="line">set password [lindex $argv 3]</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> spawn 命令新启子进程，执行后面的命令</span><br><span class="line">spawn ssh -p $sshPort $user@$ip</span><br><span class="line">expect "password"</span><br><span class="line">send "$password\n"</span><br><span class="line">expect eof</span><br><span class="line">exit 0</span><br></pre></td></tr></table></figure>
+
+<p>在当前 shell 里执行:</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">/usr/bin/expect login.sh "22" "root" "127.0.0.1" "xxxxx"</span><br></pre></td></tr></table></figure>
+
+<p>其实，个人觉得，expect 就是利用了 shell 的输入输出重定向，原先在终端里人工进行交互时，由人工手动将命令输入给终端，命令执行结果输出到终端给用户反馈</p>
+<p>而 expect 则是将输入由传统的人工输入给终端重定向到由 send 命令输入，也就是输入信息从 send 读取，而命令执行结果也不是输出给终端，而是输出给 expect 命令，这样一来，就可以实现由脚本来自动化处理交互，毕竟输入输出脚本都可以拿到了</p>
+<p>以上，个人理解</p>
+<h3 id="ssh"><a href="#ssh" class="headerlink" title="ssh"></a>ssh</h3><p>远程连接工具，用来登录远程服务器</p>
+<p>通常来说，借助 XShell 的可视化配置，就足够连接上服务器了，但有些服务器，只能通过跳板机连接，此时就需要先登录上跳板机，然后再跳板机上使用 ssh 命令来连接服务器</p>
+<p>当然，XShell 也可以通过 ssh 来连接登录服务器，你不用图形界面的操作也行</p>
+<h4 id="使用-1"><a href="#使用-1" class="headerlink" title="使用"></a>使用</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ssh -p 22 root@ip</span><br></pre></td></tr></table></figure>
+
+<p>很简单，指定端口，登录用户，ip 地址就可以了，然后再手动输入密码</p>
+<p>如果不想每次登录都输入密码，那么需要配置 ssh 私钥、公钥，将公钥放置在服务器上</p>
+<ul>
+<li><code>netstat -lntup | grep ssh</code></li>
+</ul>
+<p>远程服务器上查看 ssh 端口号，默认是 22</p>
+<ul>
+<li><code>service sshd reload</code></li>
+</ul>
+<p>重启 ssh 服务，因为可能需要改配置文件，如修改默认 22 端口</p>
+<h3 id="scp"><a href="#scp" class="headerlink" title="scp"></a>scp</h3><p>scp 命令用于 Linux 之间复制文件和目录，也就是直接跟远程服务器进行文件或目录的拷贝</p>
+<p>跟 cp 很类似，区别在于一个仅在本机间拷贝，一个是多机子间的拷贝</p>
+<h4 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">usage: scp [-12346BCpqrv] [-c cipher] [-F ssh_config] [-i identity_file]</span><br><span class="line">           [-l limit] [-o ssh_option] [-P port] [-S program]</span><br><span class="line">           [[user@]host1:]file1 ... [[user@]host2:]file2</span><br><span class="line">           </span><br><span class="line"><span class="meta">#</span> 简易写法</span><br><span class="line"></span><br><span class="line">scp [可选参数] file_source file_target</span><br></pre></td></tr></table></figure>
+
+<p>比较重要的也就是最后的 [[user@]host]file，可以指定连接远程的用户，ip，不指定时，将在命令执行时，手动输入</p>
+<h4 id="常用参数说明"><a href="#常用参数说明" class="headerlink" title="常用参数说明"></a>常用参数说明</h4><ul>
+<li><p>-p：保留原文件的修改时间，访问时间和访问权限。</p>
+</li>
+<li><p>-r： 递归复制整个目录。</p>
+</li>
+<li><p>-v：详细方式显示输出。scp和ssh(1)会显示出整个过程的调试信息。这些信息用于调试连接，验证和配置问题。</p>
+</li>
+<li><p>-P：注意是大写的P, port是指定数据传输用到的端口号</p>
+</li>
+</ul>
+<h4 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h4><ul>
+<li>从本地复制到远程</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span> 将本地多个文件复制到远程 target 目录下，多个文件间以空格隔开</span><br><span class="line">scp -P 5432 -p xxx.jar xxx1.jar root@ip:target</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 将本地文件 1.mp3 拷贝到远程服务器上的 001.mp3 文件里</span><br><span class="line">scp /home/space/music/1.mp3 root@www.runoob.com:/home/root/others/music/001.mp3</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>从远程拷贝到本地</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span> 将远程目录拷贝到当前目录下</span><br><span class="line">scp -r root@192.16.1.108:/var/www/blog .</span><br></pre></td></tr></table></figure>
+
+<p>当没有指定用户名时，命令输入完毕需要手动输入用户名和密码，指定了用户名后，需要输入密码</p>
+<p>密码的输入可以借助 expect 来实现自动交互</p>
+<p>当然，也可以通过 -B，以及其他参数来指定 ssh 连接的配置文件，实现无密码方式拷贝，相关信息，自行查阅</p>
+<h3 id="sz-rz"><a href="#sz-rz" class="headerlink" title="sz, rz"></a>sz, rz</h3><p>如果是借助 XShell 工具连接上远程服务器后，那么可借助 sz, rz 命令来下载和上传文件</p>
+<p>但如果远程服务器没有这两个命令的话，需要先进行安装：</p>
+<h4 id="安装-1"><a href="#安装-1" class="headerlink" title="安装"></a>安装</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span> CentOs 安装</span><br><span class="line">yum -y install lrzsz</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> Ubuntu 安装</span><br><span class="line">sudo apt-get install lrzsz</span><br></pre></td></tr></table></figure>
+
+<h4 id="使用-2"><a href="#使用-2" class="headerlink" title="使用"></a>使用</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sz xxx.file</span><br><span class="line">rz</span><br></pre></td></tr></table></figure>
+
+<p>下载文件的话，需要指定下载哪个文件，上传则不用，因为会打开文件选择弹框，选中即可</p>
+<h3 id="sftp"><a href="#sftp" class="headerlink" title="sftp"></a>sftp</h3><p>也是一个用来跟远程服务器上的文件进行下载、上传的命令</p>
+<p>sz,rz 通常是本机上装了个 XShell 工具，然后用于两机之间的文件通信</p>
+<p>但有时候，是需要在远程多个服务器之间进行文件通信，这时候就用不了 XShell，也就用不了 sz, rz 命令了</p>
+<p>这种场景，可以使用 scp 命令，也可以使用 sftp 命令</p>
+<h4 id="使用-3"><a href="#使用-3" class="headerlink" title="使用"></a>使用</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span> 先连接,端口跟 ssh 一致</span><br><span class="line">sftp -P 22 root@ip</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> help 命令,可以查看 sftp 支持的命令，比如 ls,lls,cd,lcd...</span><br><span class="line">help</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 所有命令前加 l，表示针对本机的操作，不加 l 表示针对远程服务器的操作</span><br><span class="line"><span class="meta">#</span> 本机进入 tmp 目录</span><br><span class="line">lcd /tmp/</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 下载远程文件到当前目录下</span><br><span class="line">get /usr/local/xxx.file</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 上传当前目录下的文件到远程指定目录下</span><br><span class="line">put xxx.file /usr/local/</span><br></pre></td></tr></table></figure>
+
+<p>有一点需要注意，如果本机是 window 系统，那么在 window 系统和 linux 系统之间是有 sftp 传输文件时，由于文件系统的分隔符不一样，在操作 lcd 命令时，可能会有问题，此时，可以直接输入 lcd，然后会弹窗文件选择框，选中路径后按确定即可，比较方便</p>
+<h3 id="tail"><a href="#tail" class="headerlink" title="tail"></a>tail</h3><p>通常用来实时查看日志文件：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">tail -f xxx.log</span><br></pre></td></tr></table></figure>
+
+<p>这样，只要有新日志写入，会马上在终端上输出，就可以不用每次都把文件下载下来了</p>
+<h3 id="实例-jenkins-构建-spring-boot-项目并部署远程服务器上"><a href="#实例-jenkins-构建-spring-boot-项目并部署远程服务器上" class="headerlink" title="实例-jenkins 构建 spring-boot 项目并部署远程服务器上"></a>实例-jenkins 构建 spring-boot 项目并部署远程服务器上</h3><p>场景是这样的，本地开发后端 spring-boot 项目，然后有一台专门的 jenkins 服务器，自动或手动触发构建</p>
+<p>jenkins 构建时，会自动去拉取代码，然后执行 package.sh 打包脚本，生成 jar 包</p>
+<p>再然后，执行 deploy.sh 脚本，将 jar 发送到另一台项目运行的服务器上，先停止旧项目的执行，然后移除旧 jar 包，执行新 jar 包，启动后端项目</p>
+<h4 id="package-sh"><a href="#package-sh" class="headerlink" title="package.sh"></a>package.sh</h4><p>打包脚本</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span>!/bin/sh</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 打包的渠道由外部传入</span><br><span class="line">environment=$1</span><br><span class="line">basedir=`pwd`</span><br><span class="line"><span class="meta">#</span> 先将旧的打包文件删除， -d 表示判断 target 是否是目录</span><br><span class="line">if [ -d "target" ]; then</span><br><span class="line">	rm -rf $basedir/target</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line">mkdir target</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 定义 mvn 打包的函数</span><br><span class="line">package()</span><br><span class="line">&#123;	</span><br><span class="line"><span class="meta">	#</span> mvn packgae打包</span><br><span class="line">	(mvn clean packge -P $environment)</span><br><span class="line"><span class="meta">	#</span> 如果 mvn 命令执行异常，将会返回非0，终止脚本，异常退出</span><br><span class="line">	if [ $? -ne 0 ]; then</span><br><span class="line">		exit 1</span><br><span class="line">	fi</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 进入项目根目录，执行打包工作</span><br><span class="line">cd $basedir/app</span><br><span class="line">package</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">exit 0</span><br></pre></td></tr></table></figure>
+
+<h4 id="deploy-sh"><a href="#deploy-sh" class="headerlink" title="deploy.sh"></a>deploy.sh</h4><p>部署脚本</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span>!/usr/bin/expect</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 将传给脚本的参数赋值给变量</span><br><span class="line">set ip [lindex $argv 0]</span><br><span class="line">set port [lindex $argv 1]</span><br><span class="line">set user [lindex $argv 2]</span><br><span class="line">set password [lindex $argv 3]</span><br><span class="line">set targetDir [lindex $argv 4]</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 先另起进程，用 scp 命令，将打包好的 jar 包发送到项目运行的服务器上</span><br><span class="line">spawn scp -P $port target/xxx.jar $user@$ip:$targetDir</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 用 expect 解决 scp 需要输入命令的交互，实现自动化</span><br><span class="line">expect &#123;</span><br><span class="line">	"yes/no" &#123;</span><br><span class="line">		send "yes\n"</span><br><span class="line">		exp_continue</span><br><span class="line">	&#125;</span><br><span class="line">	"password" &#123;</span><br><span class="line">		send "$password\n"</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#</span> jar 发送完毕就退出子进程，返回主进程，继续处理往下命令</span><br><span class="line">expect eof</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 另起进程执行 ssh 连接项目运行的服务器</span><br><span class="line">spawn ssh -p $port -o "StrictHostKeyChecking no" $user@$ip</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 用 expect 解决 ssh 需要输入命令的交互，实现自动化</span><br><span class="line">expect &#123;</span><br><span class="line">	"password" &#123;</span><br><span class="line">		send "$password\n"</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 登录成功，则发送需要在远程服务器上执行的命令</span><br><span class="line">expect "login"</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 包括，停止旧项目，执行新项目</span><br><span class="line">send "</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 进入 jar 包存放目录</span><br><span class="line">cd xxx</span><br><span class="line"><span class="meta">#</span> 停止运行</span><br><span class="line">kill -9 `ps aux|grep 'xxx.jar'|grep -v grep|awk '&#123;print $2&#125;'`  </span><br><span class="line"><span class="meta">#</span> 备份</span><br><span class="line">cp xxx.jar xxx.jar.bak</span><br><span class="line"><span class="meta">#</span> 移新包</span><br><span class="line">mv $targetDir/xxx.jar xxx</span><br><span class="line"><span class="meta">#</span> 启动项目</span><br><span class="line">su - www -c "nohup java -jar xxx.jar &amp;"</span><br><span class="line"></span><br><span class="line">sleep 10s</span><br><span class="line">exit 0</span><br><span class="line">"</span><br><span class="line">expect eof</span><br><span class="line">exit 0</span><br></pre></td></tr></table></figure>
+
+<h4 id="jenkins-构建-shell"><a href="#jenkins-构建-shell" class="headerlink" title="jenkins - 构建 shell"></a>jenkins - 构建 shell</h4><p>jenkins 配置里的构建 shell 命令</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span>!/bin/sh</span><br><span class="line">source /etc/profile</span><br><span class="line"><span class="meta">#</span> 先执行打包脚本，指定打包的渠道</span><br><span class="line">sh jenkins/package.sh online</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 如果打包失败，终止</span><br><span class="line">if [ $? -ne 0 ]; then</span><br><span class="line">   exit 1</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 执行部署脚本，指定项目运行的服务器的连接端口号，ip，登录用户，密码，移包路径</span><br><span class="line">/usr/bin/expect jenkins/deploy.sh "127.0.0.1" "22" "root" "xxxx" "/temp/"</span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>shell脚本</category>
+      </categories>
+  </entry>
+  <entry>
     <title>node-sass 安装的填坑记录</title>
     <url>/2019/11/16/%E5%9F%8B%E5%9D%91%E8%AE%B0%E5%BD%95/node-sass%E5%AE%89%E8%A3%85%E7%9A%84%E5%A1%AB%E5%9D%91%E8%AE%B0%E5%BD%95/</url>
     <content><![CDATA[<h1 id="node-sass-埋坑记录"><a href="#node-sass-埋坑记录" class="headerlink" title="node-sass 埋坑记录"></a>node-sass 埋坑记录</h1><h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>原有项目、环境：</p>
@@ -3136,68 +3510,6 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
-    <title>前端16-JavaScript执行上下文EC和变量对象VO（进阶）</title>
-    <url>/2018/11/02/%E5%89%8D%E7%AB%AF/%E8%BF%9B%E9%98%B6/%E5%89%8D%E7%AB%AF%E5%85%A5%E9%97%A816-JavaScript%E8%BF%9B%E9%98%B6%E4%B9%8BEC%E5%92%8CVO/</url>
-    <content><![CDATA[<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本系列文章内容全部梳理自以下几个来源：</p>
-<ul>
-<li>《JavaScript权威指南》</li>
-<li><a href="https://developer.mozilla.org/zh-CN/docs/Web" target="_blank" rel="noopener">MDN web docs</a></li>
-<li><a href="https://github.com/smyhvae/Web" target="_blank" rel="noopener">Github:smyhvae/web</a></li>
-<li><a href="https://github.com/goddyZhao/Translation/tree/master/JavaScript" target="_blank" rel="noopener">Github:goddyZhao/Translation/JavaScript</a></li>
-</ul>
-<p>作为一个前端小白，入门跟着这几个来源学习，感谢作者的分享，在其基础上，通过自己的理解，梳理出的知识点，或许有遗漏，或许有些理解是错误的，如有发现，欢迎指点下。</p>
-<p>PS：梳理的内容以《JavaScript权威指南》这本书中的内容为主，因此接下去跟 JavaScript 语法相关的系列文章基本只介绍 ES5 标准规范的内容、ES6 等这系列梳理完再单独来讲讲。</p>
-<h1 id="正文-执行上下文EC和变量对象VO"><a href="#正文-执行上下文EC和变量对象VO" class="headerlink" title="正文-执行上下文EC和变量对象VO"></a>正文-执行上下文EC和变量对象VO</h1><p>EC：Execution Context，中文翻译执行上下文，也有翻译成执行环境的。</p>
-<p>VO：Variable object，中文翻译变量对象。</p>
-<p>这两个概念很重要，涉及到作用域以及作用域链的原理。</p>
-<h3 id="执行上下文-EC"><a href="#执行上下文-EC" class="headerlink" title="执行上下文 EC"></a>执行上下文 EC</h3><p>先说说Android中的上下文： </p>
-<ul>
-<li>Android</li>
-</ul>
-<p>Android 中也有上下文：Context，四大组件都是上下文，还有一个全局的 Application上下文。在 Android 中基本是以四大组件为界限，每创建一个四大组件，都会产生一个上下文，比如每个 Activity 都是独立的上下文。</p>
-<p>在 Android 中，上下文 Context 的作用大体上用于标识各种资源的所属，要加载一张图片、创建一个 View、弹一个 Dialog 等等，你需要告诉系统，这些是谁发出的指令，要挂载到哪个上下文，这些资源依赖于上下文的生命周期。</p>
-<p>所以才会出现，有时弹 Dialog 或者更新某个 View 时抛异常说 Context 已销毁，因为它需要挂载的上下文已经销毁了，那么就没有上下文来统筹管理这些资源了，自然会抛异常。</p>
-<ul>
-<li>JavaScript</li>
-</ul>
-<p>在 JavaScript 中，上下文是指执行上下文，通俗点理解，代码执行的上下文，所以也有翻译成执行环境，可以通俗的把它理解成一个对象，对象名 EC，表示代码的执行上下文。</p>
-<p>既然理解成一个对象，那么就有它创建的时机，在 JavaScript 中，每当要执行不同类型的代码时，就会创建一个执行上下文 EC。</p>
-<p>而代码的类型分三种：</p>
-<ul>
-<li>全局代码</li>
-<li>函数代码</li>
-<li>eval()执行的代码</li>
-</ul>
-<p>最后一种不讨论，全局代码就是指写在函数外的代码，在前端里，当 HTML 加载一个 js 文件时，全局代码就会被执行，那么在全局代码执行前就会先创建一个全局的执行上下文 EC，之后每调用一次函数，要执行函数内的代码时，会再创建一个函数执行上下文 EC。</p>
-<p>也就是说，不讨论 eval 的话，那么在 JavaScript 有两种执行上下文，一种是全局执行上下文，一种是函数执行上下文。</p>
-<p>而每次创建一个执行上下文时，都会将其放入一个栈结构，这个栈就称为执行上下文栈（ECS），也有翻译成执行环境栈。</p>
-<p>所以执行 js 文件代码期间，这个栈底一直是全局执行上下文，直到 js 文件代码执行结束。全局代码执行过程中，每调用一次函数，新创建一个函数执行上下文，就放入栈内。</p>
-<p>因此，栈顶就表示当前执行的代码，如果栈顶是全局执行上下文，表示正在执行全局代码；如果栈顶是函数执行上下文，表示正在执行函数内的代码。当函数执行结束时，这个函数执行上下文就从栈中移出。</p>
-<p>那么执行上下文（EC）有什么用呢？</p>
-<p>用途可多了，跟 Android 不一样，Android 里由于是各种资源的组合使用，但在 JavaScript 中更多的是嵌套函数的变量使用。所以，用途之一就是保存各个变量。</p>
-<p>将 EC 理解成一个对象的话，它有两个属性，一个是变量对象（VO），另一个是作用域链（Scope Chain）。对于全局执行上下文，当 HTML 加载一个 js 文件时，就会创建一个全局 EC，此时会创建它的两个属性：变量对象和作用域链。之后，每调用一次函数，创建这次函数执行的上下文，函数内部的变量的使用就依赖于这个函数执行上下文中的变量对象和作用域链。</p>
-<p>也就是说，内部函数之所以可以使用外部函数内的变量，之所以可以使用全局变量，都是依赖于当前这个内部函数的执行上下文。</p>
-<p>而且，变量之所以会提前声明也是因为执行上下文的因素。这些当讲解了执行上下文 EC 的创建过程就清楚了。</p>
-<h3 id="变量对象-VO"><a href="#变量对象-VO" class="headerlink" title="变量对象 VO"></a>变量对象 VO</h3><p>变量对象只是一个抽象的概念，可以通俗的理解成保存当前上下文所有变量的对象。</p>
-<p>在不同的执行上下文中，它有不同的具体表现。</p>
-<p>在全局执行上下文中，变量对象 VO 的具体表现就是全局对象，因为所有的全局变量其实都是全局对象的属性，而变量对象 VO 的作用是要保存当前上下文中的所有变量，所以此时的变量对象 VO 实际上是指向的全局对象。</p>
-<p>尤其在前端中，全局对象就是 window，所以全局执行上下文的变量对象 VO = window。</p>
-<p>在函数执行上下文中，因为变量对象 VO 是要保存当前上下文中所有的变量，一个函数内的变量包括：形参变量、局部变量、自身函数对象引用变量、arguments、this。</p>
-<p>针对函数执行上下文，为了保存这些变量，特意创建了一个对象，称它为活动对象 AO，函数内所需的变量就都保存在 AO 中，所以在函数执行上下文中，变量对象 VO 的具体表现也就是 AO。</p>
-<p>小结：变量对象 VO 是一个抽象概念，用于保存当前执行上下文中所有的变量。所以在全局执行上下文中，因为全局对象已经保存着当前上下文所有的变量，所以 VO 在这里的具体实现就是全局对象。在函数执行上下文中，由于要保存函数形参、局部变量、自身函数对象引用变量、arguments、this，所以新创建了一个叫活动对象 AO 来保存，此时 VO 的具体实现就是 AO。</p>
-<h3 id="作用域链"><a href="#作用域链" class="headerlink" title="作用域链"></a>作用域链</h3><p>每次函数调用时，都会创建一个函数执行上下文 EC，但其中的变量对象 VO 只保存着当前上下文中的变量而已，那么函数内如果需要使用到外部函数的变量，甚至是使用全局的变量时，此时就需要依赖于执行上下文的另一个属性：作用域链。</p>
-<p>作用域链本质上，其实是将有嵌套层次关系的执行上下文的 VO 拼接起来。</p>
-<p>所以大部分场景作用域链只有两个节点：当前函数执行上下文的 VO –&gt; 全局执行上下文的 VO。所以函数内才可以根据作用域链访问全局内的变量。</p>
-<p>当出现函数内再嵌套函数时，此时作用域链就会比较长：</p>
-<p>内层函数执行上下文的 VO –&gt; 外层函数执行上下文的 VO –&gt; 全局执行上下文 VO。</p>
-<p>至于作用域链是如何将有嵌套层次的执行上下文的 VO 拼接起来，需要借助函数对象的内部属性 [[Scope]]，[[]]表示执行引擎为对象创建的内部属性，我们访问不了，也操作不了。具体原理在作用域链一节中讲解。  </p>
-]]></content>
-      <categories>
-        <category>前端</category>
-        <category>进阶</category>
-      </categories>
-  </entry>
-  <entry>
     <title>前端15-JavaScript原型链（进阶）</title>
     <url>/2018/11/02/%E5%89%8D%E7%AB%AF/%E8%BF%9B%E9%98%B6/%E5%89%8D%E7%AB%AF%E5%85%A5%E9%97%A815-JavaScript%E8%BF%9B%E9%98%B6%E4%B9%8B%E5%8E%9F%E5%9E%8B%E9%93%BE/</url>
     <content><![CDATA[<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本系列文章内容全部梳理自以下几个来源：</p>
@@ -3305,6 +3617,68 @@ b.y; <span class="comment">//1</span>
 <p>而且，建议看这张图时，每次都将某条原型链跟踪到底，再去看另一条，这过程不要过多关注在分支上，否则很容易混乱。</p>
 <p>对于新手，如果能够对这张稍作备注，而不是直接将这张图放出来，我觉得会更好，如下：</p>
 <p><img src="https://upload-images.jianshu.io/upload_images/1924341-ed3572ea96c33df5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt>  </p>
+]]></content>
+      <categories>
+        <category>前端</category>
+        <category>进阶</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>前端16-JavaScript执行上下文EC和变量对象VO（进阶）</title>
+    <url>/2018/11/02/%E5%89%8D%E7%AB%AF/%E8%BF%9B%E9%98%B6/%E5%89%8D%E7%AB%AF%E5%85%A5%E9%97%A816-JavaScript%E8%BF%9B%E9%98%B6%E4%B9%8BEC%E5%92%8CVO/</url>
+    <content><![CDATA[<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本系列文章内容全部梳理自以下几个来源：</p>
+<ul>
+<li>《JavaScript权威指南》</li>
+<li><a href="https://developer.mozilla.org/zh-CN/docs/Web" target="_blank" rel="noopener">MDN web docs</a></li>
+<li><a href="https://github.com/smyhvae/Web" target="_blank" rel="noopener">Github:smyhvae/web</a></li>
+<li><a href="https://github.com/goddyZhao/Translation/tree/master/JavaScript" target="_blank" rel="noopener">Github:goddyZhao/Translation/JavaScript</a></li>
+</ul>
+<p>作为一个前端小白，入门跟着这几个来源学习，感谢作者的分享，在其基础上，通过自己的理解，梳理出的知识点，或许有遗漏，或许有些理解是错误的，如有发现，欢迎指点下。</p>
+<p>PS：梳理的内容以《JavaScript权威指南》这本书中的内容为主，因此接下去跟 JavaScript 语法相关的系列文章基本只介绍 ES5 标准规范的内容、ES6 等这系列梳理完再单独来讲讲。</p>
+<h1 id="正文-执行上下文EC和变量对象VO"><a href="#正文-执行上下文EC和变量对象VO" class="headerlink" title="正文-执行上下文EC和变量对象VO"></a>正文-执行上下文EC和变量对象VO</h1><p>EC：Execution Context，中文翻译执行上下文，也有翻译成执行环境的。</p>
+<p>VO：Variable object，中文翻译变量对象。</p>
+<p>这两个概念很重要，涉及到作用域以及作用域链的原理。</p>
+<h3 id="执行上下文-EC"><a href="#执行上下文-EC" class="headerlink" title="执行上下文 EC"></a>执行上下文 EC</h3><p>先说说Android中的上下文： </p>
+<ul>
+<li>Android</li>
+</ul>
+<p>Android 中也有上下文：Context，四大组件都是上下文，还有一个全局的 Application上下文。在 Android 中基本是以四大组件为界限，每创建一个四大组件，都会产生一个上下文，比如每个 Activity 都是独立的上下文。</p>
+<p>在 Android 中，上下文 Context 的作用大体上用于标识各种资源的所属，要加载一张图片、创建一个 View、弹一个 Dialog 等等，你需要告诉系统，这些是谁发出的指令，要挂载到哪个上下文，这些资源依赖于上下文的生命周期。</p>
+<p>所以才会出现，有时弹 Dialog 或者更新某个 View 时抛异常说 Context 已销毁，因为它需要挂载的上下文已经销毁了，那么就没有上下文来统筹管理这些资源了，自然会抛异常。</p>
+<ul>
+<li>JavaScript</li>
+</ul>
+<p>在 JavaScript 中，上下文是指执行上下文，通俗点理解，代码执行的上下文，所以也有翻译成执行环境，可以通俗的把它理解成一个对象，对象名 EC，表示代码的执行上下文。</p>
+<p>既然理解成一个对象，那么就有它创建的时机，在 JavaScript 中，每当要执行不同类型的代码时，就会创建一个执行上下文 EC。</p>
+<p>而代码的类型分三种：</p>
+<ul>
+<li>全局代码</li>
+<li>函数代码</li>
+<li>eval()执行的代码</li>
+</ul>
+<p>最后一种不讨论，全局代码就是指写在函数外的代码，在前端里，当 HTML 加载一个 js 文件时，全局代码就会被执行，那么在全局代码执行前就会先创建一个全局的执行上下文 EC，之后每调用一次函数，要执行函数内的代码时，会再创建一个函数执行上下文 EC。</p>
+<p>也就是说，不讨论 eval 的话，那么在 JavaScript 有两种执行上下文，一种是全局执行上下文，一种是函数执行上下文。</p>
+<p>而每次创建一个执行上下文时，都会将其放入一个栈结构，这个栈就称为执行上下文栈（ECS），也有翻译成执行环境栈。</p>
+<p>所以执行 js 文件代码期间，这个栈底一直是全局执行上下文，直到 js 文件代码执行结束。全局代码执行过程中，每调用一次函数，新创建一个函数执行上下文，就放入栈内。</p>
+<p>因此，栈顶就表示当前执行的代码，如果栈顶是全局执行上下文，表示正在执行全局代码；如果栈顶是函数执行上下文，表示正在执行函数内的代码。当函数执行结束时，这个函数执行上下文就从栈中移出。</p>
+<p>那么执行上下文（EC）有什么用呢？</p>
+<p>用途可多了，跟 Android 不一样，Android 里由于是各种资源的组合使用，但在 JavaScript 中更多的是嵌套函数的变量使用。所以，用途之一就是保存各个变量。</p>
+<p>将 EC 理解成一个对象的话，它有两个属性，一个是变量对象（VO），另一个是作用域链（Scope Chain）。对于全局执行上下文，当 HTML 加载一个 js 文件时，就会创建一个全局 EC，此时会创建它的两个属性：变量对象和作用域链。之后，每调用一次函数，创建这次函数执行的上下文，函数内部的变量的使用就依赖于这个函数执行上下文中的变量对象和作用域链。</p>
+<p>也就是说，内部函数之所以可以使用外部函数内的变量，之所以可以使用全局变量，都是依赖于当前这个内部函数的执行上下文。</p>
+<p>而且，变量之所以会提前声明也是因为执行上下文的因素。这些当讲解了执行上下文 EC 的创建过程就清楚了。</p>
+<h3 id="变量对象-VO"><a href="#变量对象-VO" class="headerlink" title="变量对象 VO"></a>变量对象 VO</h3><p>变量对象只是一个抽象的概念，可以通俗的理解成保存当前上下文所有变量的对象。</p>
+<p>在不同的执行上下文中，它有不同的具体表现。</p>
+<p>在全局执行上下文中，变量对象 VO 的具体表现就是全局对象，因为所有的全局变量其实都是全局对象的属性，而变量对象 VO 的作用是要保存当前上下文中的所有变量，所以此时的变量对象 VO 实际上是指向的全局对象。</p>
+<p>尤其在前端中，全局对象就是 window，所以全局执行上下文的变量对象 VO = window。</p>
+<p>在函数执行上下文中，因为变量对象 VO 是要保存当前上下文中所有的变量，一个函数内的变量包括：形参变量、局部变量、自身函数对象引用变量、arguments、this。</p>
+<p>针对函数执行上下文，为了保存这些变量，特意创建了一个对象，称它为活动对象 AO，函数内所需的变量就都保存在 AO 中，所以在函数执行上下文中，变量对象 VO 的具体表现也就是 AO。</p>
+<p>小结：变量对象 VO 是一个抽象概念，用于保存当前执行上下文中所有的变量。所以在全局执行上下文中，因为全局对象已经保存着当前上下文所有的变量，所以 VO 在这里的具体实现就是全局对象。在函数执行上下文中，由于要保存函数形参、局部变量、自身函数对象引用变量、arguments、this，所以新创建了一个叫活动对象 AO 来保存，此时 VO 的具体实现就是 AO。</p>
+<h3 id="作用域链"><a href="#作用域链" class="headerlink" title="作用域链"></a>作用域链</h3><p>每次函数调用时，都会创建一个函数执行上下文 EC，但其中的变量对象 VO 只保存着当前上下文中的变量而已，那么函数内如果需要使用到外部函数的变量，甚至是使用全局的变量时，此时就需要依赖于执行上下文的另一个属性：作用域链。</p>
+<p>作用域链本质上，其实是将有嵌套层次关系的执行上下文的 VO 拼接起来。</p>
+<p>所以大部分场景作用域链只有两个节点：当前函数执行上下文的 VO –&gt; 全局执行上下文的 VO。所以函数内才可以根据作用域链访问全局内的变量。</p>
+<p>当出现函数内再嵌套函数时，此时作用域链就会比较长：</p>
+<p>内层函数执行上下文的 VO –&gt; 外层函数执行上下文的 VO –&gt; 全局执行上下文 VO。</p>
+<p>至于作用域链是如何将有嵌套层次的执行上下文的 VO 拼接起来，需要借助函数对象的内部属性 [[Scope]]，[[]]表示执行引擎为对象创建的内部属性，我们访问不了，也操作不了。具体原理在作用域链一节中讲解。  </p>
 ]]></content>
       <categories>
         <category>前端</category>
@@ -7113,6 +7487,189 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
+    <title>封装个-Android-的高斯模糊组件</title>
+    <url>/2018/10/14/Android%E7%BB%84%E4%BB%B6/%E5%B0%81%E8%A3%85%E4%B8%AA-Android-%E7%9A%84%E9%AB%98%E6%96%AF%E6%A8%A1%E7%B3%8A%E7%BB%84%E4%BB%B6/</url>
+    <content><![CDATA[<blockquote>
+<p><strong>本篇文章已授权微信公众号 hongyangAndroid （鸿洋）独家发布</strong>  </p>
+</blockquote>
+<p>最近基于 <a href="https://github.com/kikoso/android-stackblur" target="_blank" rel="noopener">Android StackBlur</a> 开源库，根据自己碰到的需求场景，封装了个高斯模糊组件，顺便记录一下。  </p>
+<p><strong>为什么要自己重复造轮子？</strong>  </p>
+<p>其实也谈不上重头自己造轮子，毕竟是基于大神的开源库，做了二次封装。封装的目的在于，方便外部使用。毕竟有着自己的编程习惯，大神的开源库也只是提供了基础的功能，现实编程中，产品的需求是各种各样的。</p>
+<p>导致每次使用时，都蛮麻烦的，需要额外自己处理蛮多东西。而一旦新的项目又需要接入高斯模糊了，又得重新写一些代码，复制粘贴也麻烦，经常由于各种业务耦合报错。</p>
+<p>既然如此，干脆花时间抽个基础、公用的高斯模糊组件，需要时直接依赖即可。</p>
+<h1 id="基础理论"><a href="#基础理论" class="headerlink" title="基础理论"></a>基础理论</h1><h3 id="高斯模糊"><a href="#高斯模糊" class="headerlink" title="高斯模糊"></a>高斯模糊</h3><p>高斯模糊的原理和算法就不介绍了，我也不懂，没深入，这里就大概讲讲我的粗坯理解：</p>
+<p>我们知道，一张图片，本质上其实是一个个像素点构成的，虽然经过计算机处理后，呈现在我们眼前的是具体的图像。但在计算机中，其实就是一堆数组数据。</p>
+<p>数组中每个单位就是一个个像素点，那么每个像素点是存储什么内容呢，其实也就是 RGB 或者 ARGB 之类格式的数据。</p>
+<p>高斯模糊，大体上就是对这张图片中的每个像素点都重新进行计算，每个像素点的新值等于以它为中心，半径为 r 的周围区域内所有像素点各自按照不同权重相加之和的平均值。</p>
+<p>可以粗坯的理解为，<strong>本来这个像素点是要呈现它自己本身的内容，但经过高斯模糊计算后，掺杂进它周围区域像素点的内容了。就像加水稀释类似的道理，既然都掺杂进周围的内容了，那么它呈现的内容相比最初，肯定就不那么清晰了</strong>。</p>
+<p>而如果掺杂的半径越大，混合进的内容也就越多，那么它本身的内容就越淡了，是不是这个理。所以，这就是为什么每个开源的高斯模糊组件库，使用时基本都需要我们传入一个 radius 半径的参数。而且，半径越大，越模糊。</p>
+<p>这么一粗坯的解释，就理解多了，是吧。</p>
+<p>为什么需要大概掌握这个理论基础呢？</p>
+<p>想想，高斯模糊是遍历所有像素点，对每个像素点都重新计算。那么，这自然是一个耗时的工作，掌握了理论基础，我们要优化时也才有方向去优化。</p>
+<h3 id="性能对比"><a href="#性能对比" class="headerlink" title="性能对比"></a>性能对比</h3><p>大神的开源库中提供了三种高斯模糊方式，而我在 <a href="https://github.com/Blankj/AndroidUtilCode" target="_blank" rel="noopener">Blankj 的 AndroidUtilCode</a> 开源库中发现了另外一种，所以我将他们都整合起来，一共有四种：</p>
+<ul>
+<li>Google 官方提供的 RenderScript 方式 （RSBlur）</li>
+<li>C 编写的高斯算法 blur.c 方式 （NativeBlur）</li>
+<li>Java 编写的高斯算法方式1（JavaBlur）</li>
+<li>Java 编写的高斯算法方式2（StackBlur）</li>
+</ul>
+<p>其实，大体上就三种：Google 官方提供的，大神用 C 写的高斯模糊算法，大神用 Java 写的高斯模糊算法。至于后面两种，看了下，算法的代码不一样，我就把它们当做是两种不同的算法实现了。也许是一样，但我没深入去看，反正代码不一样，我就这么认为了。</p>
+<p>下面我们来做个实验，在如下相同条件下，不同高斯模糊方案的耗时比较：</p>
+<ul>
+<li>radius=10, scale=1, bitmap=200*200(11.69KB)</li>
+</ul>
+<p>ps: radius 表示高斯算法计算过程中的半径取值，scale=1表示对 bitmap 原图进行高斯模糊。这些前提条件需要了解一下，不然你在看网上其他类似性能比对的文章时，发现它们动不动就优化到几 ms 级别的，然而你自己尝试却始终达不到。这是因为也许所使用的这些前提都不一致，不一致的前提下，耗时根本无从比较。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">testBlur</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="keyword">int</span> sum = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">		<span class="keyword">long</span> time = SystemClock.uptimeMillis();</span><br><span class="line">		DBlur.source(<span class="keyword">this</span>, R.drawable.image).modeRs().radius(<span class="number">10</span>).sampling(<span class="number">1</span>).build().doBlurSync();</span><br><span class="line">		<span class="keyword">long</span> end = SystemClock.uptimeMillis();</span><br><span class="line">		sum += (end - time);</span><br><span class="line">	&#125;</span><br><span class="line">    Log.e(<span class="string">"DBlur"</span>, <span class="string">"RSBlur cast "</span> + (sum/<span class="number">100</span>) + <span class="string">"ms"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>代码模板如上，分别运行 100 次后取平均值，四种不同方式的耗时如下表：</p>
+<table>
+<thead>
+<tr>
+<th align="center">前提条件</th>
+<th align="center">RSBlur</th>
+<th align="center">NativeBlur</th>
+<th align="center">JavaBlur</th>
+<th align="center">StackBlur</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">radius=<strong>10</strong>, scale=1, bitmap=200*200</td>
+<td align="center">51ms</td>
+<td align="center">13ms</td>
+<td align="center">162ms</td>
+<td align="center">384ms</td>
+</tr>
+<tr>
+<td align="center">radius=<strong>20</strong>, scale=1, bitmap=200*200</td>
+<td align="center">56ms</td>
+<td align="center">12ms</td>
+<td align="center">164ms</td>
+<td align="center">435ms</td>
+</tr>
+<tr>
+<td align="center">radius=10, scale=<strong>2</strong>, bitmap=200*200</td>
+<td align="center">48ms</td>
+<td align="center">11ms</td>
+<td align="center">75ms</td>
+<td align="center">110ms</td>
+</tr>
+<tr>
+<td align="center">radius=10, scale=<strong>8</strong>, bitmap=200*200</td>
+<td align="center">45ms</td>
+<td align="center">7ms</td>
+<td align="center">14ms</td>
+<td align="center">19ms</td>
+</tr>
+<tr>
+<td align="center">radius=10, scale=8, bitmap=<strong>1920*1180</strong></td>
+<td align="center">183ms</td>
+<td align="center">143ms</td>
+<td align="center">346ms</td>
+<td align="center">460ms</td>
+</tr>
+<tr>
+<td align="center">radius=<strong>20</strong>, scale=8, bitmap=1920*1180</td>
+<td align="center">204ms</td>
+<td align="center">145ms</td>
+<td align="center">353ms</td>
+<td align="center">510ms</td>
+</tr>
+<tr>
+<td align="center">radius=20, scale=<strong>1</strong>, bitmap=1920*1180</td>
+<td align="center">474ms</td>
+<td align="center">444ms</td>
+<td align="center">8663ms</td>
+<td align="center">内存溢出</td>
+</tr>
+</tbody></table>
+<p>100 次样本可能不多，但大体上我们也能比较出不同类型的高斯模糊之前的区别，及其适用场景：</p>
+<ul>
+<li>总体上，NativeBlur 和 RSBlur 的耗时会少于 JavaBlur 和 StackBlur</li>
+<li>JavaBlur 和 StackBlur 方式，如果先对 Bitmap 进行缩小，再高斯模糊，最后再放大，耗时会大大缩短</li>
+<li>radius 增大会增加耗时，但影响不大，但视图呈现效果会越模糊</li>
+<li>scale 对原图缩小倍数越多，耗时越短，但视图呈现效果同样会越模糊</li>
+<li>分辨率越高的图片，高斯模糊的就越耗时</li>
+<li>对于大图而言，如果要使用 JavaBlur 或 StackBlur，最好设置 scale 先缩小再模糊，否则将非常耗时且容易内存溢出</li>
+<li>如果已经通过 scale 方式进行优化，那么最好 radius 值可以相对小一点，否则两者的值都大会对图片的模糊效果特别强烈，也许会过了头</li>
+</ul>
+<h3 id="性能优化"><a href="#性能优化" class="headerlink" title="性能优化"></a>性能优化</h3><p>高斯模糊的优化考虑点，其实就三个：</p>
+<ul>
+<li>选择不同的高斯模糊方式</li>
+<li>通过 scale 对原图先缩小，再模糊，最后再放大方式</li>
+<li>优化高斯模糊算法</li>
+</ul>
+<p>最后一点就不考虑了，毕竟难度太大。那么，其实就剩下两种，要么是从高斯模糊的方案上选择，要么从待模糊的图片上做手脚。</p>
+<p>虽然有四种高斯模糊方案，但每种都有各自优缺点：</p>
+<ul>
+<li>RSBlur 在低端机上可能无法兼容</li>
+<li>NativeBlur 需要生成对应 CPU 架构的 so 文件支持</li>
+<li>JavaBlur 和 StackBlur 耗时会较长</li>
+</ul>
+<p>优化的考虑点大体上这几种：</p>
+<ul>
+<li>大体上，使用 NativeBlur 或者 RSBlur 即可，如果出现一些问题，那么此时可考虑切到 JavaBlur 或 StackBlur 方案，但记得结合 scale 方式优化处理。</li>
+<li>如果高斯模糊的图片有实时性要求，要求模糊得同步进行处理，主线程后续的工作需要等待高斯模糊后才能够处理的话，那么尽量选择 scale 方式进行优化，减少耗时。</li>
+<li>如果对实时性没要求，但对图片模糊程度有要求，那其实，只要后台异步去进行高斯模糊即可，此时 scale 可不用缩小太多，而利用 radius 来控制模糊效果，以达到理想的要求。</li>
+<li>如果两者都有要求，那就自行尝试寻找折中点吧。</li>
+</ul>
+<p>最后说一点，因为已经封装成组件库了，RSBlur 也是引入的 support 包，so 文件也打包好了，那么使用这两种方案足够满足绝大部分场景了，所以，没有特意指定，组件默认的方案为 RSBlur。</p>
+<h1 id="二次封装"><a href="#二次封装" class="headerlink" title="二次封装"></a>二次封装</h1><h3 id="需求场景"><a href="#需求场景" class="headerlink" title="需求场景"></a>需求场景</h3><p>为什么要二次封装？那肯定是因为有自己的各种需求场景的，我的需求如下：</p>
+<ul>
+<li>要能够对当前页面（Activity）截图后，进行模糊</li>
+<li>要能够对 drawable 资源图片进行模糊、或者对指定 View 的视图进行模糊</li>
+<li>模糊完成后，要能够自动以淡入的动画方式显示在指定的控件上</li>
+<li>存在这种需求场景：对当前界面截图、并且模糊，模糊后的图片展示的时机可能在其他界面，因此需要支持缓存功能，可以根据指定 cacheKey 值获取缓存</li>
+<li>当然，可以根据各种配置使用高斯模糊，当不指定配置时，有默认配置</li>
+</ul>
+<p>总结一下，其实封装要做的事也就是要实现：</p>
+<ul>
+<li>截图、缓存、淡入动画、默认配置</li>
+<li>可以的话，组件最好可以达到，其他人在不看文档，不看源码前提下，以最少的成本接入直接上手使用</li>
+</ul>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>截图、缓存、动画这些都属于纯功能代码的封装了，具体就不说了。</p>
+<p>这里想来讲讲，如何设计，可以让其他人以最少的成本接入直接上手使用。</p>
+<p>我的想法是，利用 AndroidStudio 的代码提示功能，具体的说就是，你只需要了解组件的入口是 DBlur 即可，至于后续怎么使用，全靠 AndroidStudio 来提示，跟着 AndroidStudio 走就行。</p>
+<p>例如：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-7eb4707f967a5577.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="DBlur入口.png">  </p>
+<p>当敲完 DBlur. 时，会弹出代码提示框，入口很少，是吧，就两个，看命名也能猜到作用：<code>getCacheBitmap()</code> 明显是用来取缓存的，那么要高斯模糊自然是另外一个入口 <code>source()</code>，这个方法有多个重载函数，看参数，其实也能知道，这就对应着要模糊的图片的不同来源类型，如：</p>
+<ul>
+<li>直接传入 Bitmap 对其进行模糊</li>
+<li>传入 Activity/View，内部会对这个界面/控件进行截图后再模糊</li>
+<li>传入 resId，对 drawable 资源图片进行模糊</li>
+</ul>
+<p>那么，可能想问了，哪里进行高斯模糊配置，哪里设置同步或异步，哪里注册回调等等。别急，既然只给你开了一个入口，那么就跟着入口走下去，自然会一步步引导你走到最后。如：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-9efa2fb81a12cd2d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BlurConfigBuilder入口.png">  </p>
+<p>第一步、第二步该做什么，我都给你规定好了，你也只能按照步骤一步步来。想要设置高斯模糊配置，你得先指定图片来源，才能进入第二步，在这里，可以进行的配置也都给你列出来了，想要哪个，直接设置即可。如：</p>
+<ul>
+<li><code>mode()</code>，<code>modeRs()</code>，<code>modeNative()</code> 等等类似 mode 开头的方法，用于指定要使用哪种高斯模糊方案，一共四种，每种内部都有提供对应的常量标志，但如果你不知道哪里找，那么直接调用 modeXXX 方法即可。</li>
+<li><code>radius()</code> 用于设置高斯模糊计算的半径，内部默认为 4。</li>
+<li><code>sampling()</code> 用于设置对原图的缩小比例，内部默认为 8，即默认先缩小 8 倍，再模糊，最后再放大。</li>
+<li><code>cache()</code> 用于设置缓存此次模糊后的图片，没有调用默认不缓存。</li>
+<li><code>animAlpha()</code> 用于设置使用淡入动画，需要结合 <code>intoTarget()</code> 使用，否则不生效。</li>
+<li><code>intoTarget()</code> 用于设置模糊完成后，自动显示到指定控件上。</li>
+</ul>
+<p>另外，看每个方法返回的类名，其实这个过程都是在设置配置项，如果有对 Builder 模式了解的话，应该清楚，这个大多用来解决构造函数参数过多的场景，最后一般都会有一个 <code>build()</code> 或者 <code>create()</code> 类型的方法。参考的是 Android 源码中 AlertDialog。</p>
+<p>也就是说，要进入下一个步骤，需要调用 <code>build()</code> 方法，如：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-96ce20f8a2154350.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="doblur.png">  </p>
+<p>显然，已经到最后一个步骤了，这里就是发起高斯模糊工作的地方了。</p>
+<ul>
+<li><code>doBlur()</code> 会指定此次高斯模糊工作异步进行，所以需要注册回调的在这里传入。</li>
+<li><code>doBlurSync()</code> 指定高斯模糊同步进行，模糊后的 Bitmap 直接返回。</li>
+</ul>
+<p>至此，接入结束。</p>
+<p>使用这个高斯模糊的组件，只需要知道 DBlur 入口，其他都跟随着 AndroidStudio 代码提示一步步往下走即可，当然你也可以直接看源码，注释里也写得蛮清楚的了。</p>
+<p>这个就是我的想法，能力不足，只能想出这种方案，如果有哪里需要改进，哪里不合理，或者有其他思路，欢迎指点一下。</p>
+<h3 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">compile <span class="string">'com.dasu.image:blur:0.0.4'</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//使用默认配置，最短调用链</span></span><br><span class="line">Bitmap bitmap = DBlur.source(MainActivity.<span class="keyword">this</span>).build().doBlurSync();</span><br><span class="line"></span><br><span class="line"><span class="comment">//同步模糊，将imageView控制的视图进行模糊，完成后自动显示到 imageView1 控件上，以淡入动画方式</span></span><br><span class="line">DBlur.source(imageView).intoTarget(imageView1).animAlpha().build().doBlurSync();</span><br><span class="line"></span><br><span class="line"><span class="comment">//异步模糊，将drawable资源文件中的图片以 NATIVE 方式进行模糊，注册回调，完成时手动显示到 imageView1 控件上</span></span><br><span class="line">DBlur.source(<span class="keyword">this</span>, R.drawable.background).mode(BlurConfig.MODE_NATIVE).build()</span><br><span class="line">      .doBlur(<span class="keyword">new</span> OnBlurListener() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBlurSuccess</span><span class="params">(Bitmap bitmap)</span> </span>&#123;</span><br><span class="line">                imageView1.setImageBitmap(bitmap);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBlurFailed</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="comment">//do something</span></span><br><span class="line">            &#125;&#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="Github"><a href="#Github" class="headerlink" title="Github"></a><a href="https://github.com/woshidasusu/base-module/tree/master/blur" target="_blank" rel="noopener">Github</a></h3><p><a href="https://github.com/woshidasusu/base-module/tree/master/blur" target="_blank" rel="noopener">DBlur 的 Github 链接：https://github.com/woshidasusu/base-module/tree/master/blur</a>  </p>
+]]></content>
+      <categories>
+        <category>Android组件</category>
+      </categories>
+  </entry>
+  <entry>
     <title>Android中一张图片占据的内存大小是如何计算</title>
     <url>/2018/10/14/Android%E7%9F%A5%E8%AF%86/Android%E4%B8%AD%E4%B8%80%E5%BC%A0%E5%9B%BE%E7%89%87%E5%8D%A0%E6%8D%AE%E7%9A%84%E5%86%85%E5%AD%98%E5%A4%A7%E5%B0%8F%E6%98%AF%E5%A6%82%E4%BD%95%E8%AE%A1%E7%AE%97/</url>
     <content><![CDATA[<blockquote>
@@ -7413,189 +7970,6 @@ b.y; <span class="comment">//1</span>
 ]]></content>
       <categories>
         <category>Android知识</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>封装个-Android-的高斯模糊组件</title>
-    <url>/2018/10/14/Android%E7%BB%84%E4%BB%B6/%E5%B0%81%E8%A3%85%E4%B8%AA-Android-%E7%9A%84%E9%AB%98%E6%96%AF%E6%A8%A1%E7%B3%8A%E7%BB%84%E4%BB%B6/</url>
-    <content><![CDATA[<blockquote>
-<p><strong>本篇文章已授权微信公众号 hongyangAndroid （鸿洋）独家发布</strong>  </p>
-</blockquote>
-<p>最近基于 <a href="https://github.com/kikoso/android-stackblur" target="_blank" rel="noopener">Android StackBlur</a> 开源库，根据自己碰到的需求场景，封装了个高斯模糊组件，顺便记录一下。  </p>
-<p><strong>为什么要自己重复造轮子？</strong>  </p>
-<p>其实也谈不上重头自己造轮子，毕竟是基于大神的开源库，做了二次封装。封装的目的在于，方便外部使用。毕竟有着自己的编程习惯，大神的开源库也只是提供了基础的功能，现实编程中，产品的需求是各种各样的。</p>
-<p>导致每次使用时，都蛮麻烦的，需要额外自己处理蛮多东西。而一旦新的项目又需要接入高斯模糊了，又得重新写一些代码，复制粘贴也麻烦，经常由于各种业务耦合报错。</p>
-<p>既然如此，干脆花时间抽个基础、公用的高斯模糊组件，需要时直接依赖即可。</p>
-<h1 id="基础理论"><a href="#基础理论" class="headerlink" title="基础理论"></a>基础理论</h1><h3 id="高斯模糊"><a href="#高斯模糊" class="headerlink" title="高斯模糊"></a>高斯模糊</h3><p>高斯模糊的原理和算法就不介绍了，我也不懂，没深入，这里就大概讲讲我的粗坯理解：</p>
-<p>我们知道，一张图片，本质上其实是一个个像素点构成的，虽然经过计算机处理后，呈现在我们眼前的是具体的图像。但在计算机中，其实就是一堆数组数据。</p>
-<p>数组中每个单位就是一个个像素点，那么每个像素点是存储什么内容呢，其实也就是 RGB 或者 ARGB 之类格式的数据。</p>
-<p>高斯模糊，大体上就是对这张图片中的每个像素点都重新进行计算，每个像素点的新值等于以它为中心，半径为 r 的周围区域内所有像素点各自按照不同权重相加之和的平均值。</p>
-<p>可以粗坯的理解为，<strong>本来这个像素点是要呈现它自己本身的内容，但经过高斯模糊计算后，掺杂进它周围区域像素点的内容了。就像加水稀释类似的道理，既然都掺杂进周围的内容了，那么它呈现的内容相比最初，肯定就不那么清晰了</strong>。</p>
-<p>而如果掺杂的半径越大，混合进的内容也就越多，那么它本身的内容就越淡了，是不是这个理。所以，这就是为什么每个开源的高斯模糊组件库，使用时基本都需要我们传入一个 radius 半径的参数。而且，半径越大，越模糊。</p>
-<p>这么一粗坯的解释，就理解多了，是吧。</p>
-<p>为什么需要大概掌握这个理论基础呢？</p>
-<p>想想，高斯模糊是遍历所有像素点，对每个像素点都重新计算。那么，这自然是一个耗时的工作，掌握了理论基础，我们要优化时也才有方向去优化。</p>
-<h3 id="性能对比"><a href="#性能对比" class="headerlink" title="性能对比"></a>性能对比</h3><p>大神的开源库中提供了三种高斯模糊方式，而我在 <a href="https://github.com/Blankj/AndroidUtilCode" target="_blank" rel="noopener">Blankj 的 AndroidUtilCode</a> 开源库中发现了另外一种，所以我将他们都整合起来，一共有四种：</p>
-<ul>
-<li>Google 官方提供的 RenderScript 方式 （RSBlur）</li>
-<li>C 编写的高斯算法 blur.c 方式 （NativeBlur）</li>
-<li>Java 编写的高斯算法方式1（JavaBlur）</li>
-<li>Java 编写的高斯算法方式2（StackBlur）</li>
-</ul>
-<p>其实，大体上就三种：Google 官方提供的，大神用 C 写的高斯模糊算法，大神用 Java 写的高斯模糊算法。至于后面两种，看了下，算法的代码不一样，我就把它们当做是两种不同的算法实现了。也许是一样，但我没深入去看，反正代码不一样，我就这么认为了。</p>
-<p>下面我们来做个实验，在如下相同条件下，不同高斯模糊方案的耗时比较：</p>
-<ul>
-<li>radius=10, scale=1, bitmap=200*200(11.69KB)</li>
-</ul>
-<p>ps: radius 表示高斯算法计算过程中的半径取值，scale=1表示对 bitmap 原图进行高斯模糊。这些前提条件需要了解一下，不然你在看网上其他类似性能比对的文章时，发现它们动不动就优化到几 ms 级别的，然而你自己尝试却始终达不到。这是因为也许所使用的这些前提都不一致，不一致的前提下，耗时根本无从比较。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">testBlur</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="keyword">int</span> sum = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">		<span class="keyword">long</span> time = SystemClock.uptimeMillis();</span><br><span class="line">		DBlur.source(<span class="keyword">this</span>, R.drawable.image).modeRs().radius(<span class="number">10</span>).sampling(<span class="number">1</span>).build().doBlurSync();</span><br><span class="line">		<span class="keyword">long</span> end = SystemClock.uptimeMillis();</span><br><span class="line">		sum += (end - time);</span><br><span class="line">	&#125;</span><br><span class="line">    Log.e(<span class="string">"DBlur"</span>, <span class="string">"RSBlur cast "</span> + (sum/<span class="number">100</span>) + <span class="string">"ms"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>代码模板如上，分别运行 100 次后取平均值，四种不同方式的耗时如下表：</p>
-<table>
-<thead>
-<tr>
-<th align="center">前提条件</th>
-<th align="center">RSBlur</th>
-<th align="center">NativeBlur</th>
-<th align="center">JavaBlur</th>
-<th align="center">StackBlur</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">radius=<strong>10</strong>, scale=1, bitmap=200*200</td>
-<td align="center">51ms</td>
-<td align="center">13ms</td>
-<td align="center">162ms</td>
-<td align="center">384ms</td>
-</tr>
-<tr>
-<td align="center">radius=<strong>20</strong>, scale=1, bitmap=200*200</td>
-<td align="center">56ms</td>
-<td align="center">12ms</td>
-<td align="center">164ms</td>
-<td align="center">435ms</td>
-</tr>
-<tr>
-<td align="center">radius=10, scale=<strong>2</strong>, bitmap=200*200</td>
-<td align="center">48ms</td>
-<td align="center">11ms</td>
-<td align="center">75ms</td>
-<td align="center">110ms</td>
-</tr>
-<tr>
-<td align="center">radius=10, scale=<strong>8</strong>, bitmap=200*200</td>
-<td align="center">45ms</td>
-<td align="center">7ms</td>
-<td align="center">14ms</td>
-<td align="center">19ms</td>
-</tr>
-<tr>
-<td align="center">radius=10, scale=8, bitmap=<strong>1920*1180</strong></td>
-<td align="center">183ms</td>
-<td align="center">143ms</td>
-<td align="center">346ms</td>
-<td align="center">460ms</td>
-</tr>
-<tr>
-<td align="center">radius=<strong>20</strong>, scale=8, bitmap=1920*1180</td>
-<td align="center">204ms</td>
-<td align="center">145ms</td>
-<td align="center">353ms</td>
-<td align="center">510ms</td>
-</tr>
-<tr>
-<td align="center">radius=20, scale=<strong>1</strong>, bitmap=1920*1180</td>
-<td align="center">474ms</td>
-<td align="center">444ms</td>
-<td align="center">8663ms</td>
-<td align="center">内存溢出</td>
-</tr>
-</tbody></table>
-<p>100 次样本可能不多，但大体上我们也能比较出不同类型的高斯模糊之前的区别，及其适用场景：</p>
-<ul>
-<li>总体上，NativeBlur 和 RSBlur 的耗时会少于 JavaBlur 和 StackBlur</li>
-<li>JavaBlur 和 StackBlur 方式，如果先对 Bitmap 进行缩小，再高斯模糊，最后再放大，耗时会大大缩短</li>
-<li>radius 增大会增加耗时，但影响不大，但视图呈现效果会越模糊</li>
-<li>scale 对原图缩小倍数越多，耗时越短，但视图呈现效果同样会越模糊</li>
-<li>分辨率越高的图片，高斯模糊的就越耗时</li>
-<li>对于大图而言，如果要使用 JavaBlur 或 StackBlur，最好设置 scale 先缩小再模糊，否则将非常耗时且容易内存溢出</li>
-<li>如果已经通过 scale 方式进行优化，那么最好 radius 值可以相对小一点，否则两者的值都大会对图片的模糊效果特别强烈，也许会过了头</li>
-</ul>
-<h3 id="性能优化"><a href="#性能优化" class="headerlink" title="性能优化"></a>性能优化</h3><p>高斯模糊的优化考虑点，其实就三个：</p>
-<ul>
-<li>选择不同的高斯模糊方式</li>
-<li>通过 scale 对原图先缩小，再模糊，最后再放大方式</li>
-<li>优化高斯模糊算法</li>
-</ul>
-<p>最后一点就不考虑了，毕竟难度太大。那么，其实就剩下两种，要么是从高斯模糊的方案上选择，要么从待模糊的图片上做手脚。</p>
-<p>虽然有四种高斯模糊方案，但每种都有各自优缺点：</p>
-<ul>
-<li>RSBlur 在低端机上可能无法兼容</li>
-<li>NativeBlur 需要生成对应 CPU 架构的 so 文件支持</li>
-<li>JavaBlur 和 StackBlur 耗时会较长</li>
-</ul>
-<p>优化的考虑点大体上这几种：</p>
-<ul>
-<li>大体上，使用 NativeBlur 或者 RSBlur 即可，如果出现一些问题，那么此时可考虑切到 JavaBlur 或 StackBlur 方案，但记得结合 scale 方式优化处理。</li>
-<li>如果高斯模糊的图片有实时性要求，要求模糊得同步进行处理，主线程后续的工作需要等待高斯模糊后才能够处理的话，那么尽量选择 scale 方式进行优化，减少耗时。</li>
-<li>如果对实时性没要求，但对图片模糊程度有要求，那其实，只要后台异步去进行高斯模糊即可，此时 scale 可不用缩小太多，而利用 radius 来控制模糊效果，以达到理想的要求。</li>
-<li>如果两者都有要求，那就自行尝试寻找折中点吧。</li>
-</ul>
-<p>最后说一点，因为已经封装成组件库了，RSBlur 也是引入的 support 包，so 文件也打包好了，那么使用这两种方案足够满足绝大部分场景了，所以，没有特意指定，组件默认的方案为 RSBlur。</p>
-<h1 id="二次封装"><a href="#二次封装" class="headerlink" title="二次封装"></a>二次封装</h1><h3 id="需求场景"><a href="#需求场景" class="headerlink" title="需求场景"></a>需求场景</h3><p>为什么要二次封装？那肯定是因为有自己的各种需求场景的，我的需求如下：</p>
-<ul>
-<li>要能够对当前页面（Activity）截图后，进行模糊</li>
-<li>要能够对 drawable 资源图片进行模糊、或者对指定 View 的视图进行模糊</li>
-<li>模糊完成后，要能够自动以淡入的动画方式显示在指定的控件上</li>
-<li>存在这种需求场景：对当前界面截图、并且模糊，模糊后的图片展示的时机可能在其他界面，因此需要支持缓存功能，可以根据指定 cacheKey 值获取缓存</li>
-<li>当然，可以根据各种配置使用高斯模糊，当不指定配置时，有默认配置</li>
-</ul>
-<p>总结一下，其实封装要做的事也就是要实现：</p>
-<ul>
-<li>截图、缓存、淡入动画、默认配置</li>
-<li>可以的话，组件最好可以达到，其他人在不看文档，不看源码前提下，以最少的成本接入直接上手使用</li>
-</ul>
-<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>截图、缓存、动画这些都属于纯功能代码的封装了，具体就不说了。</p>
-<p>这里想来讲讲，如何设计，可以让其他人以最少的成本接入直接上手使用。</p>
-<p>我的想法是，利用 AndroidStudio 的代码提示功能，具体的说就是，你只需要了解组件的入口是 DBlur 即可，至于后续怎么使用，全靠 AndroidStudio 来提示，跟着 AndroidStudio 走就行。</p>
-<p>例如：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/1924341-7eb4707f967a5577.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="DBlur入口.png">  </p>
-<p>当敲完 DBlur. 时，会弹出代码提示框，入口很少，是吧，就两个，看命名也能猜到作用：<code>getCacheBitmap()</code> 明显是用来取缓存的，那么要高斯模糊自然是另外一个入口 <code>source()</code>，这个方法有多个重载函数，看参数，其实也能知道，这就对应着要模糊的图片的不同来源类型，如：</p>
-<ul>
-<li>直接传入 Bitmap 对其进行模糊</li>
-<li>传入 Activity/View，内部会对这个界面/控件进行截图后再模糊</li>
-<li>传入 resId，对 drawable 资源图片进行模糊</li>
-</ul>
-<p>那么，可能想问了，哪里进行高斯模糊配置，哪里设置同步或异步，哪里注册回调等等。别急，既然只给你开了一个入口，那么就跟着入口走下去，自然会一步步引导你走到最后。如：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/1924341-9efa2fb81a12cd2d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BlurConfigBuilder入口.png">  </p>
-<p>第一步、第二步该做什么，我都给你规定好了，你也只能按照步骤一步步来。想要设置高斯模糊配置，你得先指定图片来源，才能进入第二步，在这里，可以进行的配置也都给你列出来了，想要哪个，直接设置即可。如：</p>
-<ul>
-<li><code>mode()</code>，<code>modeRs()</code>，<code>modeNative()</code> 等等类似 mode 开头的方法，用于指定要使用哪种高斯模糊方案，一共四种，每种内部都有提供对应的常量标志，但如果你不知道哪里找，那么直接调用 modeXXX 方法即可。</li>
-<li><code>radius()</code> 用于设置高斯模糊计算的半径，内部默认为 4。</li>
-<li><code>sampling()</code> 用于设置对原图的缩小比例，内部默认为 8，即默认先缩小 8 倍，再模糊，最后再放大。</li>
-<li><code>cache()</code> 用于设置缓存此次模糊后的图片，没有调用默认不缓存。</li>
-<li><code>animAlpha()</code> 用于设置使用淡入动画，需要结合 <code>intoTarget()</code> 使用，否则不生效。</li>
-<li><code>intoTarget()</code> 用于设置模糊完成后，自动显示到指定控件上。</li>
-</ul>
-<p>另外，看每个方法返回的类名，其实这个过程都是在设置配置项，如果有对 Builder 模式了解的话，应该清楚，这个大多用来解决构造函数参数过多的场景，最后一般都会有一个 <code>build()</code> 或者 <code>create()</code> 类型的方法。参考的是 Android 源码中 AlertDialog。</p>
-<p>也就是说，要进入下一个步骤，需要调用 <code>build()</code> 方法，如：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/1924341-96ce20f8a2154350.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="doblur.png">  </p>
-<p>显然，已经到最后一个步骤了，这里就是发起高斯模糊工作的地方了。</p>
-<ul>
-<li><code>doBlur()</code> 会指定此次高斯模糊工作异步进行，所以需要注册回调的在这里传入。</li>
-<li><code>doBlurSync()</code> 指定高斯模糊同步进行，模糊后的 Bitmap 直接返回。</li>
-</ul>
-<p>至此，接入结束。</p>
-<p>使用这个高斯模糊的组件，只需要知道 DBlur 入口，其他都跟随着 AndroidStudio 代码提示一步步往下走即可，当然你也可以直接看源码，注释里也写得蛮清楚的了。</p>
-<p>这个就是我的想法，能力不足，只能想出这种方案，如果有哪里需要改进，哪里不合理，或者有其他思路，欢迎指点一下。</p>
-<h3 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">compile <span class="string">'com.dasu.image:blur:0.0.4'</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//使用默认配置，最短调用链</span></span><br><span class="line">Bitmap bitmap = DBlur.source(MainActivity.<span class="keyword">this</span>).build().doBlurSync();</span><br><span class="line"></span><br><span class="line"><span class="comment">//同步模糊，将imageView控制的视图进行模糊，完成后自动显示到 imageView1 控件上，以淡入动画方式</span></span><br><span class="line">DBlur.source(imageView).intoTarget(imageView1).animAlpha().build().doBlurSync();</span><br><span class="line"></span><br><span class="line"><span class="comment">//异步模糊，将drawable资源文件中的图片以 NATIVE 方式进行模糊，注册回调，完成时手动显示到 imageView1 控件上</span></span><br><span class="line">DBlur.source(<span class="keyword">this</span>, R.drawable.background).mode(BlurConfig.MODE_NATIVE).build()</span><br><span class="line">      .doBlur(<span class="keyword">new</span> OnBlurListener() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBlurSuccess</span><span class="params">(Bitmap bitmap)</span> </span>&#123;</span><br><span class="line">                imageView1.setImageBitmap(bitmap);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBlurFailed</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="comment">//do something</span></span><br><span class="line">            &#125;&#125;);</span><br></pre></td></tr></table></figure>
-
-<h3 id="Github"><a href="#Github" class="headerlink" title="Github"></a><a href="https://github.com/woshidasusu/base-module/tree/master/blur" target="_blank" rel="noopener">Github</a></h3><p><a href="https://github.com/woshidasusu/base-module/tree/master/blur" target="_blank" rel="noopener">DBlur 的 Github 链接：https://github.com/woshidasusu/base-module/tree/master/blur</a>  </p>
-]]></content>
-      <categories>
-        <category>Android组件</category>
       </categories>
   </entry>
   <entry>
@@ -7940,6 +8314,61 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
+    <title>谈谈 final finally finalize 区别</title>
+    <url>/2018/07/09/Java/%E8%B0%88%E8%B0%88-final-finally-finalize-%E5%8C%BA%E5%88%AB/</url>
+    <content><![CDATA[<blockquote>
+<p><strong>本篇文章已授权微信公众号 dasu_Android（大苏）独家发布</strong>  </p>
+</blockquote>
+<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本篇所涉及的提问，正文的知识点，全都来自于<strong>杨晓峰的《Java核心技术36讲》</strong>，当然，我并不会全文照搬过来，毕竟这是付费的课程，应该会涉及到侵权之类的问题。</p>
+<p>所以，本篇正文中的知识点，是我从课程中将知识点消耗后，用个人的理解、观念所表达出来的文字，参考了原文，但由于是个人理解，因此不保证观点完全正确，也不代表错误的观点是课程所表达的。如果这样仍旧还是侵权了，请告知，会将发表的文章删掉。</p>
+<p>当然，如果你对此课程有兴趣，建议你自己也购买一下，新用户立减 30，微信扫码订阅时还可以返现 6 元，相当于 32 元购买 36 讲的文章，每篇文章还不到 1 元，蛮划算的了。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-6ca755c2bd0a6122.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="QQ图片20180703142535.png">  </p>
+<h1 id="提问"><a href="#提问" class="headerlink" title="提问"></a>提问</h1><ul>
+<li>谈谈 final、finally、finalize 有什么不同？</li>
+<li>为什么局部内部类和匿名内部类只能访问局部final变量？ </li>
+</ul>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>emmm，说实话，感觉这一讲好像没什么实质性内容。而且，就像评论区里有人提到的，搞不懂为啥总有人喜欢拿这三者来比较，它们有个毛的关系？仅仅就是因为单词相近就拿来比较？</p>
+<p>但课程小结还是要做下，梳理梳理下相关面试知识点也好，那也不说废话了，结合原文和评论区，以及一些扩展，尽量多总结一些知识点吧。</p>
+<h4 id="final"><a href="#final" class="headerlink" title="final"></a>final</h4><p>final 是 java 中的关键字，可用于修饰类，方法，变量。</p>
+<p>当修饰类时，表明这个类不可被继承。Java 中有一些核心类都被 final 修饰了，比如 String，System。当考虑到安全性原因时，可以将该类设计成 final。</p>
+<p>当修饰方法时，表明该方法不可被重写。一般是某些流程控制不希望被修改掉时，可以将这些方法声明成 final，比如 View 中的 <code>measure()</code>，<code>requestFocus()</code>，<code>findViewById()</code>。</p>
+<p>当修饰变量时，表明该变量为常量，不允许被重新赋值，因此声明成 final 的变量都需要显示的进行赋值，否则编译会报错。 </p>
+<h4 id="finally"><a href="#finally" class="headerlink" title="finally"></a>finally</h4><p>finally 是确保 try-catch 方式最后执行的一种机制，通常的用法都是在 finally 里进行一些资源的关闭，回收。比如 IO 流的关闭等等。</p>
+<p>建议最好不要利用 finally 来控制流程，也不要在 finally 中有返回值，否则很容易影响正常流程，导致流程结构特别杂乱。</p>
+<p>另外，有些特殊情况下，finally 中的代码并不会被执行到，比如：  </p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//1.try-catch异常退出</span></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    System.exit(<span class="number">1</span>)</span><br><span class="line">&#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">    ....</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">	<span class="comment">//不会执行到这里</span></span><br><span class="line">    Log.d(<span class="string">"finally"</span>, <span class="string">"finally"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//2.无限循环</span></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">while</span>(<span class="keyword">true</span>) &#123;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="comment">//不会执行到这里</span></span><br><span class="line">    Log.d(<span class="string">"finally"</span>, <span class="string">"finally"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//3. 线程被杀死</span></span><br><span class="line"><span class="comment">//当执行 try-catch 时，线程被杀死了，那么 finally 里的代码也无法被执行到</span></span><br></pre></td></tr></table></figure>
+
+<p>总之，finally 通常情况下都会最后被执行到，所以最好不要在这里有 return 之类的语句来影响正常流程。但在某些特殊的场景下，finally 并不会被执行到，了解一下即可。</p>
+<h4 id="finalize"><a href="#finalize" class="headerlink" title="finalize"></a>finalize</h4><p>这个是 Object 中的一个方法，方法注释说了很多，大概就是讲这个方法是由垃圾收集器即将要回收该对象时会调用该方法，用户可在这里做一些最后的资源释放工作。</p>
+<p>以上是概念定义，但说实话，没用过该方法，而且作者也说了，不推荐使用 finalize 机制来做资源回收，并且在 JDK 9，这个方法已经被标志为 deprecated 废弃的方法了。</p>
+<p>作者有提到说，因为我们无法保证 finalize 什么时候执行，执行是否符合预期，使用不当还会影响性能，导致程序死锁、挂起等问题。</p>
+<p>那么，有其他方案来替代 finalize 处理回收资源的工作么？有，Cleaner 机制，这个我没接触过，作者提了这个替代方案。另外，作者也说了，回收资源最好就是资源用完后就随手清除，或者结合 try-catch-finally 机制回收。不管是 finalize 或者 Cleaner 机制，最好都只将它看成是最后一道防线，一旦将主要的回收工作依赖于这两个机制的话，很容易出现各种问题。</p>
+<h3 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h3><p><strong>为什么局部内部类和匿名内部类只能访问局部final变量？</strong>  </p>
+<p>先来看这么段代码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//参数 msg 必须声明为 final 类型</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">notifyChange</span><span class="params">(<span class="keyword">final</span> String msg)</span> </span>&#123;</span><br><span class="line">    mTextView.post(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            mTextView.setText(msg);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在这里，<code>post()</code> 方法的参数是一个匿名内部类，在内部类中如果要使用外部 <code>notifyChange()</code> 方法的参数 msg，那么必须将 msg 类型声明成 final，否则编译器会保错。</p>
+<p>这种场景非常常见的吧，不管是类似上述的 Ui 场景，还有网络访问时也经常需要通过回调通知上层，此时也就经常出现这种场景了。</p>
+<p>那么，<strong>有考虑过，为什么内部类只能访问局部 final 变量么？</strong>  </p>
+<p>如果懂得反编译 class 文件的，那么应该就很清楚了。我也不懂，理解这点是通过阅读其他大神分析的文章，以下是我的理解：</p>
+<p>首先，变量都是有生命周期的，成员变量的生命周期就跟随着对象的整个生命周期，而局部变量的生命周期则是非常有限。</p>
+<p>比如方法内部的局部变量，它的生命周期就是在这个方法执行结束就终止。同样，方法的参数也是局部变量，它是生命周期也同样是到该方法执行结束。</p>
+<p>另外，内部类的执行时机有时是会在外部方法执行结束之后。就拿上述例子来说，<code>post()</code> 中 Runnable 的执行时机，肯定是在外部 <code>notifyChange()</code> 方法执行完之后的。</p>
+<p>那么，问题来了。内部类 Runnable 的执行需要使用到外部方法 <code>notifyChange()</code> 的参数，但当它执行的时候，这个参数的生命周期早已结束，已经被回收掉了。既然已经被回收了，内部类又是怎么使用外部的这个局部变量呢？</p>
+<p>有大神反编译了 class 文件后，给出了结论，<strong>原来内部类使用外部的局部变量时，是通过 copy 一份过来</strong>。也就是说，其实内部类此时使用的是自己内部定义的局部变量了，只是这个变量的值是复制外部那个局部变量的而已。</p>
+<p>这也就解释了，为什么外部的局部变量明明已经被回收了，内部类仍旧可以使用，因为内部类此时使用的并不是外部类的局部变量引用了。</p>
+<p>但到这里，<strong>新的问题就来了</strong>：既然内部类使用的局部变量本质上跟外部的局部变量是相互独立的两个变量，那如果在内部类中修改了这个局部变量的值会出现什么情况？是吧，数据的不一致性。</p>
+<p>基于此，java 编译器就直接限定死，内部类使用外部的局部变量时，必须将其限制为 final 类型，确保该变量不允许进行更改。</p>
+<p>这样一来，其实也就顺便理解了，为什么成员变量可以直接在内部类中使用，因为成员变量的声明周期很长，不存在局部变量的问题。</p>
+<p>以上内容，是在大神的文章里被醍醐灌顶了，感谢大神，原文链接放出来：  </p>
+<p><a href="https://www.cnblogs.com/dolphin0520/p/3811445.html" target="_blank" rel="noopener">Java内部类详解</a></p>
+<hr>
+]]></content>
+      <categories>
+        <category>Java</category>
+      </categories>
+  </entry>
+  <entry>
     <title>毕业一年啦</title>
     <url>/2018/07/09/%E7%9E%8E%E6%89%AF%E6%89%AF/%E6%AF%95%E4%B8%9A%E4%B8%80%E5%B9%B4%E5%95%A6/</url>
     <content><![CDATA[<blockquote>
@@ -8000,61 +8429,6 @@ b.y; <span class="comment">//1</span>
 ]]></content>
       <categories>
         <category>谈人生</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>谈谈 final finally finalize 区别</title>
-    <url>/2018/07/09/Java/%E8%B0%88%E8%B0%88-final-finally-finalize-%E5%8C%BA%E5%88%AB/</url>
-    <content><![CDATA[<blockquote>
-<p><strong>本篇文章已授权微信公众号 dasu_Android（大苏）独家发布</strong>  </p>
-</blockquote>
-<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本篇所涉及的提问，正文的知识点，全都来自于<strong>杨晓峰的《Java核心技术36讲》</strong>，当然，我并不会全文照搬过来，毕竟这是付费的课程，应该会涉及到侵权之类的问题。</p>
-<p>所以，本篇正文中的知识点，是我从课程中将知识点消耗后，用个人的理解、观念所表达出来的文字，参考了原文，但由于是个人理解，因此不保证观点完全正确，也不代表错误的观点是课程所表达的。如果这样仍旧还是侵权了，请告知，会将发表的文章删掉。</p>
-<p>当然，如果你对此课程有兴趣，建议你自己也购买一下，新用户立减 30，微信扫码订阅时还可以返现 6 元，相当于 32 元购买 36 讲的文章，每篇文章还不到 1 元，蛮划算的了。</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/1924341-6ca755c2bd0a6122.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="QQ图片20180703142535.png">  </p>
-<h1 id="提问"><a href="#提问" class="headerlink" title="提问"></a>提问</h1><ul>
-<li>谈谈 final、finally、finalize 有什么不同？</li>
-<li>为什么局部内部类和匿名内部类只能访问局部final变量？ </li>
-</ul>
-<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>emmm，说实话，感觉这一讲好像没什么实质性内容。而且，就像评论区里有人提到的，搞不懂为啥总有人喜欢拿这三者来比较，它们有个毛的关系？仅仅就是因为单词相近就拿来比较？</p>
-<p>但课程小结还是要做下，梳理梳理下相关面试知识点也好，那也不说废话了，结合原文和评论区，以及一些扩展，尽量多总结一些知识点吧。</p>
-<h4 id="final"><a href="#final" class="headerlink" title="final"></a>final</h4><p>final 是 java 中的关键字，可用于修饰类，方法，变量。</p>
-<p>当修饰类时，表明这个类不可被继承。Java 中有一些核心类都被 final 修饰了，比如 String，System。当考虑到安全性原因时，可以将该类设计成 final。</p>
-<p>当修饰方法时，表明该方法不可被重写。一般是某些流程控制不希望被修改掉时，可以将这些方法声明成 final，比如 View 中的 <code>measure()</code>，<code>requestFocus()</code>，<code>findViewById()</code>。</p>
-<p>当修饰变量时，表明该变量为常量，不允许被重新赋值，因此声明成 final 的变量都需要显示的进行赋值，否则编译会报错。 </p>
-<h4 id="finally"><a href="#finally" class="headerlink" title="finally"></a>finally</h4><p>finally 是确保 try-catch 方式最后执行的一种机制，通常的用法都是在 finally 里进行一些资源的关闭，回收。比如 IO 流的关闭等等。</p>
-<p>建议最好不要利用 finally 来控制流程，也不要在 finally 中有返回值，否则很容易影响正常流程，导致流程结构特别杂乱。</p>
-<p>另外，有些特殊情况下，finally 中的代码并不会被执行到，比如：  </p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//1.try-catch异常退出</span></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    System.exit(<span class="number">1</span>)</span><br><span class="line">&#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">    ....</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">	<span class="comment">//不会执行到这里</span></span><br><span class="line">    Log.d(<span class="string">"finally"</span>, <span class="string">"finally"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//2.无限循环</span></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">while</span>(<span class="keyword">true</span>) &#123;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="comment">//不会执行到这里</span></span><br><span class="line">    Log.d(<span class="string">"finally"</span>, <span class="string">"finally"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//3. 线程被杀死</span></span><br><span class="line"><span class="comment">//当执行 try-catch 时，线程被杀死了，那么 finally 里的代码也无法被执行到</span></span><br></pre></td></tr></table></figure>
-
-<p>总之，finally 通常情况下都会最后被执行到，所以最好不要在这里有 return 之类的语句来影响正常流程。但在某些特殊的场景下，finally 并不会被执行到，了解一下即可。</p>
-<h4 id="finalize"><a href="#finalize" class="headerlink" title="finalize"></a>finalize</h4><p>这个是 Object 中的一个方法，方法注释说了很多，大概就是讲这个方法是由垃圾收集器即将要回收该对象时会调用该方法，用户可在这里做一些最后的资源释放工作。</p>
-<p>以上是概念定义，但说实话，没用过该方法，而且作者也说了，不推荐使用 finalize 机制来做资源回收，并且在 JDK 9，这个方法已经被标志为 deprecated 废弃的方法了。</p>
-<p>作者有提到说，因为我们无法保证 finalize 什么时候执行，执行是否符合预期，使用不当还会影响性能，导致程序死锁、挂起等问题。</p>
-<p>那么，有其他方案来替代 finalize 处理回收资源的工作么？有，Cleaner 机制，这个我没接触过，作者提了这个替代方案。另外，作者也说了，回收资源最好就是资源用完后就随手清除，或者结合 try-catch-finally 机制回收。不管是 finalize 或者 Cleaner 机制，最好都只将它看成是最后一道防线，一旦将主要的回收工作依赖于这两个机制的话，很容易出现各种问题。</p>
-<h3 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h3><p><strong>为什么局部内部类和匿名内部类只能访问局部final变量？</strong>  </p>
-<p>先来看这么段代码：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//参数 msg 必须声明为 final 类型</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">notifyChange</span><span class="params">(<span class="keyword">final</span> String msg)</span> </span>&#123;</span><br><span class="line">    mTextView.post(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            mTextView.setText(msg);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>在这里，<code>post()</code> 方法的参数是一个匿名内部类，在内部类中如果要使用外部 <code>notifyChange()</code> 方法的参数 msg，那么必须将 msg 类型声明成 final，否则编译器会保错。</p>
-<p>这种场景非常常见的吧，不管是类似上述的 Ui 场景，还有网络访问时也经常需要通过回调通知上层，此时也就经常出现这种场景了。</p>
-<p>那么，<strong>有考虑过，为什么内部类只能访问局部 final 变量么？</strong>  </p>
-<p>如果懂得反编译 class 文件的，那么应该就很清楚了。我也不懂，理解这点是通过阅读其他大神分析的文章，以下是我的理解：</p>
-<p>首先，变量都是有生命周期的，成员变量的生命周期就跟随着对象的整个生命周期，而局部变量的生命周期则是非常有限。</p>
-<p>比如方法内部的局部变量，它的生命周期就是在这个方法执行结束就终止。同样，方法的参数也是局部变量，它是生命周期也同样是到该方法执行结束。</p>
-<p>另外，内部类的执行时机有时是会在外部方法执行结束之后。就拿上述例子来说，<code>post()</code> 中 Runnable 的执行时机，肯定是在外部 <code>notifyChange()</code> 方法执行完之后的。</p>
-<p>那么，问题来了。内部类 Runnable 的执行需要使用到外部方法 <code>notifyChange()</code> 的参数，但当它执行的时候，这个参数的生命周期早已结束，已经被回收掉了。既然已经被回收了，内部类又是怎么使用外部的这个局部变量呢？</p>
-<p>有大神反编译了 class 文件后，给出了结论，<strong>原来内部类使用外部的局部变量时，是通过 copy 一份过来</strong>。也就是说，其实内部类此时使用的是自己内部定义的局部变量了，只是这个变量的值是复制外部那个局部变量的而已。</p>
-<p>这也就解释了，为什么外部的局部变量明明已经被回收了，内部类仍旧可以使用，因为内部类此时使用的并不是外部类的局部变量引用了。</p>
-<p>但到这里，<strong>新的问题就来了</strong>：既然内部类使用的局部变量本质上跟外部的局部变量是相互独立的两个变量，那如果在内部类中修改了这个局部变量的值会出现什么情况？是吧，数据的不一致性。</p>
-<p>基于此，java 编译器就直接限定死，内部类使用外部的局部变量时，必须将其限制为 final 类型，确保该变量不允许进行更改。</p>
-<p>这样一来，其实也就顺便理解了，为什么成员变量可以直接在内部类中使用，因为成员变量的声明周期很长，不存在局部变量的问题。</p>
-<p>以上内容，是在大神的文章里被醍醐灌顶了，感谢大神，原文链接放出来：  </p>
-<p><a href="https://www.cnblogs.com/dolphin0520/p/3811445.html" target="_blank" rel="noopener">Java内部类详解</a></p>
-<hr>
-]]></content>
-      <categories>
-        <category>Java</category>
       </categories>
   </entry>
   <entry>
@@ -8950,15 +9324,6 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
-    <title>Android技能树</title>
-    <url>/2018/05/27/%E6%8A%80%E8%83%BD%E6%A0%91/Android%E6%8A%80%E8%83%BD%E6%A0%91/</url>
-    <content><![CDATA[<p><img src="https://upload-images.jianshu.io/upload_images/1924341-d23f4ef9f50304cc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Android技能树.png"></p>
-]]></content>
-      <categories>
-        <category>技能树</category>
-      </categories>
-  </entry>
-  <entry>
     <title>Gradle 系列博客梳理</title>
     <url>/2018/05/27/Gradle/Gradle-%E7%B3%BB%E5%88%97%E5%8D%9A%E5%AE%A2%E6%A2%B3%E7%90%86/</url>
     <content><![CDATA[<blockquote>
@@ -9030,6 +9395,15 @@ b.y; <span class="comment">//1</span>
 ]]></content>
       <categories>
         <category>Gradle</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>Android技能树</title>
+    <url>/2018/05/27/%E6%8A%80%E8%83%BD%E6%A0%91/Android%E6%8A%80%E8%83%BD%E6%A0%91/</url>
+    <content><![CDATA[<p><img src="https://upload-images.jianshu.io/upload_images/1924341-d23f4ef9f50304cc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Android技能树.png"></p>
+]]></content>
+      <categories>
+        <category>技能树</category>
       </categories>
   </entry>
   <entry>
@@ -9988,6 +10362,30 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
+    <title>如何用Android Studio查看build.gradle源码</title>
+    <url>/2018/03/31/Gradle/%E5%A6%82%E4%BD%95%E7%94%A8Android-Studio%E6%9F%A5%E7%9C%8Bbuild-gradle%E6%BA%90%E7%A0%81/</url>
+    <content><![CDATA[<blockquote>
+<p><strong>本篇文章已授权微信公众号 dasu_Android（大苏）独家发布</strong>  </p>
+</blockquote>
+<p><strong>2019-7-30 更新：</strong><br>感谢评论区指出，gradle源码下载地址：<a href="http://services.gradle.org/distributions/" target="_blank" rel="noopener">http://services.gradle.org/distributions/</a></p>
+<hr>
+<p>上一篇博客里讲过 build.gradle 里的每一行代码基本都是在调用一个方法，既然是这样，我们就可以用 android studio(下面简称as) 去查看它源码的方法注释说明，这样就可以理解每个方法是做什么的了，就算是在大神的 build.gradle 遇见一些没看懂的代码，也可以点进去看方法介绍来理解。就像我们在查看 SDK 里的各种方法一样。    </p>
+<p>但是有个问题，应该也有小伙伴跟我一样吧，每次在大神的 build.gradle 看到一堆不懂的代码时，按住 <code>Ctrl</code> 键后，鼠标移到代码上时有个跳转的手势时总是很开心，总是心想原来可以看源码啊，那就点进去看看介绍，看这个是干嘛的吧。可是每次一点进去，打开的却是 class 代码文件，顶多就只有方法名，一点注释都没有，而且方法参数命名还混淆过，也猜不出来是干嘛的。又不懂怎么去官方文档里查找，只能去网上用关键字查找，找出来的又跟自己碰到的问题不一样，越找越气干脆不找了，放一边去，以后再说。  </p>
+<p>是吧，如果可以直接通过 as 看源码的注释该多好。好了，废话到这，下面开始正文。    </p>
+<hr>
+<h1 id="系列索引"><a href="#系列索引" class="headerlink" title="系列索引"></a>系列索引</h1><p>build.gradle系列一：<a href="http://www.jianshu.com/p/a3805905a5c7" target="_blank" rel="noopener">看不懂的build.gradle代码</a><br>build.gradle系列二：<a href="http://www.jianshu.com/p/501726c979b1" target="_blank" rel="noopener">学点Groovy来理解build.gradle代码</a><br>build.gradle系列三：<a href>如何用Adnroid Studio查看build.gradle源码</a><br>…  </p>
+<hr>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>我们来举个例子，就像系列一的博客里介绍的 build.gradle 里有这样一段代码：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-d46a0d67f548a7aa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="build.gradle"><br>咦！这代码是第一次在 build.gradle 里看见过，是什么意思呢？不怕，我有绝招：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-5d5db8368916117f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Ctrl + 左键"><br>Android Studio大法—看源码，还有什么是不能通过看源码注释解决的么<br><img src="http://upload-images.jianshu.io/upload_images/1924341-4b6cd41069f7fa21.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.class"><br>是跳到源码了，可是为什么没有方法的注释说明呢，这方法是什么鬼谁知道啊。再仔细看看 as 的提示，原来打开的是个 class 文件啊。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-c55417ff2530580f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="as提示"><br>as 的提示那里应该会有个下载和选择源码位置的按钮的啊，搞不懂为什么不出现。  </p>
+<p>另外，我们知道，as 一般会默认先打开 xxx-sources.jar 也就是 xxx 的 java 文件源码，如果没有源码文件，才会打开 xxx.jar 的 class 代码。我们看一下，打开的是什么文件。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-9692f8b22bf2eda3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle-2.3.0.jar"><br>没错，as 打开的是 gradle-2.3.0.jar，说明 as 没有找到 gradle-2.3.0-sources.jar 源码文件，我们看一下到底是不是这样<br><img src="http://upload-images.jianshu.io/upload_images/1924341-53c68923912bf799.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="as标题栏"><br>as 标题栏会显示你当前打开的文件的具体位置，好了，知道了 gradle-2.3.0.jar 在电脑里的位置了，我们到那个目录下看看<br><img src="http://upload-images.jianshu.io/upload_images/1924341-f9da8ad2908b540e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle-2.3.0.jar本地路径"><br>只有一个 gradle-2.3.0.jar 文件和一个 pom 文件，正常的话应该还要有个 xxx-sources.jar 文件才对，就像下面这样<br><img src="http://upload-images.jianshu.io/upload_images/1924341-f7700195cd081102.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="三个文件"><br>因为这里没有 gradle-2.3.0-sources.jar 文件，所以 as 没办法打开带有方法注释的源码文件了。既然知道问题，那么就好解决了，as 的提示条也没有下载的按钮，那我们就自己去下载好了<br><img src="http://upload-images.jianshu.io/upload_images/1924341-ac54a39b3846d1d4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="seach.maven.org"><br>打开 maven 网站，在这里可以下载 gradle 插件。在搜索框中输入 <code>com.android.tools.build</code>，为什么输入这个，你打开 project 下的 build.gradle 文件看看就知道了<br><img src="http://upload-images.jianshu.io/upload_images/1924341-4796f2199f748565.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="com.android.tools.build"><br><img src="http://upload-images.jianshu.io/upload_images/1924341-374001fbc95ace5c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="search result"><br>这些就是 gradle 插件，我们在根目录下的 build.gradle 配置的 gradle 版本其实就是来这里下载的，应该是吧。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-b9b6f2c35d82ede4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="下载的文件"><br>下载后得到的就是这些文件了，接下去就是找到相应文件的位置，复制一份过去<br><img src="http://upload-images.jianshu.io/upload_images/1924341-139f310de6d6dfc5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle的本地路径"><br>打开相应的插件文件夹，选择相应的版本，最后将下载的 xxx-sources.jar 复制一份进去，最后的样子如下<br><img src="http://upload-images.jianshu.io/upload_images/1924341-9dbac486701a27fa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="三个文件"><br>好了，大功告成，我们再打开 as，记得 ReBuild 一下，然后再试试查看 build.gradle 源码会是什么样子<br><img src="http://upload-images.jianshu.io/upload_images/1924341-327042d04c7edab6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.java"><br><img src="http://upload-images.jianshu.io/upload_images/1924341-5723f731293b39a7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="LintOptions.java"><br>翻译一下英文大概就是说， lintOptions.abortOnError = false 是设置即使 lint 检查时发现错误也不停止构建程序的运行。  </p>
+<p>这种方法比去官方的 api 文档里查阅方便多了吧。再来看看几个效果。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-19e3e3f8353694db.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.java"><br>这里就可以看到源码里介绍 Plugin 的值都有哪些，分别对应哪个类，该去哪个类看它的作用是什么，干什么的。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-3024eb6a6819fd42.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="AndroidConfig.java"><br>借助 as，我们甚至可以很容易的查到 <code>android{...}</code> 这个括号里能使用的方法都有哪些，如果要看各自的作用是干什么的，再继续点进去查看注释就行了。是不是发现，我们在 build.gradle 里的 <code>android{...}</code> 使用过的标签名原来都在这里的啊。  </p>
+<p>以后就算是再碰到大神的 build.gradle 文件里各种没看见过的标签名，不用再担心看不懂了。不懂就看源码注释嘛，so easy!  </p>
+<p>当然，大神的 build.gradle 文件里还是会出现一些 groovy 代码或者是 task 之类的，这些就不是 gradle 源码里能够查到的了，需要稍微了解一下 groovy 和 gradle 语言的基础，有兴趣的可以继续阅读下我写的这个系列里的相关博客，当然能力不够，如果你希望更好的学习，网上资料也很多。   </p>
+]]></content>
+      <categories>
+        <category>Gradle</category>
+      </categories>
+  </entry>
+  <entry>
     <title>分享两个提高效率的AndroidStudio小技巧</title>
     <url>/2018/03/31/%E6%95%99%E7%A8%8B%E7%B1%BB/%E5%88%86%E4%BA%AB%E4%B8%A4%E4%B8%AA%E6%8F%90%E9%AB%98%E6%95%88%E7%8E%87%E7%9A%84AndroidStudio%E5%B0%8F%E6%8A%80%E5%B7%A7/</url>
     <content><![CDATA[<blockquote>
@@ -10080,30 +10478,6 @@ b.y; <span class="comment">//1</span>
 ]]></content>
       <categories>
         <category>教程类</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>如何用Android Studio查看build.gradle源码</title>
-    <url>/2018/03/31/Gradle/%E5%A6%82%E4%BD%95%E7%94%A8Android-Studio%E6%9F%A5%E7%9C%8Bbuild-gradle%E6%BA%90%E7%A0%81/</url>
-    <content><![CDATA[<blockquote>
-<p><strong>本篇文章已授权微信公众号 dasu_Android（大苏）独家发布</strong>  </p>
-</blockquote>
-<p><strong>2019-7-30 更新：</strong><br>感谢评论区指出，gradle源码下载地址：<a href="http://services.gradle.org/distributions/" target="_blank" rel="noopener">http://services.gradle.org/distributions/</a></p>
-<hr>
-<p>上一篇博客里讲过 build.gradle 里的每一行代码基本都是在调用一个方法，既然是这样，我们就可以用 android studio(下面简称as) 去查看它源码的方法注释说明，这样就可以理解每个方法是做什么的了，就算是在大神的 build.gradle 遇见一些没看懂的代码，也可以点进去看方法介绍来理解。就像我们在查看 SDK 里的各种方法一样。    </p>
-<p>但是有个问题，应该也有小伙伴跟我一样吧，每次在大神的 build.gradle 看到一堆不懂的代码时，按住 <code>Ctrl</code> 键后，鼠标移到代码上时有个跳转的手势时总是很开心，总是心想原来可以看源码啊，那就点进去看看介绍，看这个是干嘛的吧。可是每次一点进去，打开的却是 class 代码文件，顶多就只有方法名，一点注释都没有，而且方法参数命名还混淆过，也猜不出来是干嘛的。又不懂怎么去官方文档里查找，只能去网上用关键字查找，找出来的又跟自己碰到的问题不一样，越找越气干脆不找了，放一边去，以后再说。  </p>
-<p>是吧，如果可以直接通过 as 看源码的注释该多好。好了，废话到这，下面开始正文。    </p>
-<hr>
-<h1 id="系列索引"><a href="#系列索引" class="headerlink" title="系列索引"></a>系列索引</h1><p>build.gradle系列一：<a href="http://www.jianshu.com/p/a3805905a5c7" target="_blank" rel="noopener">看不懂的build.gradle代码</a><br>build.gradle系列二：<a href="http://www.jianshu.com/p/501726c979b1" target="_blank" rel="noopener">学点Groovy来理解build.gradle代码</a><br>build.gradle系列三：<a href>如何用Adnroid Studio查看build.gradle源码</a><br>…  </p>
-<hr>
-<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>我们来举个例子，就像系列一的博客里介绍的 build.gradle 里有这样一段代码：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-d46a0d67f548a7aa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="build.gradle"><br>咦！这代码是第一次在 build.gradle 里看见过，是什么意思呢？不怕，我有绝招：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-5d5db8368916117f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Ctrl + 左键"><br>Android Studio大法—看源码，还有什么是不能通过看源码注释解决的么<br><img src="http://upload-images.jianshu.io/upload_images/1924341-4b6cd41069f7fa21.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.class"><br>是跳到源码了，可是为什么没有方法的注释说明呢，这方法是什么鬼谁知道啊。再仔细看看 as 的提示，原来打开的是个 class 文件啊。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-c55417ff2530580f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="as提示"><br>as 的提示那里应该会有个下载和选择源码位置的按钮的啊，搞不懂为什么不出现。  </p>
-<p>另外，我们知道，as 一般会默认先打开 xxx-sources.jar 也就是 xxx 的 java 文件源码，如果没有源码文件，才会打开 xxx.jar 的 class 代码。我们看一下，打开的是什么文件。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-9692f8b22bf2eda3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle-2.3.0.jar"><br>没错，as 打开的是 gradle-2.3.0.jar，说明 as 没有找到 gradle-2.3.0-sources.jar 源码文件，我们看一下到底是不是这样<br><img src="http://upload-images.jianshu.io/upload_images/1924341-53c68923912bf799.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="as标题栏"><br>as 标题栏会显示你当前打开的文件的具体位置，好了，知道了 gradle-2.3.0.jar 在电脑里的位置了，我们到那个目录下看看<br><img src="http://upload-images.jianshu.io/upload_images/1924341-f9da8ad2908b540e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle-2.3.0.jar本地路径"><br>只有一个 gradle-2.3.0.jar 文件和一个 pom 文件，正常的话应该还要有个 xxx-sources.jar 文件才对，就像下面这样<br><img src="http://upload-images.jianshu.io/upload_images/1924341-f7700195cd081102.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="三个文件"><br>因为这里没有 gradle-2.3.0-sources.jar 文件，所以 as 没办法打开带有方法注释的源码文件了。既然知道问题，那么就好解决了，as 的提示条也没有下载的按钮，那我们就自己去下载好了<br><img src="http://upload-images.jianshu.io/upload_images/1924341-ac54a39b3846d1d4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="seach.maven.org"><br>打开 maven 网站，在这里可以下载 gradle 插件。在搜索框中输入 <code>com.android.tools.build</code>，为什么输入这个，你打开 project 下的 build.gradle 文件看看就知道了<br><img src="http://upload-images.jianshu.io/upload_images/1924341-4796f2199f748565.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="com.android.tools.build"><br><img src="http://upload-images.jianshu.io/upload_images/1924341-374001fbc95ace5c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="search result"><br>这些就是 gradle 插件，我们在根目录下的 build.gradle 配置的 gradle 版本其实就是来这里下载的，应该是吧。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-b9b6f2c35d82ede4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="下载的文件"><br>下载后得到的就是这些文件了，接下去就是找到相应文件的位置，复制一份过去<br><img src="http://upload-images.jianshu.io/upload_images/1924341-139f310de6d6dfc5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle的本地路径"><br>打开相应的插件文件夹，选择相应的版本，最后将下载的 xxx-sources.jar 复制一份进去，最后的样子如下<br><img src="http://upload-images.jianshu.io/upload_images/1924341-9dbac486701a27fa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="三个文件"><br>好了，大功告成，我们再打开 as，记得 ReBuild 一下，然后再试试查看 build.gradle 源码会是什么样子<br><img src="http://upload-images.jianshu.io/upload_images/1924341-327042d04c7edab6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.java"><br><img src="http://upload-images.jianshu.io/upload_images/1924341-5723f731293b39a7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="LintOptions.java"><br>翻译一下英文大概就是说， lintOptions.abortOnError = false 是设置即使 lint 检查时发现错误也不停止构建程序的运行。  </p>
-<p>这种方法比去官方的 api 文档里查阅方便多了吧。再来看看几个效果。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-19e3e3f8353694db.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.java"><br>这里就可以看到源码里介绍 Plugin 的值都有哪些，分别对应哪个类，该去哪个类看它的作用是什么，干什么的。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-3024eb6a6819fd42.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="AndroidConfig.java"><br>借助 as，我们甚至可以很容易的查到 <code>android{...}</code> 这个括号里能使用的方法都有哪些，如果要看各自的作用是干什么的，再继续点进去查看注释就行了。是不是发现，我们在 build.gradle 里的 <code>android{...}</code> 使用过的标签名原来都在这里的啊。  </p>
-<p>以后就算是再碰到大神的 build.gradle 文件里各种没看见过的标签名，不用再担心看不懂了。不懂就看源码注释嘛，so easy!  </p>
-<p>当然，大神的 build.gradle 文件里还是会出现一些 groovy 代码或者是 task 之类的，这些就不是 gradle 源码里能够查到的了，需要稍微了解一下 groovy 和 gradle 语言的基础，有兴趣的可以继续阅读下我写的这个系列里的相关博客，当然能力不够，如果你希望更好的学习，网上资料也很多。   </p>
-]]></content>
-      <categories>
-        <category>Gradle</category>
       </categories>
   </entry>
   <entry>
