@@ -1,6 +1,249 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>模拟实现 Promise（小白版）</title>
+    <url>/2019/12/15/%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%A8%A1%E6%8B%9F%E5%AE%9E%E7%8E%B0promise/</url>
+    <content><![CDATA[<h1 id="模拟实现-Promise（小白版）"><a href="#模拟实现-Promise（小白版）" class="headerlink" title="模拟实现 Promise（小白版）"></a>模拟实现 Promise（小白版）</h1><p>本篇来讲讲如何模拟实现一个 Promise 的基本功能，网上这类文章已经很多，本篇笔墨会比较多，因为想用自己的理解，用白话文来讲讲</p>
+<p>Promise 的基本规范，参考了这篇：<a href="https://www.ituring.com.cn/article/66566" target="_blank" rel="noopener">【翻译】Promises/A+规范</a></p>
+<p>但说实话，太多的专业术语，以及基本按照标准规范格式翻译而来，有些内容，如果不是对规范的阅读方式比较熟悉的话，那是很难理解这句话的内容的</p>
+<p>我就是属于没直接阅读过官方规范的，所以即使在看中文译版时，有些表达仍旧需要花费很多时间去理解，基于此，才想要写这篇</p>
+<h3 id="Promise-基本介绍"><a href="#Promise-基本介绍" class="headerlink" title="Promise 基本介绍"></a>Promise 基本介绍</h3><p>Promise 是一种异步编程方案，通过 then 方法来注册回调函数，通过构造函数参数来控制异步状态</p>
+<p>Promise 的状态变化有两种，成功或失败，状态一旦变更结束，就不会再改变，后续所有注册的回调都能接收此状态，同时异步执行结果会通过参数传递给回调函数</p>
+<h4 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h4><figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> p = <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// do something async job</span></span><br><span class="line">    <span class="comment">// resolve(data); // 任务结束，触发状态变化，通知成功回调的处理，并传递结果数据</span></span><br><span class="line">    <span class="comment">// reject(err);   // 任务异常，触发状态变化，通知失败回调的处理，并传递失败原因</span></span><br><span class="line">&#125;).then(<span class="function"><span class="params">value</span> =&gt;</span> <span class="built_in">console</span>.log(value))</span><br><span class="line">.catch(<span class="function"><span class="params">err</span> =&gt;</span> <span class="built_in">console</span>.error(err));</span><br><span class="line"></span><br><span class="line">p.then(<span class="function"><span class="params">v</span> =&gt;</span> <span class="built_in">console</span>.log(v), err =&gt; <span class="built_in">console</span>.error(err));</span><br></pre></td></tr></table></figure>
+
+<p>上述例子是基本用法，then 方法返回一个新的 Promise，所以支持链式调用，可用于一个任务依赖于上一个任务的执行结果这种场景</p>
+<p>对于同一个 Promise 也可以调用多次 then 来注册多个回调处理</p>
+<p>通过使用来理解它的功能，清楚它都支持哪些功能后，我们在模拟实现时，才能知道到底需要写些什么代码</p>
+<p>所以，这里来比较细节的罗列下 Promise 的基本功能：</p>
+<ul>
+<li>Promise 有三种状态：Pending（执行中）、Resolved（成功）、Rejected（失败），状态一旦变更结束就不再改变</li>
+<li>Promise 构造函数接收一个函数参数，可以把它叫做 task 处理函数</li>
+<li>task 处理函数用来处理异步工作，这个函数有两个参数，也都是函数类型，当异步工作结束，就是通过调用这两个函数参数来通知 Promise 状态变更、回调触发、结果传递</li>
+<li>Promise 有一个 then 方法用于注册回调处理，当状态变化结束，注册的回调一定会被处理，即使是在状态变化结束后才通过 then 注册</li>
+<li>then 方法支持调用多次来注册多个回调处理</li>
+<li>then 方法接收两个可选参数，这两个参数类型都是函数，也就是需要注册的回调处理函数，分别是成功时的回调函数，失败时的回调函数</li>
+<li>这些回调函数有一个参数，类型任意，值就是任务结束需要通知给回调的结果，通过调用 task 处理函数的参数（类型是函数）传递过来</li>
+<li>then 方法返回一个新的 Promise，以便支持链式调用，新 Promise 状态的变化依赖于回调函数的返回值，不同类型处理方式不同</li>
+<li>then 方法的链式调用中，如果中间某个 then 传入的回调处理不能友好的处理回调工作（比如传递给 then 非函数类型参数），那么这个工作会继续往下传递给下个 then 注册的回调函数</li>
+<li>Promise 有一个 catch 方法，用于注册失败的回调处理，其实是 <code>then(null, onRejected)</code> 的语法糖</li>
+<li>task 处理函数或者回调函数执行过程发生代码异常时，Promise 内部自动捕获，状态直接当做失败来处理</li>
+<li><code>new Promise(task)</code> 时，传入的 task 函数就会马上被执行了，但传给 then 的回调函数，会作为微任务放入队列中等待执行（通俗理解，就是降低优先级，延迟执行，不知道怎么模拟微任务的话，可以使用 setTimeout 生成的宏任务来模拟） </li>
+</ul>
+<p>这些基本功能就足够 Promise 的日常使用了，所以我们的模拟实现版的目标就是实现这些功能</p>
+<h3 id="模拟实现思路"><a href="#模拟实现思路" class="headerlink" title="模拟实现思路"></a>模拟实现思路</h3><h4 id="第一步：骨架"><a href="#第一步：骨架" class="headerlink" title="第一步：骨架"></a>第一步：骨架</h4><p>Promise 的基本功能清楚了，那我们代码该怎么写，写什么？</p>
+<p>从代码角度来看的话，无非也就是一些变量、函数，所以，我们就可以来针对各个功能点，思考下，都需要哪些代码：</p>
+<ol>
+<li>变量上至少需要：<strong>三种状态、当前状态（_status）、传递给回调函数的结果值（_value）</strong></li>
+<li><strong>构造函数 constructor</strong></li>
+<li><del><strong>task 处理函数</strong></del></li>
+<li>task 处理函数的<strong>两个用于通知状态变更的函数（handleResolve, handleReject）</strong></li>
+<li><strong>then 方法</strong></li>
+<li>then 方法<del><strong>注册的两个回调函数</strong></del></li>
+<li><strong>回调函数队列</strong></li>
+<li><strong>catch 方法</strong></li>
+</ol>
+<p>task 处理函数和注册的回调处理函数都是使用者在使用 Promise 时，自行根据业务需要编写的代码</p>
+<p>那么，剩下的也就是我们在实现 Promise 时需要编写的代码了，这样一来，Promise 的骨架其实也就可以出来了：</p>
+<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">type</span> statusChangeFn = <span class="function">(<span class="params">value?: <span class="built_in">any</span></span>) =&gt;</span> <span class="built_in">void</span>;</span><br><span class="line"><span class="comment">/* 回调函数类型 */</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">type</span> callbackFn = <span class="function">(<span class="params">value?: <span class="built_in">any</span></span>) =&gt;</span> <span class="built_in">any</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="built_in">Promise</span> &#123;</span><br><span class="line">    <span class="comment">/* 三种状态 */</span></span><br><span class="line">    <span class="keyword">private</span> readonly PENDING: <span class="built_in">string</span> = <span class="string">'pending'</span>;</span><br><span class="line">    <span class="keyword">private</span> readonly RESOLVED: <span class="built_in">string</span> = <span class="string">'resolved'</span>;</span><br><span class="line">    <span class="keyword">private</span> readonly REJECTED: <span class="built_in">string</span> = <span class="string">'rejected'</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* promise当前状态 */</span></span><br><span class="line">    <span class="keyword">private</span> _status: <span class="built_in">string</span>;</span><br><span class="line">    <span class="comment">/* promise执行结果 */</span></span><br><span class="line">    <span class="keyword">private</span> _value: <span class="built_in">string</span>;</span><br><span class="line">    <span class="comment">/* 成功的回调 */</span></span><br><span class="line">    <span class="keyword">private</span> _resolvedCallback: <span class="built_in">Function</span>[] = [];</span><br><span class="line">    <span class="comment">/* 失败的回调 */</span></span><br><span class="line">    <span class="keyword">private</span> _rejectedCallback: <span class="built_in">Function</span>[] = [];</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 处理 resolve 的状态变更相关工作，参数接收外部传入的执行结果</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> _handleResolve(value?: <span class="built_in">any</span>) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 处理 reject 的状态变更相关工作，参数接收外部传入的失败原因</span></span><br><span class="line"><span class="comment">     */</span> </span><br><span class="line">    <span class="keyword">private</span> _handleReject(value?: <span class="built_in">any</span>) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 构造函数，接收一个 task 处理函数，task 有两个可选参数，类型也是函数，其实也就是上面的两个处理状态变更工作的函数（_handleResolve，_handleReject），用来给使用者来触发状态变更使用</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">constructor</span>(<span class="params">task: (resolve?: statusChangeFn, reject?: statusChangeFn) =&gt; <span class="built_in">void</span></span>) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * then 方法，接收两个可选参数，用于注册成功或失败时的回调处理，所以类型也是函数，函数有一个参数，接收 Promise 执行结果或失败原因，同时可返回任意值，作为新 Promise 的执行结果</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    then(onResolved?: callbackFn, onRejected?: callbackFn): <span class="built_in">Promise</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">catch</span>(onRejected?: callbackFn): <span class="built_in">Promise</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.then(<span class="literal">null</span>, onRejected);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意：骨架这里的代码，我用了 TypeScript，这是一种强类型语言，可以标明各个变量、参数类型，便于讲述和理解，看不懂没关系，下面有编译成 js 版的</p>
+<p>所以，我们要补充完成的其实就是三部分：Promise 构造函数都做了哪些事、状态变更需要做什么处理、then 注册回调函数时需要做的处理</p>
+<h4 id="第二步：构造函数"><a href="#第二步：构造函数" class="headerlink" title="第二步：构造函数"></a>第二步：构造函数</h4><p>Promise 的构造函数做的事，其实很简单，就是马上执行传入的 task 处理函数，并将自己内部提供的两个状态变更处理的函数传递给 task，同时将当前 promise 状态置为 PENDING（执行中）</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">constructor</span>(task) &#123;</span><br><span class="line">    <span class="comment">// 1. 将当前状态置为 PENDING</span></span><br><span class="line">    <span class="keyword">this</span>._status = <span class="keyword">this</span>.PENDING;</span><br><span class="line">        </span><br><span class="line">    <span class="comment">// 参数类型校验</span></span><br><span class="line">	<span class="keyword">if</span> (!(task <span class="keyword">instanceof</span> <span class="built_in">Function</span>)) &#123;</span><br><span class="line">		<span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">TypeError</span>(<span class="string">`<span class="subst">$&#123;task&#125;</span> is not a function`</span>);</span><br><span class="line">	&#125;</span><br><span class="line">        </span><br><span class="line">	<span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 2. 调用 task 处理函数，并将状态变更通知的函数传递过去，需要注意 this 的处理</span></span><br><span class="line">		task(<span class="keyword">this</span>._handleResolve.bind(<span class="keyword">this</span>), <span class="keyword">this</span>._handleReject.bind(<span class="keyword">this</span>));</span><br><span class="line">	&#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">        <span class="comment">// 3. 如果 task 处理函数发生异常，当做失败来处理</span></span><br><span class="line">		<span class="keyword">this</span>._handleReject(e);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="第三步：状态变更"><a href="#第三步：状态变更" class="headerlink" title="第三步：状态变更"></a>第三步：状态变更</h4><p>Promise 状态变更的相关处理是我觉得实现 Promise <strong>最难的一部分</strong>，这里说的难并不是说代码有多复杂，而是说这块需要理解透，或者看懂规范并不大容易，因为需要考虑一些处理，网上看了些 Promise 实现的文章，这部分都存在问题</p>
+<p>状态变更的工作，是由传给 task 处理函数的两个函数参数被调用时触发进行，如：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">   	resolve(<span class="number">1</span>); </span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>resolve 或 reject 的调用，就会触发 Promise 内部去处理状态变更的相关工作，还记得构造函数做的事吧，这里的 resolve 或 reject 其实就是对应着内部的 _handleResolve 和 _handleReject 这两个处理状态变更工作的函数</p>
+<p>但这里有一点需要注意，是不是 resolve 一调用，Promise 的状态就一定发生变化了呢？</p>
+<p>答案不是的，网上看了些这类文章，他们的处理是 resolve 调用，状态就变化，就去处理回调队列了</p>
+<p>但实际上，这样是错的</p>
+<p>状态的变更，其实依赖于 resolve 调用时，传递过去的参数的类型，因为这里可以传递任意类型的值，可以是基本类型，也可以是 Promise</p>
+<p>当类型不一样时，对于状态的变更处理是不一样的，开头那篇规范里面有详细的说明，但要看懂并不大容易，我这里就简单用我的理解来讲讲：</p>
+<ul>
+<li>resolve(x) 触发的 pending =&gt; resolved 的处理：<ul>
+<li>当 x 类型是 Promise 对象时：<ul>
+<li>当 x 这个 Promise 的状态变化结束时，再以 x 这个 Promise 内部状态和结果（_status 和 _value）作为当前 Promise 的状态和结果进行状态变更处理</li>
+<li>可以简单理解成当前的 Promise 是依赖于 x 这个 Promise 的，即 <code>x.then(this._handleResolve, this._handleReject)</code></li>
+</ul>
+</li>
+<li>当 x 类型是 thenable 对象（具有 then 方法的对象）时：<ul>
+<li>把这个 then 方法作为 task 处理函数来处理，这样就又回到第一步即等待状态变更的触发</li>
+<li>可以简单理解成 <code>x.then(this._handleResolve, this._handleReject)</code></li>
+<li>这里的 x.then 并不是 Promise 的 then 处理，只是简单的一个函数调用，只是刚好函数名叫做 then</li>
+</ul>
+</li>
+<li>其余类型时：<ul>
+<li>内部状态（_status）置为 RESOLVE</li>
+<li>内部结果（_value）置为 x</li>
+<li>模拟创建微任务（setTimeout）处理回调函数队列</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>reject(x) 触发的 pending =&gt; rejected 的处理：<ul>
+<li>不区分 x 类型，直接走 rejected 的处理<ul>
+<li>内部状态（_status）置为 REJECTED</li>
+<li>内部结构（_value）置为 x</li>
+<li>模拟创建微任务（setTimeout）处理回调函数队列</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>所以你可以看到，其实 resolve 即使调用了，但内部并不一定就会发生状态变化，只有当 resolve 传递的参数类型既不是 Promise 对象类型，也不是具有 then 方法的 thenable 对象时，状态才会发生变化</p>
+<p>而当传递的参数是 Promise 或具有 then 方法的 thenable 对象时，差不多又是相当于递归回到第一步的等待 task 函数的处理了</p>
+<p>想想为什么需要这种处理，或者说，为什么需要这么设计？</p>
+<p>这是因为，存在这样一种场景：有多个异步任务，这些异步任务之间是同步关系，一个任务的执行依赖于上一个异步任务的执行结果，当这些异步任务通过 then 的链式调用组合起来时，then 方法产生的新的 Promise 的状态变更是依赖于回调函数的返回值。所以这个状态变更需要支持当值类型是 Promise 时的异步等待处理，这条异步任务链才能得到预期的执行效果</p>
+<p>当你们去看规范，或看规范的中文版翻译，其实有关于这个的更详细处理说明，比如开头给的链接的那篇文章里有专门一个模块：Promise 的解决过程，也表示成 <code>[[Resolve]](promise, x)</code> 就是在讲这个</p>
+<p>但我想用自己的理解来描述，这样比较容易理解，虽然我也只能描述个大概的工作，更细节、更全面的处理应该要跟着规范来，下面就看看代码：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * resolve 的状态变更处理</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">_handleResolve(value) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>._status === <span class="keyword">this</span>.PENDING) &#123;</span><br><span class="line">        <span class="comment">// 1. 如果 value 是 Promise，那么等待 Promise 状态结果出来后，再重新做状态变更处理</span></span><br><span class="line">        <span class="keyword">if</span> (value <span class="keyword">instanceof</span> <span class="built_in">Promise</span>) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="comment">// 这里之所以不需要用 bind 来注意 this 问题是因为使用了箭头函数</span></span><br><span class="line">                <span class="comment">// 这里也可以写成 value.then(this._handleResole.bind(this), this._handleReject.bind(this))</span></span><br><span class="line">                value.then(<span class="function"><span class="params">v</span> =&gt;</span> &#123;</span><br><span class="line">                    <span class="keyword">this</span>._handleResolve(v);</span><br><span class="line">                &#125;,</span><br><span class="line">                err =&gt; &#123;</span><br><span class="line">                    <span class="keyword">this</span>._handleReject(err);</span><br><span class="line">                &#125;);</span><br><span class="line">            &#125; <span class="keyword">catch</span>(e) &#123;</span><br><span class="line">                <span class="keyword">this</span>._handleReject(e);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (value &amp;&amp; value.then <span class="keyword">instanceof</span> <span class="built_in">Function</span>) &#123;</span><br><span class="line">            <span class="comment">// 2. 如果 value 是具有 then 方法的对象时，那么将这个 then 方法当做 task 处理函数，把状态变更的触发工作交由 then 来处理，注意 this 的处理</span></span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">const</span> then = value.then;</span><br><span class="line">                then.call(value, <span class="keyword">this</span>._handleResolve.bind(<span class="keyword">this</span>), <span class="keyword">this</span>._handleReject.bind(<span class="keyword">this</span>));</span><br><span class="line">            &#125; <span class="keyword">catch</span>(e) &#123;</span><br><span class="line">                <span class="keyword">this</span>._handleReject(e);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 3. 其他类型，状态变更、触发成功的回调</span></span><br><span class="line">            <span class="keyword">this</span>._status = <span class="keyword">this</span>.RESOLVED;</span><br><span class="line">            <span class="keyword">this</span>._value = value;</span><br><span class="line">            setTimeout(() = &#123;</span><br><span class="line">                <span class="keyword">this</span>._resolvedCallback.forEach(<span class="function"><span class="params">callback</span> =&gt;</span> &#123;</span><br><span class="line">                    callback();</span><br><span class="line">                &#125;);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * reject 的状态变更处理</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">_handleReject(value) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>._status === <span class="keyword">this</span>.PENDING) &#123;</span><br><span class="line">        <span class="keyword">this</span>._status = <span class="keyword">this</span>.REJECTED;</span><br><span class="line">        <span class="keyword">this</span>._value = value;</span><br><span class="line">        setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">            <span class="keyword">this</span>._rejectedCallback.forEach(<span class="function"><span class="params">callback</span> =&gt;</span> &#123;</span><br><span class="line">                callback();</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="第四步：then"><a href="#第四步：then" class="headerlink" title="第四步：then"></a>第四步：then</h4><p>then 方法负责的职能其实也很复杂，既要返回一个新的 Promise，这个新的 Promise 的状态和结果又要依赖于回调函数的返回值，而回调函数的执行又要看情况是缓存进回调函数队列里，还是直接取依赖的 Promise 的状态结果后，丢到微任务队列里去执行</p>
+<p>虽然职能复杂是复杂了点，但其实，实现上，都是依赖于前面已经写好的构造函数和状态变更函数，所以只要前面几个步骤实现上没问题，then 方法也就不会有太大的问题，直接看代码：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * then 方法，接收两个可选参数，用于注册回调处理，所以类型也是函数，且有一个参数，接收 Promise 执行结果，同时可返回任意值，作为新 Promise 的执行结果</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">then(onResolved, onRejected) &#123;</span><br><span class="line">    <span class="comment">// then 方法返回一个新的 Promise，新 Promise 的状态结果依赖于回调函数的返回值</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">        <span class="comment">// 对回调函数进行一层封装，主要是因为回调函数的执行结果会影响到返回的新 Promise 的状态和结果</span></span><br><span class="line">        <span class="keyword">const</span> _onResolved = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">        	<span class="comment">// 根据回调函数的返回值，决定如何处理状态变更</span></span><br><span class="line">            <span class="keyword">if</span> (onResolved &amp;&amp; onResolved <span class="keyword">instanceof</span> <span class="built_in">Function</span>) &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="keyword">const</span> result = onResolved(<span class="keyword">this</span>._value);</span><br><span class="line">                    resolve(result);</span><br><span class="line">                &#125; <span class="keyword">catch</span>(e) &#123;</span><br><span class="line">                    reject(e);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// 如果传入非函数类型，则将上个Promise结果传递给下个处理</span></span><br><span class="line">                resolve(<span class="keyword">this</span>._value);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        <span class="keyword">const</span> _onRejected = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (onRejected &amp;&amp; onRejected <span class="keyword">instanceof</span> <span class="built_in">Function</span>) &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="keyword">const</span> result = onRejected(<span class="keyword">this</span>._value);</span><br><span class="line">                    resolve(result);</span><br><span class="line">                &#125; <span class="keyword">catch</span>(e) &#123;</span><br><span class="line">                    reject(e);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                reject(<span class="keyword">this</span>._value);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        <span class="comment">// 如果当前 Promise 状态还没变更，则将回调函数放入队列里等待执行</span></span><br><span class="line">        <span class="comment">// 否则直接创建微任务来处理这些回调函数</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>._status === <span class="keyword">this</span>.PENDING) &#123;</span><br><span class="line">            <span class="keyword">this</span>._resolvedCallback.push(_onResolved);</span><br><span class="line">            <span class="keyword">this</span>._rejectedCallback.push(_onRejected);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">this</span>._status === <span class="keyword">this</span>.RESOLVED) &#123;</span><br><span class="line">            setTimeout(_onResolved);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">this</span>._status === <span class="keyword">this</span>.REJECTED) &#123;</span><br><span class="line">            setTimeout(_onRejected);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="其他方面"><a href="#其他方面" class="headerlink" title="其他方面"></a>其他方面</h4><p>因为目的在于理清 Promise 的主要功能职责，所以我的实现版并没有按照规范一步步来，细节上，或者某些特殊场景的处理，可能欠缺考虑</p>
+<p>比如对各个函数参数类型的校验处理，因为 Promise 的参数基本都是函数类型，但即使传其他类型，也仍旧不影响 Promise 的使用</p>
+<p>比如为了避免被更改实现，一些内部变量可以改用 Symbol 实现</p>
+<p>但大体上，考虑了上面这些步骤实现，基本功能也差不多了，重要的是状态变更这个的处理要考虑全一点，网上一些文章的实现版，这个是漏掉考虑的</p>
+<p>还有当面试遇到让你手写实现 Promise 时不要慌，可以按着这篇的思路，先把 Promise 的基本用法回顾一下，然后回想一下它支持的功能，再然后心里有个大概的骨架，其实无非也就是几个内部变量、构造函数、状态变更函数、then 函数这几块而已，但死记硬背并不好，有个思路，一步步来，总能回想起来</p>
+<h3 id="源码"><a href="#源码" class="headerlink" title="源码"></a>源码</h3><p>源码补上了 catch，resolve 等其他方法的实现，这些其实都是基于 Promise 基本功能上的一层封装，方便使用</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Promise</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 构造函数负责接收并执行一个 task 处理函数，并将自己内部提供的两个状态变更处理的函数传递给 task，同时将当前 promise 状态置为 PENDING（执行中）</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">constructor</span>(task) &#123;</span><br><span class="line">        <span class="comment">/* 三种状态 */</span></span><br><span class="line">        <span class="keyword">this</span>.PENDING = <span class="string">'pending'</span>;</span><br><span class="line">        <span class="keyword">this</span>.RESOLVED = <span class="string">'resolved'</span>;</span><br><span class="line">        <span class="keyword">this</span>.REJECTED = <span class="string">'rejected'</span>;</span><br><span class="line">        <span class="comment">/* 成功的回调 */</span></span><br><span class="line">        <span class="keyword">this</span>._resolvedCallback = [];</span><br><span class="line">        <span class="comment">/* 失败的回调 */</span></span><br><span class="line">        <span class="keyword">this</span>._rejectedCallback = [];</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 1. 将当前状态置为 PENDING</span></span><br><span class="line">        <span class="keyword">this</span>._status = <span class="keyword">this</span>.PENDING;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 参数类型校验</span></span><br><span class="line">        <span class="keyword">if</span> (!(task <span class="keyword">instanceof</span> <span class="built_in">Function</span>)) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">TypeError</span>(<span class="string">`<span class="subst">$&#123;task&#125;</span> is not a function`</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 2. 调用 task 处理函数，并将状态变更通知的函数传递过去，需要注意 this 的处理</span></span><br><span class="line">            task(<span class="keyword">this</span>._handleResolve.bind(<span class="keyword">this</span>), <span class="keyword">this</span>._handleReject.bind(<span class="keyword">this</span>));</span><br><span class="line">        &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">            <span class="comment">// 3. 如果 task 处理函数发生异常，当做失败来处理</span></span><br><span class="line">            <span class="keyword">this</span>._handleReject(e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * resolve 的状态变更处理</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    _handleResolve(value) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>._status === <span class="keyword">this</span>.PENDING) &#123;</span><br><span class="line">            <span class="keyword">if</span> (value <span class="keyword">instanceof</span> <span class="built_in">Promise</span>) &#123;</span><br><span class="line">                <span class="comment">// 1. 如果 value 是 Promise，那么等待 Promise 状态结果出来后，再重新做状态变更处理</span></span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="comment">// 这里之所以不需要用 bind 来注意 this 问题是因为使用了箭头函数</span></span><br><span class="line">                    <span class="comment">// 这里也可以写成 value.then(this._handleResole.bind(this), this._handleReject.bind(this))</span></span><br><span class="line">                    value.then(<span class="function"><span class="params">v</span> =&gt;</span> &#123;</span><br><span class="line">                            <span class="keyword">this</span>._handleResolve(v);</span><br><span class="line">                        &#125;,</span><br><span class="line">                        err =&gt; &#123;</span><br><span class="line">                            <span class="keyword">this</span>._handleReject(err);</span><br><span class="line">                        &#125;);</span><br><span class="line">                &#125; <span class="keyword">catch</span>(e) &#123;</span><br><span class="line">                    <span class="keyword">this</span>._handleReject(e);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (value &amp;&amp; value.then <span class="keyword">instanceof</span> <span class="built_in">Function</span>) &#123;</span><br><span class="line">                <span class="comment">// 2. 如果 value 是具有 then 方法的对象时，那么将这个 then 方法当做 task 处理函数，把状态变更的触发工作交由 then 来处理，注意 this 的处理</span></span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="keyword">const</span> then = value.then;</span><br><span class="line">                    then.call(value, <span class="keyword">this</span>._handleResolve.bind(<span class="keyword">this</span>), <span class="keyword">this</span>._handleReject.bind(<span class="keyword">this</span>));</span><br><span class="line">                &#125; <span class="keyword">catch</span>(e) &#123;</span><br><span class="line">                    <span class="keyword">this</span>._handleReject(e);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// 3. 其他类型，状态变更、触发成功的回调</span></span><br><span class="line">                <span class="keyword">this</span>._status = <span class="keyword">this</span>.RESOLVED;</span><br><span class="line">                <span class="keyword">this</span>._value = value;</span><br><span class="line">                setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">                    <span class="keyword">this</span>._resolvedCallback.forEach(<span class="function"><span class="params">callback</span> =&gt;</span> &#123;</span><br><span class="line">                    callback();</span><br><span class="line">                &#125;);</span><br><span class="line">            &#125;);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * reject 的状态变更处理</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    _handleReject(value) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>._status === <span class="keyword">this</span>.PENDING) &#123;</span><br><span class="line">            <span class="keyword">this</span>._status = <span class="keyword">this</span>.REJECTED;</span><br><span class="line">            <span class="keyword">this</span>._value = value;</span><br><span class="line">            setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">                <span class="keyword">this</span>._rejectedCallback.forEach(<span class="function"><span class="params">callback</span> =&gt;</span> &#123;</span><br><span class="line">                    callback();</span><br><span class="line">                &#125;);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * then 方法，接收两个可选参数，用于注册回调处理，所以类型也是函数，且有一个参数，接收 Promise 执行结果，同时可返回任意值，作为新 Promise 的执行结果</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    then(onResolved, onRejected) &#123;</span><br><span class="line">        <span class="comment">// then 方法返回一个新的 Promise，新 Promise 的状态结果依赖于回调函数的返回值</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">            <span class="comment">// 对回调函数进行一层封装，主要是因为回调函数的执行结果会影响到返回的新 Promise 的状态和结果</span></span><br><span class="line">            <span class="keyword">const</span> _onResolved = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">                <span class="comment">// 根据回调函数的返回值，决定如何处理状态变更</span></span><br><span class="line">                <span class="keyword">if</span> (onResolved &amp;&amp; onResolved <span class="keyword">instanceof</span> <span class="built_in">Function</span>) &#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        <span class="keyword">const</span> result = onResolved(<span class="keyword">this</span>._value);</span><br><span class="line">                        resolve(result);</span><br><span class="line">                    &#125; <span class="keyword">catch</span>(e) &#123;</span><br><span class="line">                        reject(e);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="comment">// 如果传入非函数类型，则将上个Promise结果传递给下个处理</span></span><br><span class="line">                    resolve(<span class="keyword">this</span>._value);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;;</span><br><span class="line">            <span class="keyword">const</span> _onRejected = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (onRejected &amp;&amp; onRejected <span class="keyword">instanceof</span> <span class="built_in">Function</span>) &#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        <span class="keyword">const</span> result = onRejected(<span class="keyword">this</span>._value);</span><br><span class="line">                        resolve(result);</span><br><span class="line">                    &#125; <span class="keyword">catch</span>(e) &#123;</span><br><span class="line">                        reject(e);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    reject(<span class="keyword">this</span>._value);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;;</span><br><span class="line">            <span class="comment">// 如果当前 Promise 状态还没变更，则将回调函数放入队列里等待执行</span></span><br><span class="line">            <span class="comment">// 否则直接创建微任务来处理这些回调函数</span></span><br><span class="line">            <span class="keyword">if</span> (<span class="keyword">this</span>._status === <span class="keyword">this</span>.PENDING) &#123;</span><br><span class="line">                <span class="keyword">this</span>._resolvedCallback.push(_onResolved);</span><br><span class="line">                <span class="keyword">this</span>._rejectedCallback.push(_onRejected);</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">this</span>._status === <span class="keyword">this</span>.RESOLVED) &#123;</span><br><span class="line">                setTimeout(_onResolved);</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">this</span>._status === <span class="keyword">this</span>.REJECTED) &#123;</span><br><span class="line">                setTimeout(_onRejected);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">catch</span>(onRejected) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.then(<span class="literal">null</span>, onRejected);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> resolve(value) &#123;</span><br><span class="line">        <span class="keyword">if</span> (value <span class="keyword">instanceof</span> <span class="built_in">Promise</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> value;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">reso</span>) =&gt;</span> &#123;</span><br><span class="line">            reso(value);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">static</span> reject(value) &#123;</span><br><span class="line">        <span class="keyword">if</span> (value <span class="keyword">instanceof</span> <span class="built_in">Promise</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> value;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">reso, reje</span>) =&gt;</span> &#123;</span><br><span class="line">            reje(value);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><p>网上有一些专门测试 Promise 的库，可以直接借助这些，比如：<a href="https://github.com/promises-aplus/promises-tests" target="_blank" rel="noopener">promises-tests</a></p>
+<p>我这里就举一些基本功能的测试用例：</p>
+<ul>
+<li>测试链式调用</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 测试链式调用</span></span><br><span class="line"><span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="params">r</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'0.--同步-----'</span>);</span><br><span class="line">    r();</span><br><span class="line">&#125;).then(<span class="function"><span class="params">v</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'1.-----------------'</span>))</span><br><span class="line">.then(<span class="function"><span class="params">v</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'2.-----------------'</span>))</span><br><span class="line">.then(<span class="function"><span class="params">v</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'3.-----------------'</span>))</span><br><span class="line">.then(<span class="function"><span class="params">v</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'4.-----------------'</span>))</span><br><span class="line">.then(<span class="function"><span class="params">v</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'5.-----------------'</span>))</span><br><span class="line">.then(<span class="function"><span class="params">v</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'6.-----------------'</span>))</span><br><span class="line">.then(<span class="function"><span class="params">v</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'7.-----------------'</span>))</span><br></pre></td></tr></table></figure>
+
+<details>
+    <summary>输出</summary>
+<pre><code>0.--同步-----
+1.-----------------
+2.-----------------
+3.-----------------
+4.-----------------
+5.-----------------
+6.-----------------
+7.-----------------
+</code></pre>
+</details>
+
+<ul>
+<li>测试多次调用 then 注册多个回调处理</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 测试多次调用 then 注册多个回调处理</span></span><br><span class="line"><span class="keyword">var</span> p = <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="params">r</span> =&gt;</span> r(<span class="number">1</span>));</span><br><span class="line">p.then(<span class="function"><span class="params">v</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'1-----'</span>, v), err =&gt; <span class="built_in">console</span>.error(<span class="string">'error'</span>, err));</span><br><span class="line">p.then(<span class="function"><span class="params">v</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'2-----'</span>, v), err =&gt; <span class="built_in">console</span>.error(<span class="string">'error'</span>, err));</span><br><span class="line">p.then(<span class="function"><span class="params">v</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'3-----'</span>, v), err =&gt; <span class="built_in">console</span>.error(<span class="string">'error'</span>, err));</span><br><span class="line">p.then(<span class="function"><span class="params">v</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'4-----'</span>, v), err =&gt; <span class="built_in">console</span>.error(<span class="string">'error'</span>, err));</span><br></pre></td></tr></table></figure>
+
+<details>
+    <summary>输出</summary>
+<pre><code>1----- 1
+2----- 1
+3----- 1
+4----- 1
+</code></pre>
+</details>
+
+
+<ul>
+<li>测试异步场景</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 测试异步场景</span></span><br><span class="line"><span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="params">r</span> =&gt;</span> &#123;</span><br><span class="line">    r(<span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="params">a</span> =&gt;</span> setTimeout(a, <span class="number">5000</span>)).then(<span class="function"><span class="params">v</span> =&gt;</span> <span class="number">1</span>));</span><br><span class="line">&#125;)</span><br><span class="line">.then(<span class="function"><span class="params">v</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(v);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="params">a</span> =&gt;</span> setTimeout(a, <span class="number">1000</span>)).then(<span class="function"><span class="params">v</span> =&gt;</span> <span class="number">2</span>);</span><br><span class="line">&#125;)</span><br><span class="line">.then(<span class="function"><span class="params">v</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'success'</span>, v), err =&gt; <span class="built_in">console</span>.error(<span class="string">'error'</span>, err));</span><br></pre></td></tr></table></figure>
+
+<details>
+    <summary>输出</summary>
+<pre><code>1  // 5s 后才输出
+success 2  // 再2s后才输出
+</code></pre>
+</details>
+
+<p>这个测试，可以检测出 resolve 的状态变更到底有没有根据规范，区分不同场景进行不同处理，你可以网上随便找一篇 Promise 的实现，把它的代码贴到浏览器的 console 里，然后测试一下看看，就知道有没有问题了</p>
+<ul>
+<li>测试执行结果类型为 Promise 对象场景</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 测试执行结果类型为 Promise 对象场景(Promise 状态 5s 后变化)</span></span><br><span class="line"><span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="params">r</span> =&gt;</span> &#123;</span><br><span class="line">   r(<span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="params">a</span> =&gt;</span> setTimeout(a, <span class="number">5000</span>)));</span><br><span class="line">&#125;).then(<span class="function"><span class="params">v</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'success'</span>, v), err =&gt; <span class="built_in">console</span>.error(<span class="string">'error'</span>, err));</span><br></pre></td></tr></table></figure>
+
+<details>
+    <summary>输出</summary>
+<pre><code>success undefined  // 5s 后才输出
+</code></pre>
+</details>
+
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 测试执行结果类型为 Promise 对象场景(Promise 状态不会发生变化)</span></span><br><span class="line"><span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="params">r</span> =&gt;</span> &#123;</span><br><span class="line">   r(<span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="params">a</span> =&gt;</span> <span class="number">1</span>));</span><br><span class="line">&#125;).then(<span class="function"><span class="params">v</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'success'</span>, v), err =&gt; <span class="built_in">console</span>.error(<span class="string">'error'</span>, err));</span><br></pre></td></tr></table></figure>
+
+<details>
+    <summary>输出</summary>
+<pre><code>// 永远都不输出
+</code></pre>
+</details>
+
+<ul>
+<li>测试执行结果类型为具有 then 方法的 thenable 对象场景</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 测试执行结果类型为具有 then 方法的 thenable 对象场景（then 方法内部会调用传递的函数参数）</span></span><br><span class="line"><span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="params">r</span> =&gt;</span> &#123;</span><br><span class="line">    r(&#123;</span><br><span class="line">        then: <span class="function">(<span class="params">a, b</span>) =&gt;</span> &#123;</span><br><span class="line">        	<span class="keyword">return</span> a(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;).then(<span class="function"><span class="params">v</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'success'</span>, v), err =&gt; <span class="built_in">console</span>.error(<span class="string">'error'</span>, err));</span><br></pre></td></tr></table></figure>
+
+<details>
+    <summary>输出</summary>
+<pre><code>success 1
+</code></pre>
+</details>
+
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// // 测试执行结果类型为具有 then 方法的 thenable 对象场景（then 方法内部不会调用传递的函数参数）</span></span><br><span class="line"><span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="params">r</span> =&gt;</span> &#123;</span><br><span class="line">    r(&#123;</span><br><span class="line">        then: <span class="function">(<span class="params">a, b</span>) =&gt;</span> &#123;</span><br><span class="line">        	<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;).then(<span class="function"><span class="params">v</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'success'</span>, v), err =&gt; <span class="built_in">console</span>.error(<span class="string">'error'</span>, err));</span><br></pre></td></tr></table></figure>
+
+<details>
+    <summary>输出</summary>
+<pre><code>// 永远都不输出
+</code></pre>
+</details>
+
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 测试执行结果类型为具有 then 的属性，但属性值类型非函数</span></span><br><span class="line"><span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="params">r</span> =&gt;</span> &#123;</span><br><span class="line">    r(&#123;</span><br><span class="line">        then: <span class="number">111</span></span><br><span class="line">    &#125;);</span><br><span class="line">&#125;).then(<span class="function"><span class="params">v</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'success'</span>, v), err =&gt; <span class="built_in">console</span>.error(<span class="string">'error'</span>, err));</span><br></pre></td></tr></table></figure>
+
+<details>
+    <summary>输出</summary>
+<pre><code>success {then: 111}
+</code></pre>
+</details>
+
+<ul>
+<li>测试执行结果的传递</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 测试当 Promise rejectd 时，reject 的状态结果会一直传递到可以处理这个失败结果的那个 then 的回调中</span></span><br><span class="line"><span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">r, j</span>) =&gt;</span> &#123;</span><br><span class="line">    j(<span class="number">1</span>);</span><br><span class="line">&#125;).then(<span class="function"><span class="params">v</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'success'</span>, v))</span><br><span class="line">  .then(<span class="function"><span class="params">v</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'success'</span>, v), err =&gt; <span class="built_in">console</span>.error(<span class="string">'error'</span>, err))</span><br><span class="line">  .catch(<span class="function"><span class="params">err</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'catch'</span>, err));</span><br></pre></td></tr></table></figure>
+
+<details>
+    <summary>输出</summary>
+<pre><code>error 1
+</code></pre>
+</details>
+
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 测试传给 then 的参数是非函数类型时，执行结果和状态会一直传递</span></span><br><span class="line"><span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="params">r</span> =&gt;</span> &#123;</span><br><span class="line">    r(<span class="number">1</span>);</span><br><span class="line">&#125;).then(<span class="number">1</span>)</span><br><span class="line">.then(<span class="literal">null</span>, err =&gt; <span class="built_in">console</span>.error(<span class="string">'error'</span>, err))</span><br><span class="line">.then(<span class="function"><span class="params">v</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'success'</span>, v), err =&gt; <span class="built_in">console</span>.error(<span class="string">'error'</span>, err));</span><br></pre></td></tr></table></figure>
+
+<details>
+    <summary>输出</summary>
+<pre><code>success 1
+</code></pre>
+</details>
+
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 测试 rejectd 失败被处理后，就不会继续传递 rejectd</span></span><br><span class="line"><span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">r,j</span>) =&gt;</span> &#123;</span><br><span class="line">    j(<span class="number">1</span>);</span><br><span class="line">&#125;).then(<span class="number">2</span>)</span><br><span class="line">.then(<span class="function"><span class="params">v</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'success'</span>, v), err =&gt; <span class="built_in">console</span>.error(<span class="string">'error'</span>, err))</span><br><span class="line">.then(<span class="function"><span class="params">v</span> =&gt;</span> <span class="built_in">console</span>.log(<span class="string">'success'</span>, v), err =&gt; <span class="built_in">console</span>.error(<span class="string">'error'</span>, err));</span><br></pre></td></tr></table></figure>
+
+<details>
+    <summary>输出</summary>
+<pre><code>error 1
+success undefined
+</code></pre>
+</details>
+
+<p>最后，当你自己写完个模拟实现 Promise 时，你可以将代码贴到浏览器上，然后自己测试下这些用例，跟官方的 Promise 执行结果比对下，你就可以知道，你实现的 Promise 基本功能上有没有问题了</p>
+<p>当然，需要更全面的测试的话，还是得借助一些测试库</p>
+<p>不过，自己实现一个 Promise 的目的其实也就在于理清 Promise 基本功能、行为、原理，所以这些用例能测通过的话，那么基本上也就掌握这些知识点了</p>
+]]></content>
+      <categories>
+        <category>面试题</category>
+        <category>前端</category>
+      </categories>
+  </entry>
+  <entry>
     <title>shell 基本语法</title>
     <url>/2019/11/23/shell%E8%84%9A%E6%9C%AC/shell%E8%AF%AD%E6%B3%95/</url>
     <content><![CDATA[<h1 id="shell-基本语法"><a href="#shell-基本语法" class="headerlink" title="shell 基本语法"></a>shell 基本语法</h1><p>jenkins 上构建项目时，经常需要借助 shell 脚本，最近也经常跟服务器打交道，顺便记录些常用命令，方便查阅  </p>
@@ -972,7 +1215,7 @@
 <li><strong>返回这个空对象</strong></li>
 </ul>
 <p>这是基本的 new 使用的场景，那么我们要来模拟实现的话，这几件事就得自己处理：</p>
-<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> _new(<span class="params">Fn, ...args</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 创建一个继承构造函数.prototype的空对象</span></span><br><span class="line">    <span class="keyword">var</span> obj = <span class="built_in">Object</span>.create(Fn.prototype);</span><br><span class="line">    <span class="comment">// 2. 让空对象作为函数 A 的上下文，并调用 A</span></span><br><span class="line">    Fn.call(obj, ...args);</span><br><span class="line">    <span class="comment">// 3. 返回这个空对象</span></span><br><span class="line">    <span class="keyword">return</span> obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">_new</span>(<span class="params">Fn, ...args</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 创建一个继承构造函数.prototype的空对象</span></span><br><span class="line">    <span class="keyword">var</span> obj = <span class="built_in">Object</span>.create(Fn.prototype);</span><br><span class="line">    <span class="comment">// 2. 让空对象作为函数 A 的上下文，并调用 A</span></span><br><span class="line">    Fn.call(obj, ...args);</span><br><span class="line">    <span class="comment">// 3. 返回这个空对象</span></span><br><span class="line">    <span class="keyword">return</span> obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p><strong>这样就结束了吗？并没有</strong></p>
 <p>要模拟实现一个完整的 new 操作符，就还得将它的其他使用场景都考虑进去：</p>
@@ -994,7 +1237,7 @@
 <li>具有构造函数的内置对象 ==&gt; 当前函数可用来作为构造函数，那么返回内部创建的新对象</li>
 </ul>
 <p>所以，要完整模拟一个 new 的工作，还得完成上面两点，先来看看对返回值的处理，很简单：</p>
-<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> _new(<span class="params">Fn, ...args</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 创建一个继承构造函数.prototype的空对象</span></span><br><span class="line">    <span class="keyword">var</span> obj = <span class="built_in">Object</span>.create(Fn.prototype);</span><br><span class="line">    <span class="comment">// 2. 让空对象作为函数 A 的上下文，并调用 A，同时获取它的返回值</span></span><br><span class="line">    <span class="keyword">let</span> result = Fn.call(obj, ...args);</span><br><span class="line">    <span class="comment">// 3. 如果构造函数返回一个对象，那么直接 return 它，否则返回内部创建的新对象</span></span><br><span class="line">    <span class="keyword">return</span> result <span class="keyword">instanceof</span> <span class="built_in">Object</span> ? result : obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">_new</span>(<span class="params">Fn, ...args</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 1. 创建一个继承构造函数.prototype的空对象</span></span><br><span class="line">    <span class="keyword">var</span> obj = <span class="built_in">Object</span>.create(Fn.prototype);</span><br><span class="line">    <span class="comment">// 2. 让空对象作为函数 A 的上下文，并调用 A，同时获取它的返回值</span></span><br><span class="line">    <span class="keyword">let</span> result = Fn.call(obj, ...args);</span><br><span class="line">    <span class="comment">// 3. 如果构造函数返回一个对象，那么直接 return 它，否则返回内部创建的新对象</span></span><br><span class="line">    <span class="keyword">return</span> result <span class="keyword">instanceof</span> <span class="built_in">Object</span> ? result : obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>接下去就剩最后一个处理了：判断一个函数是否可以作为构造函数</p>
 <h4 id="如何判断函数是否可以作为构造函数"><a href="#如何判断函数是否可以作为构造函数" class="headerlink" title="如何判断函数是否可以作为构造函数"></a>如何判断函数是否可以作为构造函数</h4><p>我们通过 function 定义的普通函数都可以结合 new 来作为构造函数使用，那么到底如何判断一个函数能否作为构造函数呢？</p>
@@ -1060,7 +1303,7 @@
 <figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 代码来自文末的链接</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">is_constructor</span>(<span class="params">f</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 特殊处理，因为 Symbol 能通过 Reflect.construct 对参数的检测</span></span><br><span class="line">  <span class="keyword">if</span> (f === <span class="built_in">Symbol</span>) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="comment">// 第一个 target 参数传入无关的构造函数，第三个参数传入待检测函数  </span></span><br><span class="line">    <span class="built_in">Reflect</span>.construct(<span class="built_in">String</span>, [], f);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 当 f 可作为构造函数使用，Reflect.construct 就会正常执行，那么此时：</span></span><br><span class="line"><span class="comment">// Reflect.construct(String, [], f) 其实相当于执行了:</span></span><br><span class="line"><span class="comment">// var a = new String();</span></span><br><span class="line"><span class="comment">// a.__proto__ = f.prototype</span></span><br><span class="line"><span class="comment">// 既不会让被检测函数先行执行一遍，又可以达到利用引擎层面检测函数是否能作为构造函数的目的</span></span><br></pre></td></tr></table></figure>
 
 <h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>最终，模拟 new 的实现代码：</p>
-<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> _new(<span class="params">Fn, ...args</span>) </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">is_constructor</span>(<span class="params">f</span>) </span>&#123;</span><br><span class="line">      	<span class="keyword">if</span> (f === <span class="built_in">Symbol</span>) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      	<span class="keyword">try</span> &#123;</span><br><span class="line">        	<span class="built_in">Reflect</span>.construct(<span class="built_in">String</span>, [], f);</span><br><span class="line">      	&#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">        	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      	&#125;</span><br><span class="line">      	<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 1. 参数判断检测</span></span><br><span class="line">    <span class="keyword">let</span> isFunction = <span class="keyword">typeof</span> Fn === <span class="string">'function'</span>;</span><br><span class="line">    <span class="keyword">if</span> (!isFunction || !is_constructor(Fn)) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">TypeError</span>(<span class="string">`<span class="subst">$&#123;Fn.name || Fn&#125;</span> is not a constructor`</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 2. 创建一个继承构造函数.prototype的空对象</span></span><br><span class="line">    <span class="keyword">var</span> obj = <span class="built_in">Object</span>.create(Fn.prototype);</span><br><span class="line">    <span class="comment">// 3. 让空对象作为函数 A 的上下文，并调用 A，同时获取它的返回值</span></span><br><span class="line">    <span class="keyword">let</span> result = Fn.call(obj, ...args);</span><br><span class="line">    <span class="comment">// 4. 如果构造函数返回一个对象，那么直接 return 它，否则返回内部创建的新对象</span></span><br><span class="line">    <span class="keyword">return</span> result <span class="keyword">instanceof</span> <span class="built_in">Object</span> ? result : obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">_new</span>(<span class="params">Fn, ...args</span>) </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">is_constructor</span>(<span class="params">f</span>) </span>&#123;</span><br><span class="line">      	<span class="keyword">if</span> (f === <span class="built_in">Symbol</span>) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      	<span class="keyword">try</span> &#123;</span><br><span class="line">        	<span class="built_in">Reflect</span>.construct(<span class="built_in">String</span>, [], f);</span><br><span class="line">      	&#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">        	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      	&#125;</span><br><span class="line">      	<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 1. 参数判断检测</span></span><br><span class="line">    <span class="keyword">let</span> isFunction = <span class="keyword">typeof</span> Fn === <span class="string">'function'</span>;</span><br><span class="line">    <span class="keyword">if</span> (!isFunction || !is_constructor(Fn)) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">TypeError</span>(<span class="string">`<span class="subst">$&#123;Fn.name || Fn&#125;</span> is not a constructor`</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 2. 创建一个继承构造函数.prototype的空对象</span></span><br><span class="line">    <span class="keyword">var</span> obj = <span class="built_in">Object</span>.create(Fn.prototype);</span><br><span class="line">    <span class="comment">// 3. 让空对象作为函数 A 的上下文，并调用 A，同时获取它的返回值</span></span><br><span class="line">    <span class="keyword">let</span> result = Fn.call(obj, ...args);</span><br><span class="line">    <span class="comment">// 4. 如果构造函数返回一个对象，那么直接 return 它，否则返回内部创建的新对象</span></span><br><span class="line">    <span class="keyword">return</span> result <span class="keyword">instanceof</span> <span class="built_in">Object</span> ? result : obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>几个关键点理清就可以写出来了：</p>
 <ul>
@@ -3510,6 +3753,68 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
+    <title>前端16-JavaScript执行上下文EC和变量对象VO（进阶）</title>
+    <url>/2018/11/02/%E5%89%8D%E7%AB%AF/%E8%BF%9B%E9%98%B6/%E5%89%8D%E7%AB%AF%E5%85%A5%E9%97%A816-JavaScript%E8%BF%9B%E9%98%B6%E4%B9%8BEC%E5%92%8CVO/</url>
+    <content><![CDATA[<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本系列文章内容全部梳理自以下几个来源：</p>
+<ul>
+<li>《JavaScript权威指南》</li>
+<li><a href="https://developer.mozilla.org/zh-CN/docs/Web" target="_blank" rel="noopener">MDN web docs</a></li>
+<li><a href="https://github.com/smyhvae/Web" target="_blank" rel="noopener">Github:smyhvae/web</a></li>
+<li><a href="https://github.com/goddyZhao/Translation/tree/master/JavaScript" target="_blank" rel="noopener">Github:goddyZhao/Translation/JavaScript</a></li>
+</ul>
+<p>作为一个前端小白，入门跟着这几个来源学习，感谢作者的分享，在其基础上，通过自己的理解，梳理出的知识点，或许有遗漏，或许有些理解是错误的，如有发现，欢迎指点下。</p>
+<p>PS：梳理的内容以《JavaScript权威指南》这本书中的内容为主，因此接下去跟 JavaScript 语法相关的系列文章基本只介绍 ES5 标准规范的内容、ES6 等这系列梳理完再单独来讲讲。</p>
+<h1 id="正文-执行上下文EC和变量对象VO"><a href="#正文-执行上下文EC和变量对象VO" class="headerlink" title="正文-执行上下文EC和变量对象VO"></a>正文-执行上下文EC和变量对象VO</h1><p>EC：Execution Context，中文翻译执行上下文，也有翻译成执行环境的。</p>
+<p>VO：Variable object，中文翻译变量对象。</p>
+<p>这两个概念很重要，涉及到作用域以及作用域链的原理。</p>
+<h3 id="执行上下文-EC"><a href="#执行上下文-EC" class="headerlink" title="执行上下文 EC"></a>执行上下文 EC</h3><p>先说说Android中的上下文： </p>
+<ul>
+<li>Android</li>
+</ul>
+<p>Android 中也有上下文：Context，四大组件都是上下文，还有一个全局的 Application上下文。在 Android 中基本是以四大组件为界限，每创建一个四大组件，都会产生一个上下文，比如每个 Activity 都是独立的上下文。</p>
+<p>在 Android 中，上下文 Context 的作用大体上用于标识各种资源的所属，要加载一张图片、创建一个 View、弹一个 Dialog 等等，你需要告诉系统，这些是谁发出的指令，要挂载到哪个上下文，这些资源依赖于上下文的生命周期。</p>
+<p>所以才会出现，有时弹 Dialog 或者更新某个 View 时抛异常说 Context 已销毁，因为它需要挂载的上下文已经销毁了，那么就没有上下文来统筹管理这些资源了，自然会抛异常。</p>
+<ul>
+<li>JavaScript</li>
+</ul>
+<p>在 JavaScript 中，上下文是指执行上下文，通俗点理解，代码执行的上下文，所以也有翻译成执行环境，可以通俗的把它理解成一个对象，对象名 EC，表示代码的执行上下文。</p>
+<p>既然理解成一个对象，那么就有它创建的时机，在 JavaScript 中，每当要执行不同类型的代码时，就会创建一个执行上下文 EC。</p>
+<p>而代码的类型分三种：</p>
+<ul>
+<li>全局代码</li>
+<li>函数代码</li>
+<li>eval()执行的代码</li>
+</ul>
+<p>最后一种不讨论，全局代码就是指写在函数外的代码，在前端里，当 HTML 加载一个 js 文件时，全局代码就会被执行，那么在全局代码执行前就会先创建一个全局的执行上下文 EC，之后每调用一次函数，要执行函数内的代码时，会再创建一个函数执行上下文 EC。</p>
+<p>也就是说，不讨论 eval 的话，那么在 JavaScript 有两种执行上下文，一种是全局执行上下文，一种是函数执行上下文。</p>
+<p>而每次创建一个执行上下文时，都会将其放入一个栈结构，这个栈就称为执行上下文栈（ECS），也有翻译成执行环境栈。</p>
+<p>所以执行 js 文件代码期间，这个栈底一直是全局执行上下文，直到 js 文件代码执行结束。全局代码执行过程中，每调用一次函数，新创建一个函数执行上下文，就放入栈内。</p>
+<p>因此，栈顶就表示当前执行的代码，如果栈顶是全局执行上下文，表示正在执行全局代码；如果栈顶是函数执行上下文，表示正在执行函数内的代码。当函数执行结束时，这个函数执行上下文就从栈中移出。</p>
+<p>那么执行上下文（EC）有什么用呢？</p>
+<p>用途可多了，跟 Android 不一样，Android 里由于是各种资源的组合使用，但在 JavaScript 中更多的是嵌套函数的变量使用。所以，用途之一就是保存各个变量。</p>
+<p>将 EC 理解成一个对象的话，它有两个属性，一个是变量对象（VO），另一个是作用域链（Scope Chain）。对于全局执行上下文，当 HTML 加载一个 js 文件时，就会创建一个全局 EC，此时会创建它的两个属性：变量对象和作用域链。之后，每调用一次函数，创建这次函数执行的上下文，函数内部的变量的使用就依赖于这个函数执行上下文中的变量对象和作用域链。</p>
+<p>也就是说，内部函数之所以可以使用外部函数内的变量，之所以可以使用全局变量，都是依赖于当前这个内部函数的执行上下文。</p>
+<p>而且，变量之所以会提前声明也是因为执行上下文的因素。这些当讲解了执行上下文 EC 的创建过程就清楚了。</p>
+<h3 id="变量对象-VO"><a href="#变量对象-VO" class="headerlink" title="变量对象 VO"></a>变量对象 VO</h3><p>变量对象只是一个抽象的概念，可以通俗的理解成保存当前上下文所有变量的对象。</p>
+<p>在不同的执行上下文中，它有不同的具体表现。</p>
+<p>在全局执行上下文中，变量对象 VO 的具体表现就是全局对象，因为所有的全局变量其实都是全局对象的属性，而变量对象 VO 的作用是要保存当前上下文中的所有变量，所以此时的变量对象 VO 实际上是指向的全局对象。</p>
+<p>尤其在前端中，全局对象就是 window，所以全局执行上下文的变量对象 VO = window。</p>
+<p>在函数执行上下文中，因为变量对象 VO 是要保存当前上下文中所有的变量，一个函数内的变量包括：形参变量、局部变量、自身函数对象引用变量、arguments、this。</p>
+<p>针对函数执行上下文，为了保存这些变量，特意创建了一个对象，称它为活动对象 AO，函数内所需的变量就都保存在 AO 中，所以在函数执行上下文中，变量对象 VO 的具体表现也就是 AO。</p>
+<p>小结：变量对象 VO 是一个抽象概念，用于保存当前执行上下文中所有的变量。所以在全局执行上下文中，因为全局对象已经保存着当前上下文所有的变量，所以 VO 在这里的具体实现就是全局对象。在函数执行上下文中，由于要保存函数形参、局部变量、自身函数对象引用变量、arguments、this，所以新创建了一个叫活动对象 AO 来保存，此时 VO 的具体实现就是 AO。</p>
+<h3 id="作用域链"><a href="#作用域链" class="headerlink" title="作用域链"></a>作用域链</h3><p>每次函数调用时，都会创建一个函数执行上下文 EC，但其中的变量对象 VO 只保存着当前上下文中的变量而已，那么函数内如果需要使用到外部函数的变量，甚至是使用全局的变量时，此时就需要依赖于执行上下文的另一个属性：作用域链。</p>
+<p>作用域链本质上，其实是将有嵌套层次关系的执行上下文的 VO 拼接起来。</p>
+<p>所以大部分场景作用域链只有两个节点：当前函数执行上下文的 VO –&gt; 全局执行上下文的 VO。所以函数内才可以根据作用域链访问全局内的变量。</p>
+<p>当出现函数内再嵌套函数时，此时作用域链就会比较长：</p>
+<p>内层函数执行上下文的 VO –&gt; 外层函数执行上下文的 VO –&gt; 全局执行上下文 VO。</p>
+<p>至于作用域链是如何将有嵌套层次的执行上下文的 VO 拼接起来，需要借助函数对象的内部属性 [[Scope]]，[[]]表示执行引擎为对象创建的内部属性，我们访问不了，也操作不了。具体原理在作用域链一节中讲解。  </p>
+]]></content>
+      <categories>
+        <category>前端</category>
+        <category>进阶</category>
+      </categories>
+  </entry>
+  <entry>
     <title>前端15-JavaScript原型链（进阶）</title>
     <url>/2018/11/02/%E5%89%8D%E7%AB%AF/%E8%BF%9B%E9%98%B6/%E5%89%8D%E7%AB%AF%E5%85%A5%E9%97%A815-JavaScript%E8%BF%9B%E9%98%B6%E4%B9%8B%E5%8E%9F%E5%9E%8B%E9%93%BE/</url>
     <content><![CDATA[<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本系列文章内容全部梳理自以下几个来源：</p>
@@ -3617,68 +3922,6 @@ b.y; <span class="comment">//1</span>
 <p>而且，建议看这张图时，每次都将某条原型链跟踪到底，再去看另一条，这过程不要过多关注在分支上，否则很容易混乱。</p>
 <p>对于新手，如果能够对这张稍作备注，而不是直接将这张图放出来，我觉得会更好，如下：</p>
 <p><img src="https://upload-images.jianshu.io/upload_images/1924341-ed3572ea96c33df5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt>  </p>
-]]></content>
-      <categories>
-        <category>前端</category>
-        <category>进阶</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>前端16-JavaScript执行上下文EC和变量对象VO（进阶）</title>
-    <url>/2018/11/02/%E5%89%8D%E7%AB%AF/%E8%BF%9B%E9%98%B6/%E5%89%8D%E7%AB%AF%E5%85%A5%E9%97%A816-JavaScript%E8%BF%9B%E9%98%B6%E4%B9%8BEC%E5%92%8CVO/</url>
-    <content><![CDATA[<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本系列文章内容全部梳理自以下几个来源：</p>
-<ul>
-<li>《JavaScript权威指南》</li>
-<li><a href="https://developer.mozilla.org/zh-CN/docs/Web" target="_blank" rel="noopener">MDN web docs</a></li>
-<li><a href="https://github.com/smyhvae/Web" target="_blank" rel="noopener">Github:smyhvae/web</a></li>
-<li><a href="https://github.com/goddyZhao/Translation/tree/master/JavaScript" target="_blank" rel="noopener">Github:goddyZhao/Translation/JavaScript</a></li>
-</ul>
-<p>作为一个前端小白，入门跟着这几个来源学习，感谢作者的分享，在其基础上，通过自己的理解，梳理出的知识点，或许有遗漏，或许有些理解是错误的，如有发现，欢迎指点下。</p>
-<p>PS：梳理的内容以《JavaScript权威指南》这本书中的内容为主，因此接下去跟 JavaScript 语法相关的系列文章基本只介绍 ES5 标准规范的内容、ES6 等这系列梳理完再单独来讲讲。</p>
-<h1 id="正文-执行上下文EC和变量对象VO"><a href="#正文-执行上下文EC和变量对象VO" class="headerlink" title="正文-执行上下文EC和变量对象VO"></a>正文-执行上下文EC和变量对象VO</h1><p>EC：Execution Context，中文翻译执行上下文，也有翻译成执行环境的。</p>
-<p>VO：Variable object，中文翻译变量对象。</p>
-<p>这两个概念很重要，涉及到作用域以及作用域链的原理。</p>
-<h3 id="执行上下文-EC"><a href="#执行上下文-EC" class="headerlink" title="执行上下文 EC"></a>执行上下文 EC</h3><p>先说说Android中的上下文： </p>
-<ul>
-<li>Android</li>
-</ul>
-<p>Android 中也有上下文：Context，四大组件都是上下文，还有一个全局的 Application上下文。在 Android 中基本是以四大组件为界限，每创建一个四大组件，都会产生一个上下文，比如每个 Activity 都是独立的上下文。</p>
-<p>在 Android 中，上下文 Context 的作用大体上用于标识各种资源的所属，要加载一张图片、创建一个 View、弹一个 Dialog 等等，你需要告诉系统，这些是谁发出的指令，要挂载到哪个上下文，这些资源依赖于上下文的生命周期。</p>
-<p>所以才会出现，有时弹 Dialog 或者更新某个 View 时抛异常说 Context 已销毁，因为它需要挂载的上下文已经销毁了，那么就没有上下文来统筹管理这些资源了，自然会抛异常。</p>
-<ul>
-<li>JavaScript</li>
-</ul>
-<p>在 JavaScript 中，上下文是指执行上下文，通俗点理解，代码执行的上下文，所以也有翻译成执行环境，可以通俗的把它理解成一个对象，对象名 EC，表示代码的执行上下文。</p>
-<p>既然理解成一个对象，那么就有它创建的时机，在 JavaScript 中，每当要执行不同类型的代码时，就会创建一个执行上下文 EC。</p>
-<p>而代码的类型分三种：</p>
-<ul>
-<li>全局代码</li>
-<li>函数代码</li>
-<li>eval()执行的代码</li>
-</ul>
-<p>最后一种不讨论，全局代码就是指写在函数外的代码，在前端里，当 HTML 加载一个 js 文件时，全局代码就会被执行，那么在全局代码执行前就会先创建一个全局的执行上下文 EC，之后每调用一次函数，要执行函数内的代码时，会再创建一个函数执行上下文 EC。</p>
-<p>也就是说，不讨论 eval 的话，那么在 JavaScript 有两种执行上下文，一种是全局执行上下文，一种是函数执行上下文。</p>
-<p>而每次创建一个执行上下文时，都会将其放入一个栈结构，这个栈就称为执行上下文栈（ECS），也有翻译成执行环境栈。</p>
-<p>所以执行 js 文件代码期间，这个栈底一直是全局执行上下文，直到 js 文件代码执行结束。全局代码执行过程中，每调用一次函数，新创建一个函数执行上下文，就放入栈内。</p>
-<p>因此，栈顶就表示当前执行的代码，如果栈顶是全局执行上下文，表示正在执行全局代码；如果栈顶是函数执行上下文，表示正在执行函数内的代码。当函数执行结束时，这个函数执行上下文就从栈中移出。</p>
-<p>那么执行上下文（EC）有什么用呢？</p>
-<p>用途可多了，跟 Android 不一样，Android 里由于是各种资源的组合使用，但在 JavaScript 中更多的是嵌套函数的变量使用。所以，用途之一就是保存各个变量。</p>
-<p>将 EC 理解成一个对象的话，它有两个属性，一个是变量对象（VO），另一个是作用域链（Scope Chain）。对于全局执行上下文，当 HTML 加载一个 js 文件时，就会创建一个全局 EC，此时会创建它的两个属性：变量对象和作用域链。之后，每调用一次函数，创建这次函数执行的上下文，函数内部的变量的使用就依赖于这个函数执行上下文中的变量对象和作用域链。</p>
-<p>也就是说，内部函数之所以可以使用外部函数内的变量，之所以可以使用全局变量，都是依赖于当前这个内部函数的执行上下文。</p>
-<p>而且，变量之所以会提前声明也是因为执行上下文的因素。这些当讲解了执行上下文 EC 的创建过程就清楚了。</p>
-<h3 id="变量对象-VO"><a href="#变量对象-VO" class="headerlink" title="变量对象 VO"></a>变量对象 VO</h3><p>变量对象只是一个抽象的概念，可以通俗的理解成保存当前上下文所有变量的对象。</p>
-<p>在不同的执行上下文中，它有不同的具体表现。</p>
-<p>在全局执行上下文中，变量对象 VO 的具体表现就是全局对象，因为所有的全局变量其实都是全局对象的属性，而变量对象 VO 的作用是要保存当前上下文中的所有变量，所以此时的变量对象 VO 实际上是指向的全局对象。</p>
-<p>尤其在前端中，全局对象就是 window，所以全局执行上下文的变量对象 VO = window。</p>
-<p>在函数执行上下文中，因为变量对象 VO 是要保存当前上下文中所有的变量，一个函数内的变量包括：形参变量、局部变量、自身函数对象引用变量、arguments、this。</p>
-<p>针对函数执行上下文，为了保存这些变量，特意创建了一个对象，称它为活动对象 AO，函数内所需的变量就都保存在 AO 中，所以在函数执行上下文中，变量对象 VO 的具体表现也就是 AO。</p>
-<p>小结：变量对象 VO 是一个抽象概念，用于保存当前执行上下文中所有的变量。所以在全局执行上下文中，因为全局对象已经保存着当前上下文所有的变量，所以 VO 在这里的具体实现就是全局对象。在函数执行上下文中，由于要保存函数形参、局部变量、自身函数对象引用变量、arguments、this，所以新创建了一个叫活动对象 AO 来保存，此时 VO 的具体实现就是 AO。</p>
-<h3 id="作用域链"><a href="#作用域链" class="headerlink" title="作用域链"></a>作用域链</h3><p>每次函数调用时，都会创建一个函数执行上下文 EC，但其中的变量对象 VO 只保存着当前上下文中的变量而已，那么函数内如果需要使用到外部函数的变量，甚至是使用全局的变量时，此时就需要依赖于执行上下文的另一个属性：作用域链。</p>
-<p>作用域链本质上，其实是将有嵌套层次关系的执行上下文的 VO 拼接起来。</p>
-<p>所以大部分场景作用域链只有两个节点：当前函数执行上下文的 VO –&gt; 全局执行上下文的 VO。所以函数内才可以根据作用域链访问全局内的变量。</p>
-<p>当出现函数内再嵌套函数时，此时作用域链就会比较长：</p>
-<p>内层函数执行上下文的 VO –&gt; 外层函数执行上下文的 VO –&gt; 全局执行上下文 VO。</p>
-<p>至于作用域链是如何将有嵌套层次的执行上下文的 VO 拼接起来，需要借助函数对象的内部属性 [[Scope]]，[[]]表示执行引擎为对象创建的内部属性，我们访问不了，也操作不了。具体原理在作用域链一节中讲解。  </p>
 ]]></content>
       <categories>
         <category>前端</category>
@@ -8314,61 +8557,6 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
-    <title>谈谈 final finally finalize 区别</title>
-    <url>/2018/07/09/Java/%E8%B0%88%E8%B0%88-final-finally-finalize-%E5%8C%BA%E5%88%AB/</url>
-    <content><![CDATA[<blockquote>
-<p><strong>本篇文章已授权微信公众号 dasu_Android（大苏）独家发布</strong>  </p>
-</blockquote>
-<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本篇所涉及的提问，正文的知识点，全都来自于<strong>杨晓峰的《Java核心技术36讲》</strong>，当然，我并不会全文照搬过来，毕竟这是付费的课程，应该会涉及到侵权之类的问题。</p>
-<p>所以，本篇正文中的知识点，是我从课程中将知识点消耗后，用个人的理解、观念所表达出来的文字，参考了原文，但由于是个人理解，因此不保证观点完全正确，也不代表错误的观点是课程所表达的。如果这样仍旧还是侵权了，请告知，会将发表的文章删掉。</p>
-<p>当然，如果你对此课程有兴趣，建议你自己也购买一下，新用户立减 30，微信扫码订阅时还可以返现 6 元，相当于 32 元购买 36 讲的文章，每篇文章还不到 1 元，蛮划算的了。</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/1924341-6ca755c2bd0a6122.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="QQ图片20180703142535.png">  </p>
-<h1 id="提问"><a href="#提问" class="headerlink" title="提问"></a>提问</h1><ul>
-<li>谈谈 final、finally、finalize 有什么不同？</li>
-<li>为什么局部内部类和匿名内部类只能访问局部final变量？ </li>
-</ul>
-<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>emmm，说实话，感觉这一讲好像没什么实质性内容。而且，就像评论区里有人提到的，搞不懂为啥总有人喜欢拿这三者来比较，它们有个毛的关系？仅仅就是因为单词相近就拿来比较？</p>
-<p>但课程小结还是要做下，梳理梳理下相关面试知识点也好，那也不说废话了，结合原文和评论区，以及一些扩展，尽量多总结一些知识点吧。</p>
-<h4 id="final"><a href="#final" class="headerlink" title="final"></a>final</h4><p>final 是 java 中的关键字，可用于修饰类，方法，变量。</p>
-<p>当修饰类时，表明这个类不可被继承。Java 中有一些核心类都被 final 修饰了，比如 String，System。当考虑到安全性原因时，可以将该类设计成 final。</p>
-<p>当修饰方法时，表明该方法不可被重写。一般是某些流程控制不希望被修改掉时，可以将这些方法声明成 final，比如 View 中的 <code>measure()</code>，<code>requestFocus()</code>，<code>findViewById()</code>。</p>
-<p>当修饰变量时，表明该变量为常量，不允许被重新赋值，因此声明成 final 的变量都需要显示的进行赋值，否则编译会报错。 </p>
-<h4 id="finally"><a href="#finally" class="headerlink" title="finally"></a>finally</h4><p>finally 是确保 try-catch 方式最后执行的一种机制，通常的用法都是在 finally 里进行一些资源的关闭，回收。比如 IO 流的关闭等等。</p>
-<p>建议最好不要利用 finally 来控制流程，也不要在 finally 中有返回值，否则很容易影响正常流程，导致流程结构特别杂乱。</p>
-<p>另外，有些特殊情况下，finally 中的代码并不会被执行到，比如：  </p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//1.try-catch异常退出</span></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    System.exit(<span class="number">1</span>)</span><br><span class="line">&#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">    ....</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">	<span class="comment">//不会执行到这里</span></span><br><span class="line">    Log.d(<span class="string">"finally"</span>, <span class="string">"finally"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//2.无限循环</span></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">while</span>(<span class="keyword">true</span>) &#123;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="comment">//不会执行到这里</span></span><br><span class="line">    Log.d(<span class="string">"finally"</span>, <span class="string">"finally"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//3. 线程被杀死</span></span><br><span class="line"><span class="comment">//当执行 try-catch 时，线程被杀死了，那么 finally 里的代码也无法被执行到</span></span><br></pre></td></tr></table></figure>
-
-<p>总之，finally 通常情况下都会最后被执行到，所以最好不要在这里有 return 之类的语句来影响正常流程。但在某些特殊的场景下，finally 并不会被执行到，了解一下即可。</p>
-<h4 id="finalize"><a href="#finalize" class="headerlink" title="finalize"></a>finalize</h4><p>这个是 Object 中的一个方法，方法注释说了很多，大概就是讲这个方法是由垃圾收集器即将要回收该对象时会调用该方法，用户可在这里做一些最后的资源释放工作。</p>
-<p>以上是概念定义，但说实话，没用过该方法，而且作者也说了，不推荐使用 finalize 机制来做资源回收，并且在 JDK 9，这个方法已经被标志为 deprecated 废弃的方法了。</p>
-<p>作者有提到说，因为我们无法保证 finalize 什么时候执行，执行是否符合预期，使用不当还会影响性能，导致程序死锁、挂起等问题。</p>
-<p>那么，有其他方案来替代 finalize 处理回收资源的工作么？有，Cleaner 机制，这个我没接触过，作者提了这个替代方案。另外，作者也说了，回收资源最好就是资源用完后就随手清除，或者结合 try-catch-finally 机制回收。不管是 finalize 或者 Cleaner 机制，最好都只将它看成是最后一道防线，一旦将主要的回收工作依赖于这两个机制的话，很容易出现各种问题。</p>
-<h3 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h3><p><strong>为什么局部内部类和匿名内部类只能访问局部final变量？</strong>  </p>
-<p>先来看这么段代码：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//参数 msg 必须声明为 final 类型</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">notifyChange</span><span class="params">(<span class="keyword">final</span> String msg)</span> </span>&#123;</span><br><span class="line">    mTextView.post(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            mTextView.setText(msg);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>在这里，<code>post()</code> 方法的参数是一个匿名内部类，在内部类中如果要使用外部 <code>notifyChange()</code> 方法的参数 msg，那么必须将 msg 类型声明成 final，否则编译器会保错。</p>
-<p>这种场景非常常见的吧，不管是类似上述的 Ui 场景，还有网络访问时也经常需要通过回调通知上层，此时也就经常出现这种场景了。</p>
-<p>那么，<strong>有考虑过，为什么内部类只能访问局部 final 变量么？</strong>  </p>
-<p>如果懂得反编译 class 文件的，那么应该就很清楚了。我也不懂，理解这点是通过阅读其他大神分析的文章，以下是我的理解：</p>
-<p>首先，变量都是有生命周期的，成员变量的生命周期就跟随着对象的整个生命周期，而局部变量的生命周期则是非常有限。</p>
-<p>比如方法内部的局部变量，它的生命周期就是在这个方法执行结束就终止。同样，方法的参数也是局部变量，它是生命周期也同样是到该方法执行结束。</p>
-<p>另外，内部类的执行时机有时是会在外部方法执行结束之后。就拿上述例子来说，<code>post()</code> 中 Runnable 的执行时机，肯定是在外部 <code>notifyChange()</code> 方法执行完之后的。</p>
-<p>那么，问题来了。内部类 Runnable 的执行需要使用到外部方法 <code>notifyChange()</code> 的参数，但当它执行的时候，这个参数的生命周期早已结束，已经被回收掉了。既然已经被回收了，内部类又是怎么使用外部的这个局部变量呢？</p>
-<p>有大神反编译了 class 文件后，给出了结论，<strong>原来内部类使用外部的局部变量时，是通过 copy 一份过来</strong>。也就是说，其实内部类此时使用的是自己内部定义的局部变量了，只是这个变量的值是复制外部那个局部变量的而已。</p>
-<p>这也就解释了，为什么外部的局部变量明明已经被回收了，内部类仍旧可以使用，因为内部类此时使用的并不是外部类的局部变量引用了。</p>
-<p>但到这里，<strong>新的问题就来了</strong>：既然内部类使用的局部变量本质上跟外部的局部变量是相互独立的两个变量，那如果在内部类中修改了这个局部变量的值会出现什么情况？是吧，数据的不一致性。</p>
-<p>基于此，java 编译器就直接限定死，内部类使用外部的局部变量时，必须将其限制为 final 类型，确保该变量不允许进行更改。</p>
-<p>这样一来，其实也就顺便理解了，为什么成员变量可以直接在内部类中使用，因为成员变量的声明周期很长，不存在局部变量的问题。</p>
-<p>以上内容，是在大神的文章里被醍醐灌顶了，感谢大神，原文链接放出来：  </p>
-<p><a href="https://www.cnblogs.com/dolphin0520/p/3811445.html" target="_blank" rel="noopener">Java内部类详解</a></p>
-<hr>
-]]></content>
-      <categories>
-        <category>Java</category>
-      </categories>
-  </entry>
-  <entry>
     <title>毕业一年啦</title>
     <url>/2018/07/09/%E7%9E%8E%E6%89%AF%E6%89%AF/%E6%AF%95%E4%B8%9A%E4%B8%80%E5%B9%B4%E5%95%A6/</url>
     <content><![CDATA[<blockquote>
@@ -8429,6 +8617,61 @@ b.y; <span class="comment">//1</span>
 ]]></content>
       <categories>
         <category>谈人生</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>谈谈 final finally finalize 区别</title>
+    <url>/2018/07/09/Java/%E8%B0%88%E8%B0%88-final-finally-finalize-%E5%8C%BA%E5%88%AB/</url>
+    <content><![CDATA[<blockquote>
+<p><strong>本篇文章已授权微信公众号 dasu_Android（大苏）独家发布</strong>  </p>
+</blockquote>
+<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本篇所涉及的提问，正文的知识点，全都来自于<strong>杨晓峰的《Java核心技术36讲》</strong>，当然，我并不会全文照搬过来，毕竟这是付费的课程，应该会涉及到侵权之类的问题。</p>
+<p>所以，本篇正文中的知识点，是我从课程中将知识点消耗后，用个人的理解、观念所表达出来的文字，参考了原文，但由于是个人理解，因此不保证观点完全正确，也不代表错误的观点是课程所表达的。如果这样仍旧还是侵权了，请告知，会将发表的文章删掉。</p>
+<p>当然，如果你对此课程有兴趣，建议你自己也购买一下，新用户立减 30，微信扫码订阅时还可以返现 6 元，相当于 32 元购买 36 讲的文章，每篇文章还不到 1 元，蛮划算的了。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-6ca755c2bd0a6122.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="QQ图片20180703142535.png">  </p>
+<h1 id="提问"><a href="#提问" class="headerlink" title="提问"></a>提问</h1><ul>
+<li>谈谈 final、finally、finalize 有什么不同？</li>
+<li>为什么局部内部类和匿名内部类只能访问局部final变量？ </li>
+</ul>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>emmm，说实话，感觉这一讲好像没什么实质性内容。而且，就像评论区里有人提到的，搞不懂为啥总有人喜欢拿这三者来比较，它们有个毛的关系？仅仅就是因为单词相近就拿来比较？</p>
+<p>但课程小结还是要做下，梳理梳理下相关面试知识点也好，那也不说废话了，结合原文和评论区，以及一些扩展，尽量多总结一些知识点吧。</p>
+<h4 id="final"><a href="#final" class="headerlink" title="final"></a>final</h4><p>final 是 java 中的关键字，可用于修饰类，方法，变量。</p>
+<p>当修饰类时，表明这个类不可被继承。Java 中有一些核心类都被 final 修饰了，比如 String，System。当考虑到安全性原因时，可以将该类设计成 final。</p>
+<p>当修饰方法时，表明该方法不可被重写。一般是某些流程控制不希望被修改掉时，可以将这些方法声明成 final，比如 View 中的 <code>measure()</code>，<code>requestFocus()</code>，<code>findViewById()</code>。</p>
+<p>当修饰变量时，表明该变量为常量，不允许被重新赋值，因此声明成 final 的变量都需要显示的进行赋值，否则编译会报错。 </p>
+<h4 id="finally"><a href="#finally" class="headerlink" title="finally"></a>finally</h4><p>finally 是确保 try-catch 方式最后执行的一种机制，通常的用法都是在 finally 里进行一些资源的关闭，回收。比如 IO 流的关闭等等。</p>
+<p>建议最好不要利用 finally 来控制流程，也不要在 finally 中有返回值，否则很容易影响正常流程，导致流程结构特别杂乱。</p>
+<p>另外，有些特殊情况下，finally 中的代码并不会被执行到，比如：  </p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//1.try-catch异常退出</span></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    System.exit(<span class="number">1</span>)</span><br><span class="line">&#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">    ....</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">	<span class="comment">//不会执行到这里</span></span><br><span class="line">    Log.d(<span class="string">"finally"</span>, <span class="string">"finally"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//2.无限循环</span></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">while</span>(<span class="keyword">true</span>) &#123;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="comment">//不会执行到这里</span></span><br><span class="line">    Log.d(<span class="string">"finally"</span>, <span class="string">"finally"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//3. 线程被杀死</span></span><br><span class="line"><span class="comment">//当执行 try-catch 时，线程被杀死了，那么 finally 里的代码也无法被执行到</span></span><br></pre></td></tr></table></figure>
+
+<p>总之，finally 通常情况下都会最后被执行到，所以最好不要在这里有 return 之类的语句来影响正常流程。但在某些特殊的场景下，finally 并不会被执行到，了解一下即可。</p>
+<h4 id="finalize"><a href="#finalize" class="headerlink" title="finalize"></a>finalize</h4><p>这个是 Object 中的一个方法，方法注释说了很多，大概就是讲这个方法是由垃圾收集器即将要回收该对象时会调用该方法，用户可在这里做一些最后的资源释放工作。</p>
+<p>以上是概念定义，但说实话，没用过该方法，而且作者也说了，不推荐使用 finalize 机制来做资源回收，并且在 JDK 9，这个方法已经被标志为 deprecated 废弃的方法了。</p>
+<p>作者有提到说，因为我们无法保证 finalize 什么时候执行，执行是否符合预期，使用不当还会影响性能，导致程序死锁、挂起等问题。</p>
+<p>那么，有其他方案来替代 finalize 处理回收资源的工作么？有，Cleaner 机制，这个我没接触过，作者提了这个替代方案。另外，作者也说了，回收资源最好就是资源用完后就随手清除，或者结合 try-catch-finally 机制回收。不管是 finalize 或者 Cleaner 机制，最好都只将它看成是最后一道防线，一旦将主要的回收工作依赖于这两个机制的话，很容易出现各种问题。</p>
+<h3 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h3><p><strong>为什么局部内部类和匿名内部类只能访问局部final变量？</strong>  </p>
+<p>先来看这么段代码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//参数 msg 必须声明为 final 类型</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">notifyChange</span><span class="params">(<span class="keyword">final</span> String msg)</span> </span>&#123;</span><br><span class="line">    mTextView.post(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            mTextView.setText(msg);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在这里，<code>post()</code> 方法的参数是一个匿名内部类，在内部类中如果要使用外部 <code>notifyChange()</code> 方法的参数 msg，那么必须将 msg 类型声明成 final，否则编译器会保错。</p>
+<p>这种场景非常常见的吧，不管是类似上述的 Ui 场景，还有网络访问时也经常需要通过回调通知上层，此时也就经常出现这种场景了。</p>
+<p>那么，<strong>有考虑过，为什么内部类只能访问局部 final 变量么？</strong>  </p>
+<p>如果懂得反编译 class 文件的，那么应该就很清楚了。我也不懂，理解这点是通过阅读其他大神分析的文章，以下是我的理解：</p>
+<p>首先，变量都是有生命周期的，成员变量的生命周期就跟随着对象的整个生命周期，而局部变量的生命周期则是非常有限。</p>
+<p>比如方法内部的局部变量，它的生命周期就是在这个方法执行结束就终止。同样，方法的参数也是局部变量，它是生命周期也同样是到该方法执行结束。</p>
+<p>另外，内部类的执行时机有时是会在外部方法执行结束之后。就拿上述例子来说，<code>post()</code> 中 Runnable 的执行时机，肯定是在外部 <code>notifyChange()</code> 方法执行完之后的。</p>
+<p>那么，问题来了。内部类 Runnable 的执行需要使用到外部方法 <code>notifyChange()</code> 的参数，但当它执行的时候，这个参数的生命周期早已结束，已经被回收掉了。既然已经被回收了，内部类又是怎么使用外部的这个局部变量呢？</p>
+<p>有大神反编译了 class 文件后，给出了结论，<strong>原来内部类使用外部的局部变量时，是通过 copy 一份过来</strong>。也就是说，其实内部类此时使用的是自己内部定义的局部变量了，只是这个变量的值是复制外部那个局部变量的而已。</p>
+<p>这也就解释了，为什么外部的局部变量明明已经被回收了，内部类仍旧可以使用，因为内部类此时使用的并不是外部类的局部变量引用了。</p>
+<p>但到这里，<strong>新的问题就来了</strong>：既然内部类使用的局部变量本质上跟外部的局部变量是相互独立的两个变量，那如果在内部类中修改了这个局部变量的值会出现什么情况？是吧，数据的不一致性。</p>
+<p>基于此，java 编译器就直接限定死，内部类使用外部的局部变量时，必须将其限制为 final 类型，确保该变量不允许进行更改。</p>
+<p>这样一来，其实也就顺便理解了，为什么成员变量可以直接在内部类中使用，因为成员变量的声明周期很长，不存在局部变量的问题。</p>
+<p>以上内容，是在大神的文章里被醍醐灌顶了，感谢大神，原文链接放出来：  </p>
+<p><a href="https://www.cnblogs.com/dolphin0520/p/3811445.html" target="_blank" rel="noopener">Java内部类详解</a></p>
+<hr>
+]]></content>
+      <categories>
+        <category>Java</category>
       </categories>
   </entry>
   <entry>
@@ -9324,15 +9567,6 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
-    <title>Android技能树</title>
-    <url>/2018/05/27/%E6%8A%80%E8%83%BD%E6%A0%91/Android%E6%8A%80%E8%83%BD%E6%A0%91/</url>
-    <content><![CDATA[<p><img src="https://upload-images.jianshu.io/upload_images/1924341-d23f4ef9f50304cc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Android技能树.png"></p>
-]]></content>
-      <categories>
-        <category>技能树</category>
-      </categories>
-  </entry>
-  <entry>
     <title>Gradle 系列博客梳理</title>
     <url>/2018/05/27/Gradle/Gradle-%E7%B3%BB%E5%88%97%E5%8D%9A%E5%AE%A2%E6%A2%B3%E7%90%86/</url>
     <content><![CDATA[<blockquote>
@@ -9404,6 +9638,15 @@ b.y; <span class="comment">//1</span>
 ]]></content>
       <categories>
         <category>Gradle</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>Android技能树</title>
+    <url>/2018/05/27/%E6%8A%80%E8%83%BD%E6%A0%91/Android%E6%8A%80%E8%83%BD%E6%A0%91/</url>
+    <content><![CDATA[<p><img src="https://upload-images.jianshu.io/upload_images/1924341-d23f4ef9f50304cc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Android技能树.png"></p>
+]]></content>
+      <categories>
+        <category>技能树</category>
       </categories>
   </entry>
   <entry>
@@ -10362,6 +10605,30 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
+    <title>如何用Android Studio查看build.gradle源码</title>
+    <url>/2018/03/31/Gradle/%E5%A6%82%E4%BD%95%E7%94%A8Android-Studio%E6%9F%A5%E7%9C%8Bbuild-gradle%E6%BA%90%E7%A0%81/</url>
+    <content><![CDATA[<blockquote>
+<p><strong>本篇文章已授权微信公众号 dasu_Android（大苏）独家发布</strong>  </p>
+</blockquote>
+<p><strong>2019-7-30 更新：</strong><br>感谢评论区指出，gradle源码下载地址：<a href="http://services.gradle.org/distributions/" target="_blank" rel="noopener">http://services.gradle.org/distributions/</a></p>
+<hr>
+<p>上一篇博客里讲过 build.gradle 里的每一行代码基本都是在调用一个方法，既然是这样，我们就可以用 android studio(下面简称as) 去查看它源码的方法注释说明，这样就可以理解每个方法是做什么的了，就算是在大神的 build.gradle 遇见一些没看懂的代码，也可以点进去看方法介绍来理解。就像我们在查看 SDK 里的各种方法一样。    </p>
+<p>但是有个问题，应该也有小伙伴跟我一样吧，每次在大神的 build.gradle 看到一堆不懂的代码时，按住 <code>Ctrl</code> 键后，鼠标移到代码上时有个跳转的手势时总是很开心，总是心想原来可以看源码啊，那就点进去看看介绍，看这个是干嘛的吧。可是每次一点进去，打开的却是 class 代码文件，顶多就只有方法名，一点注释都没有，而且方法参数命名还混淆过，也猜不出来是干嘛的。又不懂怎么去官方文档里查找，只能去网上用关键字查找，找出来的又跟自己碰到的问题不一样，越找越气干脆不找了，放一边去，以后再说。  </p>
+<p>是吧，如果可以直接通过 as 看源码的注释该多好。好了，废话到这，下面开始正文。    </p>
+<hr>
+<h1 id="系列索引"><a href="#系列索引" class="headerlink" title="系列索引"></a>系列索引</h1><p>build.gradle系列一：<a href="http://www.jianshu.com/p/a3805905a5c7" target="_blank" rel="noopener">看不懂的build.gradle代码</a><br>build.gradle系列二：<a href="http://www.jianshu.com/p/501726c979b1" target="_blank" rel="noopener">学点Groovy来理解build.gradle代码</a><br>build.gradle系列三：<a href>如何用Adnroid Studio查看build.gradle源码</a><br>…  </p>
+<hr>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>我们来举个例子，就像系列一的博客里介绍的 build.gradle 里有这样一段代码：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-d46a0d67f548a7aa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="build.gradle"><br>咦！这代码是第一次在 build.gradle 里看见过，是什么意思呢？不怕，我有绝招：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-5d5db8368916117f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Ctrl + 左键"><br>Android Studio大法—看源码，还有什么是不能通过看源码注释解决的么<br><img src="http://upload-images.jianshu.io/upload_images/1924341-4b6cd41069f7fa21.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.class"><br>是跳到源码了，可是为什么没有方法的注释说明呢，这方法是什么鬼谁知道啊。再仔细看看 as 的提示，原来打开的是个 class 文件啊。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-c55417ff2530580f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="as提示"><br>as 的提示那里应该会有个下载和选择源码位置的按钮的啊，搞不懂为什么不出现。  </p>
+<p>另外，我们知道，as 一般会默认先打开 xxx-sources.jar 也就是 xxx 的 java 文件源码，如果没有源码文件，才会打开 xxx.jar 的 class 代码。我们看一下，打开的是什么文件。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-9692f8b22bf2eda3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle-2.3.0.jar"><br>没错，as 打开的是 gradle-2.3.0.jar，说明 as 没有找到 gradle-2.3.0-sources.jar 源码文件，我们看一下到底是不是这样<br><img src="http://upload-images.jianshu.io/upload_images/1924341-53c68923912bf799.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="as标题栏"><br>as 标题栏会显示你当前打开的文件的具体位置，好了，知道了 gradle-2.3.0.jar 在电脑里的位置了，我们到那个目录下看看<br><img src="http://upload-images.jianshu.io/upload_images/1924341-f9da8ad2908b540e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle-2.3.0.jar本地路径"><br>只有一个 gradle-2.3.0.jar 文件和一个 pom 文件，正常的话应该还要有个 xxx-sources.jar 文件才对，就像下面这样<br><img src="http://upload-images.jianshu.io/upload_images/1924341-f7700195cd081102.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="三个文件"><br>因为这里没有 gradle-2.3.0-sources.jar 文件，所以 as 没办法打开带有方法注释的源码文件了。既然知道问题，那么就好解决了，as 的提示条也没有下载的按钮，那我们就自己去下载好了<br><img src="http://upload-images.jianshu.io/upload_images/1924341-ac54a39b3846d1d4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="seach.maven.org"><br>打开 maven 网站，在这里可以下载 gradle 插件。在搜索框中输入 <code>com.android.tools.build</code>，为什么输入这个，你打开 project 下的 build.gradle 文件看看就知道了<br><img src="http://upload-images.jianshu.io/upload_images/1924341-4796f2199f748565.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="com.android.tools.build"><br><img src="http://upload-images.jianshu.io/upload_images/1924341-374001fbc95ace5c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="search result"><br>这些就是 gradle 插件，我们在根目录下的 build.gradle 配置的 gradle 版本其实就是来这里下载的，应该是吧。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-b9b6f2c35d82ede4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="下载的文件"><br>下载后得到的就是这些文件了，接下去就是找到相应文件的位置，复制一份过去<br><img src="http://upload-images.jianshu.io/upload_images/1924341-139f310de6d6dfc5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle的本地路径"><br>打开相应的插件文件夹，选择相应的版本，最后将下载的 xxx-sources.jar 复制一份进去，最后的样子如下<br><img src="http://upload-images.jianshu.io/upload_images/1924341-9dbac486701a27fa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="三个文件"><br>好了，大功告成，我们再打开 as，记得 ReBuild 一下，然后再试试查看 build.gradle 源码会是什么样子<br><img src="http://upload-images.jianshu.io/upload_images/1924341-327042d04c7edab6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.java"><br><img src="http://upload-images.jianshu.io/upload_images/1924341-5723f731293b39a7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="LintOptions.java"><br>翻译一下英文大概就是说， lintOptions.abortOnError = false 是设置即使 lint 检查时发现错误也不停止构建程序的运行。  </p>
+<p>这种方法比去官方的 api 文档里查阅方便多了吧。再来看看几个效果。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-19e3e3f8353694db.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.java"><br>这里就可以看到源码里介绍 Plugin 的值都有哪些，分别对应哪个类，该去哪个类看它的作用是什么，干什么的。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-3024eb6a6819fd42.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="AndroidConfig.java"><br>借助 as，我们甚至可以很容易的查到 <code>android{...}</code> 这个括号里能使用的方法都有哪些，如果要看各自的作用是干什么的，再继续点进去查看注释就行了。是不是发现，我们在 build.gradle 里的 <code>android{...}</code> 使用过的标签名原来都在这里的啊。  </p>
+<p>以后就算是再碰到大神的 build.gradle 文件里各种没看见过的标签名，不用再担心看不懂了。不懂就看源码注释嘛，so easy!  </p>
+<p>当然，大神的 build.gradle 文件里还是会出现一些 groovy 代码或者是 task 之类的，这些就不是 gradle 源码里能够查到的了，需要稍微了解一下 groovy 和 gradle 语言的基础，有兴趣的可以继续阅读下我写的这个系列里的相关博客，当然能力不够，如果你希望更好的学习，网上资料也很多。   </p>
+]]></content>
+      <categories>
+        <category>Gradle</category>
+      </categories>
+  </entry>
+  <entry>
     <title>分享两个提高效率的AndroidStudio小技巧</title>
     <url>/2018/03/31/%E6%95%99%E7%A8%8B%E7%B1%BB/%E5%88%86%E4%BA%AB%E4%B8%A4%E4%B8%AA%E6%8F%90%E9%AB%98%E6%95%88%E7%8E%87%E7%9A%84AndroidStudio%E5%B0%8F%E6%8A%80%E5%B7%A7/</url>
     <content><![CDATA[<blockquote>
@@ -10454,30 +10721,6 @@ b.y; <span class="comment">//1</span>
 ]]></content>
       <categories>
         <category>教程类</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>如何用Android Studio查看build.gradle源码</title>
-    <url>/2018/03/31/Gradle/%E5%A6%82%E4%BD%95%E7%94%A8Android-Studio%E6%9F%A5%E7%9C%8Bbuild-gradle%E6%BA%90%E7%A0%81/</url>
-    <content><![CDATA[<blockquote>
-<p><strong>本篇文章已授权微信公众号 dasu_Android（大苏）独家发布</strong>  </p>
-</blockquote>
-<p><strong>2019-7-30 更新：</strong><br>感谢评论区指出，gradle源码下载地址：<a href="http://services.gradle.org/distributions/" target="_blank" rel="noopener">http://services.gradle.org/distributions/</a></p>
-<hr>
-<p>上一篇博客里讲过 build.gradle 里的每一行代码基本都是在调用一个方法，既然是这样，我们就可以用 android studio(下面简称as) 去查看它源码的方法注释说明，这样就可以理解每个方法是做什么的了，就算是在大神的 build.gradle 遇见一些没看懂的代码，也可以点进去看方法介绍来理解。就像我们在查看 SDK 里的各种方法一样。    </p>
-<p>但是有个问题，应该也有小伙伴跟我一样吧，每次在大神的 build.gradle 看到一堆不懂的代码时，按住 <code>Ctrl</code> 键后，鼠标移到代码上时有个跳转的手势时总是很开心，总是心想原来可以看源码啊，那就点进去看看介绍，看这个是干嘛的吧。可是每次一点进去，打开的却是 class 代码文件，顶多就只有方法名，一点注释都没有，而且方法参数命名还混淆过，也猜不出来是干嘛的。又不懂怎么去官方文档里查找，只能去网上用关键字查找，找出来的又跟自己碰到的问题不一样，越找越气干脆不找了，放一边去，以后再说。  </p>
-<p>是吧，如果可以直接通过 as 看源码的注释该多好。好了，废话到这，下面开始正文。    </p>
-<hr>
-<h1 id="系列索引"><a href="#系列索引" class="headerlink" title="系列索引"></a>系列索引</h1><p>build.gradle系列一：<a href="http://www.jianshu.com/p/a3805905a5c7" target="_blank" rel="noopener">看不懂的build.gradle代码</a><br>build.gradle系列二：<a href="http://www.jianshu.com/p/501726c979b1" target="_blank" rel="noopener">学点Groovy来理解build.gradle代码</a><br>build.gradle系列三：<a href>如何用Adnroid Studio查看build.gradle源码</a><br>…  </p>
-<hr>
-<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>我们来举个例子，就像系列一的博客里介绍的 build.gradle 里有这样一段代码：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-d46a0d67f548a7aa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="build.gradle"><br>咦！这代码是第一次在 build.gradle 里看见过，是什么意思呢？不怕，我有绝招：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-5d5db8368916117f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Ctrl + 左键"><br>Android Studio大法—看源码，还有什么是不能通过看源码注释解决的么<br><img src="http://upload-images.jianshu.io/upload_images/1924341-4b6cd41069f7fa21.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.class"><br>是跳到源码了，可是为什么没有方法的注释说明呢，这方法是什么鬼谁知道啊。再仔细看看 as 的提示，原来打开的是个 class 文件啊。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-c55417ff2530580f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="as提示"><br>as 的提示那里应该会有个下载和选择源码位置的按钮的啊，搞不懂为什么不出现。  </p>
-<p>另外，我们知道，as 一般会默认先打开 xxx-sources.jar 也就是 xxx 的 java 文件源码，如果没有源码文件，才会打开 xxx.jar 的 class 代码。我们看一下，打开的是什么文件。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-9692f8b22bf2eda3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle-2.3.0.jar"><br>没错，as 打开的是 gradle-2.3.0.jar，说明 as 没有找到 gradle-2.3.0-sources.jar 源码文件，我们看一下到底是不是这样<br><img src="http://upload-images.jianshu.io/upload_images/1924341-53c68923912bf799.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="as标题栏"><br>as 标题栏会显示你当前打开的文件的具体位置，好了，知道了 gradle-2.3.0.jar 在电脑里的位置了，我们到那个目录下看看<br><img src="http://upload-images.jianshu.io/upload_images/1924341-f9da8ad2908b540e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle-2.3.0.jar本地路径"><br>只有一个 gradle-2.3.0.jar 文件和一个 pom 文件，正常的话应该还要有个 xxx-sources.jar 文件才对，就像下面这样<br><img src="http://upload-images.jianshu.io/upload_images/1924341-f7700195cd081102.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="三个文件"><br>因为这里没有 gradle-2.3.0-sources.jar 文件，所以 as 没办法打开带有方法注释的源码文件了。既然知道问题，那么就好解决了，as 的提示条也没有下载的按钮，那我们就自己去下载好了<br><img src="http://upload-images.jianshu.io/upload_images/1924341-ac54a39b3846d1d4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="seach.maven.org"><br>打开 maven 网站，在这里可以下载 gradle 插件。在搜索框中输入 <code>com.android.tools.build</code>，为什么输入这个，你打开 project 下的 build.gradle 文件看看就知道了<br><img src="http://upload-images.jianshu.io/upload_images/1924341-4796f2199f748565.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="com.android.tools.build"><br><img src="http://upload-images.jianshu.io/upload_images/1924341-374001fbc95ace5c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="search result"><br>这些就是 gradle 插件，我们在根目录下的 build.gradle 配置的 gradle 版本其实就是来这里下载的，应该是吧。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-b9b6f2c35d82ede4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="下载的文件"><br>下载后得到的就是这些文件了，接下去就是找到相应文件的位置，复制一份过去<br><img src="http://upload-images.jianshu.io/upload_images/1924341-139f310de6d6dfc5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle的本地路径"><br>打开相应的插件文件夹，选择相应的版本，最后将下载的 xxx-sources.jar 复制一份进去，最后的样子如下<br><img src="http://upload-images.jianshu.io/upload_images/1924341-9dbac486701a27fa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="三个文件"><br>好了，大功告成，我们再打开 as，记得 ReBuild 一下，然后再试试查看 build.gradle 源码会是什么样子<br><img src="http://upload-images.jianshu.io/upload_images/1924341-327042d04c7edab6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.java"><br><img src="http://upload-images.jianshu.io/upload_images/1924341-5723f731293b39a7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="LintOptions.java"><br>翻译一下英文大概就是说， lintOptions.abortOnError = false 是设置即使 lint 检查时发现错误也不停止构建程序的运行。  </p>
-<p>这种方法比去官方的 api 文档里查阅方便多了吧。再来看看几个效果。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-19e3e3f8353694db.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.java"><br>这里就可以看到源码里介绍 Plugin 的值都有哪些，分别对应哪个类，该去哪个类看它的作用是什么，干什么的。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-3024eb6a6819fd42.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="AndroidConfig.java"><br>借助 as，我们甚至可以很容易的查到 <code>android{...}</code> 这个括号里能使用的方法都有哪些，如果要看各自的作用是干什么的，再继续点进去查看注释就行了。是不是发现，我们在 build.gradle 里的 <code>android{...}</code> 使用过的标签名原来都在这里的啊。  </p>
-<p>以后就算是再碰到大神的 build.gradle 文件里各种没看见过的标签名，不用再担心看不懂了。不懂就看源码注释嘛，so easy!  </p>
-<p>当然，大神的 build.gradle 文件里还是会出现一些 groovy 代码或者是 task 之类的，这些就不是 gradle 源码里能够查到的了，需要稍微了解一下 groovy 和 gradle 语言的基础，有兴趣的可以继续阅读下我写的这个系列里的相关博客，当然能力不够，如果你希望更好的学习，网上资料也很多。   </p>
-]]></content>
-      <categories>
-        <category>Gradle</category>
       </categories>
   </entry>
   <entry>
