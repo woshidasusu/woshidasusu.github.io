@@ -147,6 +147,15 @@
 <p><img src="https://upload-images.jianshu.io/upload_images/1924341-87272db9526b5085.jpg" alt></p>
 <p>这里之所以还会梯状式上升是因为，当前内存还足够，还没有触发垃圾回收机制工作，你可以手动触发 GC，或者运行一段时间等到 GC 工作后查看一下，内存是否下降到初始状态，这表明，这些内存都可以被回收的</p>
 <p>或者拉份内存快照看看，拉快照时，会自动先强制进行 GC 再拉取快照：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-a365e42e55788823.jpg" alt></p>
+<p>是吧，即使周期性调用 replaceThing 函数，函数内的局部变量 o 即使存储着上个全局变量 t 的值，但毕竟是局部变量，函数执行完毕，如果没有外部持有它的引用，也就可以被回收掉了，所以最终内存就只剩下全局变量 t 存储的对象了</p>
+<p>当然，如果 unused 函数不能去掉，那么就只能是使用完 o 变量后需要记得手动释放掉：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> unused = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (o) &#123;</span><br><span class="line">      <span class="built_in">console</span>.log(<span class="string">"hi"</span>)</span><br><span class="line">      o = <span class="literal">null</span>;</span><br><span class="line">    &#125;        </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>但这种做法，不治本，因为在 unused 函数执行前，这堆内存还是一直存在着的，还是一直泄漏无法被回收的，与最开始的区别就在于，至少在 unused 函数执行后，就可以释放掉而已</p>
+<p>其实，这里应该考虑的代码有没有问题，为什么需要局部变量存储，为什么需要 unused 函数的存在，这个函数的目的又是什么，如果只是为了在将来某个时刻用来判断上个全局变量 t 是否可用，那么为什么不直接再使用个全局变量来存储，为什么选择了局部变量？</p>
+<p>所以，当写代码时，当涉及到闭包的场景时，应该要特别注意，如果使用不当，很可能会造成一些严重的内存泄漏场景</p>
+<p>应该铭记，闭包会让函数持有外部的词法环境，导致外部词法环境的某些变量无法被回收，还有共享一个闭包这种特性，只有清楚这两点，才能在涉及到闭包使用场景时，正确考虑该如何实现，避免造成严重的内存泄漏</p>
 ]]></content>
       <categories>
         <category>面试题</category>
@@ -657,9 +666,9 @@ success undefined
 <p>但如果这个过程是交由脚本来自动执行的，难不成每次脚本执行时，还需要你在旁边等着来输密码吗？</p>
 <p>所以，就可以借助 expect 来实现这个交互过程</p>
 <p>可以先用 <code>whereis</code> 命令查找看看，是否支持 expect 命令，否则需要自行安装</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">whereis expect</span><br><span class="line"><span class="meta">#</span> expect: /usr/bin/expect /usr/share/man/man1/expect.1.gz</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">whereis expect</span><br><span class="line"><span class="meta">#</span><span class="bash"> expect: /usr/bin/expect /usr/share/man/man1/expect.1.gz</span></span><br></pre></td></tr></table></figure>
 
-<h4 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span> Centos 系统的安装，其余的自行查阅</span><br><span class="line"><span class="meta">#</span>先下载 tcl，expect 依赖 tcl</span><br><span class="line">yum -y install tcl</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span>再下载 tcl</span><br><span class="line">yum -y install expect</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span>安装完执行 expect，查看是否安装成功，失败原因请自行查阅</span><br><span class="line">[root@VM_0_15_centos test]# expect</span><br><span class="line">expect1.1&gt;</span><br></pre></td></tr></table></figure>
+<h4 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> Centos 系统的安装，其余的自行查阅</span></span><br><span class="line"><span class="meta">#</span><span class="bash">先下载 tcl，expect 依赖 tcl</span></span><br><span class="line">yum -y install tcl</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">再下载 tcl</span></span><br><span class="line">yum -y install expect</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">安装完执行 expect，查看是否安装成功，失败原因请自行查阅</span></span><br><span class="line">[root@VM_0_15_centos test]# expect</span><br><span class="line">expect1.1&gt;</span><br></pre></td></tr></table></figure>
 
 <h4 id="基本命令"><a href="#基本命令" class="headerlink" title="基本命令"></a>基本命令</h4><ul>
 <li><p><strong>spawn</strong>：用于启动一个子进程来执行后续命令</p>
@@ -684,9 +693,9 @@ success undefined
 <p>expect 命令后面可跟随字符串或对象，如：</p>
 </li>
 </ul>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">expect "password"</span><br><span class="line">send "xxx"</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 或者</span><br><span class="line"></span><br><span class="line">expect &#123;</span><br><span class="line">  "yes" &#123;</span><br><span class="line">  	send "yes\n"</span><br><span class="line">  	exp_continue</span><br><span class="line">  &#125;</span><br><span class="line">  "password" &#123;</span><br><span class="line">  	send "xxx"</span><br><span class="line">  	expect "xxx"</span><br><span class="line">  	send "xxx"</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">expect "password"</span><br><span class="line">send "xxx"</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 或者</span></span><br><span class="line"></span><br><span class="line">expect &#123;</span><br><span class="line">  "yes" &#123;</span><br><span class="line">  	send "yes\n"</span><br><span class="line">  	exp_continue</span><br><span class="line">  &#125;</span><br><span class="line">  "password" &#123;</span><br><span class="line">  	send "xxx"</span><br><span class="line">  	expect "xxx"</span><br><span class="line">  	send "xxx"</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<h4 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span>!/usr/bin/expect</span><br><span class="line"><span class="meta">#</span> 使用 expect 结合 ssh 登录远程服务器</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 将传给脚本的参数赋值给变量</span><br><span class="line">set sshPort [lindex $argv 0]</span><br><span class="line">set user [lindex $argv 1]</span><br><span class="line">set ip [lindex $argv 2]</span><br><span class="line">set password [lindex $argv 3]</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> spawn 命令新启子进程，执行后面的命令</span><br><span class="line">spawn ssh -p $sshPort $user@$ip</span><br><span class="line">expect "password"</span><br><span class="line">send "$password\n"</span><br><span class="line">expect eof</span><br><span class="line">exit 0</span><br></pre></td></tr></table></figure>
+<h4 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/usr/bin/expect</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 使用 expect 结合 ssh 登录远程服务器</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 将传给脚本的参数赋值给变量</span></span><br><span class="line">set sshPort [lindex $argv 0]</span><br><span class="line">set user [lindex $argv 1]</span><br><span class="line">set ip [lindex $argv 2]</span><br><span class="line">set password [lindex $argv 3]</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> spawn 命令新启子进程，执行后面的命令</span></span><br><span class="line">spawn ssh -p $sshPort $user@$ip</span><br><span class="line">expect "password"</span><br><span class="line">send "$password\n"</span><br><span class="line">expect eof</span><br><span class="line">exit 0</span><br></pre></td></tr></table></figure>
 
 <p>在当前 shell 里执行:</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">/usr/bin/expect login.sh "22" "root" "127.0.0.1" "xxxxx"</span><br></pre></td></tr></table></figure>
@@ -711,7 +720,7 @@ success undefined
 <p>重启 ssh 服务，因为可能需要改配置文件，如修改默认 22 端口</p>
 <h3 id="scp"><a href="#scp" class="headerlink" title="scp"></a>scp</h3><p>scp 命令用于 Linux 之间复制文件和目录，也就是直接跟远程服务器进行文件或目录的拷贝</p>
 <p>跟 cp 很类似，区别在于一个仅在本机间拷贝，一个是多机子间的拷贝</p>
-<h4 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">usage: scp [-12346BCpqrv] [-c cipher] [-F ssh_config] [-i identity_file]</span><br><span class="line">           [-l limit] [-o ssh_option] [-P port] [-S program]</span><br><span class="line">           [[user@]host1:]file1 ... [[user@]host2:]file2</span><br><span class="line">           </span><br><span class="line"><span class="meta">#</span> 简易写法</span><br><span class="line"></span><br><span class="line">scp [可选参数] file_source file_target</span><br></pre></td></tr></table></figure>
+<h4 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">usage: scp [-12346BCpqrv] [-c cipher] [-F ssh_config] [-i identity_file]</span><br><span class="line">           [-l limit] [-o ssh_option] [-P port] [-S program]</span><br><span class="line">           [[user@]host1:]file1 ... [[user@]host2:]file2</span><br><span class="line">           </span><br><span class="line"><span class="meta">#</span><span class="bash"> 简易写法</span></span><br><span class="line"></span><br><span class="line">scp [可选参数] file_source file_target</span><br></pre></td></tr></table></figure>
 
 <p>比较重要的也就是最后的 [[user@]host]file，可以指定连接远程的用户，ip，不指定时，将在命令执行时，手动输入</p>
 <h4 id="常用参数说明"><a href="#常用参数说明" class="headerlink" title="常用参数说明"></a>常用参数说明</h4><ul>
@@ -727,19 +736,19 @@ success undefined
 <h4 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h4><ul>
 <li>从本地复制到远程</li>
 </ul>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span> 将本地多个文件复制到远程 target 目录下，多个文件间以空格隔开</span><br><span class="line">scp -P 5432 -p xxx.jar xxx1.jar root@ip:target</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 将本地文件 1.mp3 拷贝到远程服务器上的 001.mp3 文件里</span><br><span class="line">scp /home/space/music/1.mp3 root@www.runoob.com:/home/root/others/music/001.mp3</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 将本地多个文件复制到远程 target 目录下，多个文件间以空格隔开</span></span><br><span class="line">scp -P 5432 -p xxx.jar xxx1.jar root@ip:target</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 将本地文件 1.mp3 拷贝到远程服务器上的 001.mp3 文件里</span></span><br><span class="line">scp /home/space/music/1.mp3 root@www.runoob.com:/home/root/others/music/001.mp3</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>从远程拷贝到本地</li>
 </ul>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span> 将远程目录拷贝到当前目录下</span><br><span class="line">scp -r root@192.16.1.108:/var/www/blog .</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 将远程目录拷贝到当前目录下</span></span><br><span class="line">scp -r root@192.16.1.108:/var/www/blog .</span><br></pre></td></tr></table></figure>
 
 <p>当没有指定用户名时，命令输入完毕需要手动输入用户名和密码，指定了用户名后，需要输入密码</p>
 <p>密码的输入可以借助 expect 来实现自动交互</p>
 <p>当然，也可以通过 -B，以及其他参数来指定 ssh 连接的配置文件，实现无密码方式拷贝，相关信息，自行查阅</p>
 <h3 id="sz-rz"><a href="#sz-rz" class="headerlink" title="sz, rz"></a>sz, rz</h3><p>如果是借助 XShell 工具连接上远程服务器后，那么可借助 sz, rz 命令来下载和上传文件</p>
 <p>但如果远程服务器没有这两个命令的话，需要先进行安装：</p>
-<h4 id="安装-1"><a href="#安装-1" class="headerlink" title="安装"></a>安装</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span> CentOs 安装</span><br><span class="line">yum -y install lrzsz</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> Ubuntu 安装</span><br><span class="line">sudo apt-get install lrzsz</span><br></pre></td></tr></table></figure>
+<h4 id="安装-1"><a href="#安装-1" class="headerlink" title="安装"></a>安装</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> CentOs 安装</span></span><br><span class="line">yum -y install lrzsz</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> Ubuntu 安装</span></span><br><span class="line">sudo apt-get install lrzsz</span><br></pre></td></tr></table></figure>
 
 <h4 id="使用-2"><a href="#使用-2" class="headerlink" title="使用"></a>使用</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sz xxx.file</span><br><span class="line">rz</span><br></pre></td></tr></table></figure>
 
@@ -748,7 +757,7 @@ success undefined
 <p>sz,rz 通常是本机上装了个 XShell 工具，然后用于两机之间的文件通信</p>
 <p>但有时候，是需要在远程多个服务器之间进行文件通信，这时候就用不了 XShell，也就用不了 sz, rz 命令了</p>
 <p>这种场景，可以使用 scp 命令，也可以使用 sftp 命令</p>
-<h4 id="使用-3"><a href="#使用-3" class="headerlink" title="使用"></a>使用</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span> 先连接,端口跟 ssh 一致</span><br><span class="line">sftp -P 22 root@ip</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> help 命令,可以查看 sftp 支持的命令，比如 ls,lls,cd,lcd...</span><br><span class="line">help</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 所有命令前加 l，表示针对本机的操作，不加 l 表示针对远程服务器的操作</span><br><span class="line"><span class="meta">#</span> 本机进入 tmp 目录</span><br><span class="line">lcd /tmp/</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 下载远程文件到当前目录下</span><br><span class="line">get /usr/local/xxx.file</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 上传当前目录下的文件到远程指定目录下</span><br><span class="line">put xxx.file /usr/local/</span><br></pre></td></tr></table></figure>
+<h4 id="使用-3"><a href="#使用-3" class="headerlink" title="使用"></a>使用</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 先连接,端口跟 ssh 一致</span></span><br><span class="line">sftp -P 22 root@ip</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> <span class="built_in">help</span> 命令,可以查看 sftp 支持的命令，比如 ls,lls,<span class="built_in">cd</span>,lcd...</span></span><br><span class="line">help</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 所有命令前加 l，表示针对本机的操作，不加 l 表示针对远程服务器的操作</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 本机进入 tmp 目录</span></span><br><span class="line">lcd /tmp/</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 下载远程文件到当前目录下</span></span><br><span class="line">get /usr/local/xxx.file</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 上传当前目录下的文件到远程指定目录下</span></span><br><span class="line">put xxx.file /usr/local/</span><br></pre></td></tr></table></figure>
 
 <p>有一点需要注意，如果本机是 window 系统，那么在 window 系统和 linux 系统之间是有 sftp 传输文件时，由于文件系统的分隔符不一样，在操作 lcd 命令时，可能会有问题，此时，可以直接输入 lcd，然后会弹窗文件选择框，选中路径后按确定即可，比较方便</p>
 <h3 id="tail"><a href="#tail" class="headerlink" title="tail"></a>tail</h3><p>通常用来实时查看日志文件：</p>
@@ -759,13 +768,13 @@ success undefined
 <p>jenkins 构建时，会自动去拉取代码，然后执行 package.sh 打包脚本，生成 jar 包</p>
 <p>再然后，执行 deploy.sh 脚本，将 jar 发送到另一台项目运行的服务器上，先停止旧项目的执行，然后移除旧 jar 包，执行新 jar 包，启动后端项目</p>
 <h4 id="package-sh"><a href="#package-sh" class="headerlink" title="package.sh"></a>package.sh</h4><p>打包脚本</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span>!/bin/sh</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 打包的渠道由外部传入</span><br><span class="line">environment=$1</span><br><span class="line">basedir=`pwd`</span><br><span class="line"><span class="meta">#</span> 先将旧的打包文件删除， -d 表示判断 target 是否是目录</span><br><span class="line">if [ -d "target" ]; then</span><br><span class="line">	rm -rf $basedir/target</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line">mkdir target</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 定义 mvn 打包的函数</span><br><span class="line">package()</span><br><span class="line">&#123;	</span><br><span class="line"><span class="meta">	#</span> mvn packgae打包</span><br><span class="line">	(mvn clean packge -P $environment)</span><br><span class="line"><span class="meta">	#</span> 如果 mvn 命令执行异常，将会返回非0，终止脚本，异常退出</span><br><span class="line">	if [ $? -ne 0 ]; then</span><br><span class="line">		exit 1</span><br><span class="line">	fi</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 进入项目根目录，执行打包工作</span><br><span class="line">cd $basedir/app</span><br><span class="line">package</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">exit 0</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/sh</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 打包的渠道由外部传入</span></span><br><span class="line">environment=$1</span><br><span class="line">basedir=`pwd`</span><br><span class="line"><span class="meta">#</span><span class="bash"> 先将旧的打包文件删除， -d 表示判断 target 是否是目录</span></span><br><span class="line">if [ -d "target" ]; then</span><br><span class="line">	rm -rf $basedir/target</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line">mkdir target</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 定义 mvn 打包的函数</span></span><br><span class="line">package()</span><br><span class="line">&#123;	</span><br><span class="line"><span class="meta">	#</span><span class="bash"> mvn packgae打包</span></span><br><span class="line">	(mvn clean packge -P $environment)</span><br><span class="line"><span class="meta">	#</span><span class="bash"> 如果 mvn 命令执行异常，将会返回非0，终止脚本，异常退出</span></span><br><span class="line">	if [ $? -ne 0 ]; then</span><br><span class="line">		exit 1</span><br><span class="line">	fi</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 进入项目根目录，执行打包工作</span></span><br><span class="line">cd $basedir/app</span><br><span class="line">package</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">exit 0</span><br></pre></td></tr></table></figure>
 
 <h4 id="deploy-sh"><a href="#deploy-sh" class="headerlink" title="deploy.sh"></a>deploy.sh</h4><p>部署脚本</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span>!/usr/bin/expect</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 将传给脚本的参数赋值给变量</span><br><span class="line">set ip [lindex $argv 0]</span><br><span class="line">set port [lindex $argv 1]</span><br><span class="line">set user [lindex $argv 2]</span><br><span class="line">set password [lindex $argv 3]</span><br><span class="line">set targetDir [lindex $argv 4]</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 先另起进程，用 scp 命令，将打包好的 jar 包发送到项目运行的服务器上</span><br><span class="line">spawn scp -P $port target/xxx.jar $user@$ip:$targetDir</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 用 expect 解决 scp 需要输入命令的交互，实现自动化</span><br><span class="line">expect &#123;</span><br><span class="line">	"yes/no" &#123;</span><br><span class="line">		send "yes\n"</span><br><span class="line">		exp_continue</span><br><span class="line">	&#125;</span><br><span class="line">	"password" &#123;</span><br><span class="line">		send "$password\n"</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#</span> jar 发送完毕就退出子进程，返回主进程，继续处理往下命令</span><br><span class="line">expect eof</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 另起进程执行 ssh 连接项目运行的服务器</span><br><span class="line">spawn ssh -p $port -o "StrictHostKeyChecking no" $user@$ip</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 用 expect 解决 ssh 需要输入命令的交互，实现自动化</span><br><span class="line">expect &#123;</span><br><span class="line">	"password" &#123;</span><br><span class="line">		send "$password\n"</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 登录成功，则发送需要在远程服务器上执行的命令</span><br><span class="line">expect "login"</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 包括，停止旧项目，执行新项目</span><br><span class="line">send "</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 进入 jar 包存放目录</span><br><span class="line">cd xxx</span><br><span class="line"><span class="meta">#</span> 停止运行</span><br><span class="line">kill -9 `ps aux|grep 'xxx.jar'|grep -v grep|awk '&#123;print $2&#125;'`  </span><br><span class="line"><span class="meta">#</span> 备份</span><br><span class="line">cp xxx.jar xxx.jar.bak</span><br><span class="line"><span class="meta">#</span> 移新包</span><br><span class="line">mv $targetDir/xxx.jar xxx</span><br><span class="line"><span class="meta">#</span> 启动项目</span><br><span class="line">su - www -c "nohup java -jar xxx.jar &amp;"</span><br><span class="line"></span><br><span class="line">sleep 10s</span><br><span class="line">exit 0</span><br><span class="line">"</span><br><span class="line">expect eof</span><br><span class="line">exit 0</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/usr/bin/expect</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 将传给脚本的参数赋值给变量</span></span><br><span class="line">set ip [lindex $argv 0]</span><br><span class="line">set port [lindex $argv 1]</span><br><span class="line">set user [lindex $argv 2]</span><br><span class="line">set password [lindex $argv 3]</span><br><span class="line">set targetDir [lindex $argv 4]</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 先另起进程，用 scp 命令，将打包好的 jar 包发送到项目运行的服务器上</span></span><br><span class="line">spawn scp -P $port target/xxx.jar $user@$ip:$targetDir</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 用 expect 解决 scp 需要输入命令的交互，实现自动化</span></span><br><span class="line">expect &#123;</span><br><span class="line">	"yes/no" &#123;</span><br><span class="line">		send "yes\n"</span><br><span class="line">		exp_continue</span><br><span class="line">	&#125;</span><br><span class="line">	"password" &#123;</span><br><span class="line">		send "$password\n"</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#</span><span class="bash"> jar 发送完毕就退出子进程，返回主进程，继续处理往下命令</span></span><br><span class="line">expect eof</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 另起进程执行 ssh 连接项目运行的服务器</span></span><br><span class="line">spawn ssh -p $port -o "StrictHostKeyChecking no" $user@$ip</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 用 expect 解决 ssh 需要输入命令的交互，实现自动化</span></span><br><span class="line">expect &#123;</span><br><span class="line">	"password" &#123;</span><br><span class="line">		send "$password\n"</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 登录成功，则发送需要在远程服务器上执行的命令</span></span><br><span class="line">expect "login"</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 包括，停止旧项目，执行新项目</span></span><br><span class="line">send "</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 进入 jar 包存放目录</span></span><br><span class="line">cd xxx</span><br><span class="line"><span class="meta">#</span><span class="bash"> 停止运行</span></span><br><span class="line">kill -9 `ps aux|grep 'xxx.jar'|grep -v grep|awk '&#123;print $2&#125;'`  </span><br><span class="line"><span class="meta">#</span><span class="bash"> 备份</span></span><br><span class="line">cp xxx.jar xxx.jar.bak</span><br><span class="line"><span class="meta">#</span><span class="bash"> 移新包</span></span><br><span class="line">mv $targetDir/xxx.jar xxx</span><br><span class="line"><span class="meta">#</span><span class="bash"> 启动项目</span></span><br><span class="line">su - www -c "nohup java -jar xxx.jar &amp;"</span><br><span class="line"></span><br><span class="line">sleep 10s</span><br><span class="line">exit 0</span><br><span class="line">"</span><br><span class="line">expect eof</span><br><span class="line">exit 0</span><br></pre></td></tr></table></figure>
 
 <h4 id="jenkins-构建-shell"><a href="#jenkins-构建-shell" class="headerlink" title="jenkins - 构建 shell"></a>jenkins - 构建 shell</h4><p>jenkins 配置里的构建 shell 命令</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span>!/bin/sh</span><br><span class="line">source /etc/profile</span><br><span class="line"><span class="meta">#</span> 先执行打包脚本，指定打包的渠道</span><br><span class="line">sh jenkins/package.sh online</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 如果打包失败，终止</span><br><span class="line">if [ $? -ne 0 ]; then</span><br><span class="line">   exit 1</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 执行部署脚本，指定项目运行的服务器的连接端口号，ip，登录用户，密码，移包路径</span><br><span class="line">/usr/bin/expect jenkins/deploy.sh "127.0.0.1" "22" "root" "xxxx" "/temp/"</span><br></pre></td></tr></table></figure>]]></content>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/sh</span></span><br><span class="line">source /etc/profile</span><br><span class="line"><span class="meta">#</span><span class="bash"> 先执行打包脚本，指定打包的渠道</span></span><br><span class="line">sh jenkins/package.sh online</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 如果打包失败，终止</span></span><br><span class="line">if [ $? -ne 0 ]; then</span><br><span class="line">   exit 1</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 执行部署脚本，指定项目运行的服务器的连接端口号，ip，登录用户，密码，移包路径</span></span><br><span class="line">/usr/bin/expect jenkins/deploy.sh "127.0.0.1" "22" "root" "xxxx" "/temp/"</span><br></pre></td></tr></table></figure>]]></content>
       <categories>
         <category>shell脚本</category>
       </categories>
@@ -7917,6 +7926,189 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
+    <title>封装个-Android-的高斯模糊组件</title>
+    <url>/2018/10/14/Android%E7%BB%84%E4%BB%B6/%E5%B0%81%E8%A3%85%E4%B8%AA-Android-%E7%9A%84%E9%AB%98%E6%96%AF%E6%A8%A1%E7%B3%8A%E7%BB%84%E4%BB%B6/</url>
+    <content><![CDATA[<blockquote>
+<p><strong>本篇文章已授权微信公众号 hongyangAndroid （鸿洋）独家发布</strong>  </p>
+</blockquote>
+<p>最近基于 <a href="https://github.com/kikoso/android-stackblur" target="_blank" rel="noopener">Android StackBlur</a> 开源库，根据自己碰到的需求场景，封装了个高斯模糊组件，顺便记录一下。  </p>
+<p><strong>为什么要自己重复造轮子？</strong>  </p>
+<p>其实也谈不上重头自己造轮子，毕竟是基于大神的开源库，做了二次封装。封装的目的在于，方便外部使用。毕竟有着自己的编程习惯，大神的开源库也只是提供了基础的功能，现实编程中，产品的需求是各种各样的。</p>
+<p>导致每次使用时，都蛮麻烦的，需要额外自己处理蛮多东西。而一旦新的项目又需要接入高斯模糊了，又得重新写一些代码，复制粘贴也麻烦，经常由于各种业务耦合报错。</p>
+<p>既然如此，干脆花时间抽个基础、公用的高斯模糊组件，需要时直接依赖即可。</p>
+<h1 id="基础理论"><a href="#基础理论" class="headerlink" title="基础理论"></a>基础理论</h1><h3 id="高斯模糊"><a href="#高斯模糊" class="headerlink" title="高斯模糊"></a>高斯模糊</h3><p>高斯模糊的原理和算法就不介绍了，我也不懂，没深入，这里就大概讲讲我的粗坯理解：</p>
+<p>我们知道，一张图片，本质上其实是一个个像素点构成的，虽然经过计算机处理后，呈现在我们眼前的是具体的图像。但在计算机中，其实就是一堆数组数据。</p>
+<p>数组中每个单位就是一个个像素点，那么每个像素点是存储什么内容呢，其实也就是 RGB 或者 ARGB 之类格式的数据。</p>
+<p>高斯模糊，大体上就是对这张图片中的每个像素点都重新进行计算，每个像素点的新值等于以它为中心，半径为 r 的周围区域内所有像素点各自按照不同权重相加之和的平均值。</p>
+<p>可以粗坯的理解为，<strong>本来这个像素点是要呈现它自己本身的内容，但经过高斯模糊计算后，掺杂进它周围区域像素点的内容了。就像加水稀释类似的道理，既然都掺杂进周围的内容了，那么它呈现的内容相比最初，肯定就不那么清晰了</strong>。</p>
+<p>而如果掺杂的半径越大，混合进的内容也就越多，那么它本身的内容就越淡了，是不是这个理。所以，这就是为什么每个开源的高斯模糊组件库，使用时基本都需要我们传入一个 radius 半径的参数。而且，半径越大，越模糊。</p>
+<p>这么一粗坯的解释，就理解多了，是吧。</p>
+<p>为什么需要大概掌握这个理论基础呢？</p>
+<p>想想，高斯模糊是遍历所有像素点，对每个像素点都重新计算。那么，这自然是一个耗时的工作，掌握了理论基础，我们要优化时也才有方向去优化。</p>
+<h3 id="性能对比"><a href="#性能对比" class="headerlink" title="性能对比"></a>性能对比</h3><p>大神的开源库中提供了三种高斯模糊方式，而我在 <a href="https://github.com/Blankj/AndroidUtilCode" target="_blank" rel="noopener">Blankj 的 AndroidUtilCode</a> 开源库中发现了另外一种，所以我将他们都整合起来，一共有四种：</p>
+<ul>
+<li>Google 官方提供的 RenderScript 方式 （RSBlur）</li>
+<li>C 编写的高斯算法 blur.c 方式 （NativeBlur）</li>
+<li>Java 编写的高斯算法方式1（JavaBlur）</li>
+<li>Java 编写的高斯算法方式2（StackBlur）</li>
+</ul>
+<p>其实，大体上就三种：Google 官方提供的，大神用 C 写的高斯模糊算法，大神用 Java 写的高斯模糊算法。至于后面两种，看了下，算法的代码不一样，我就把它们当做是两种不同的算法实现了。也许是一样，但我没深入去看，反正代码不一样，我就这么认为了。</p>
+<p>下面我们来做个实验，在如下相同条件下，不同高斯模糊方案的耗时比较：</p>
+<ul>
+<li>radius=10, scale=1, bitmap=200*200(11.69KB)</li>
+</ul>
+<p>ps: radius 表示高斯算法计算过程中的半径取值，scale=1表示对 bitmap 原图进行高斯模糊。这些前提条件需要了解一下，不然你在看网上其他类似性能比对的文章时，发现它们动不动就优化到几 ms 级别的，然而你自己尝试却始终达不到。这是因为也许所使用的这些前提都不一致，不一致的前提下，耗时根本无从比较。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">testBlur</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="keyword">int</span> sum = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">		<span class="keyword">long</span> time = SystemClock.uptimeMillis();</span><br><span class="line">		DBlur.source(<span class="keyword">this</span>, R.drawable.image).modeRs().radius(<span class="number">10</span>).sampling(<span class="number">1</span>).build().doBlurSync();</span><br><span class="line">		<span class="keyword">long</span> end = SystemClock.uptimeMillis();</span><br><span class="line">		sum += (end - time);</span><br><span class="line">	&#125;</span><br><span class="line">    Log.e(<span class="string">"DBlur"</span>, <span class="string">"RSBlur cast "</span> + (sum/<span class="number">100</span>) + <span class="string">"ms"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>代码模板如上，分别运行 100 次后取平均值，四种不同方式的耗时如下表：</p>
+<table>
+<thead>
+<tr>
+<th align="center">前提条件</th>
+<th align="center">RSBlur</th>
+<th align="center">NativeBlur</th>
+<th align="center">JavaBlur</th>
+<th align="center">StackBlur</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">radius=<strong>10</strong>, scale=1, bitmap=200*200</td>
+<td align="center">51ms</td>
+<td align="center">13ms</td>
+<td align="center">162ms</td>
+<td align="center">384ms</td>
+</tr>
+<tr>
+<td align="center">radius=<strong>20</strong>, scale=1, bitmap=200*200</td>
+<td align="center">56ms</td>
+<td align="center">12ms</td>
+<td align="center">164ms</td>
+<td align="center">435ms</td>
+</tr>
+<tr>
+<td align="center">radius=10, scale=<strong>2</strong>, bitmap=200*200</td>
+<td align="center">48ms</td>
+<td align="center">11ms</td>
+<td align="center">75ms</td>
+<td align="center">110ms</td>
+</tr>
+<tr>
+<td align="center">radius=10, scale=<strong>8</strong>, bitmap=200*200</td>
+<td align="center">45ms</td>
+<td align="center">7ms</td>
+<td align="center">14ms</td>
+<td align="center">19ms</td>
+</tr>
+<tr>
+<td align="center">radius=10, scale=8, bitmap=<strong>1920*1180</strong></td>
+<td align="center">183ms</td>
+<td align="center">143ms</td>
+<td align="center">346ms</td>
+<td align="center">460ms</td>
+</tr>
+<tr>
+<td align="center">radius=<strong>20</strong>, scale=8, bitmap=1920*1180</td>
+<td align="center">204ms</td>
+<td align="center">145ms</td>
+<td align="center">353ms</td>
+<td align="center">510ms</td>
+</tr>
+<tr>
+<td align="center">radius=20, scale=<strong>1</strong>, bitmap=1920*1180</td>
+<td align="center">474ms</td>
+<td align="center">444ms</td>
+<td align="center">8663ms</td>
+<td align="center">内存溢出</td>
+</tr>
+</tbody></table>
+<p>100 次样本可能不多，但大体上我们也能比较出不同类型的高斯模糊之前的区别，及其适用场景：</p>
+<ul>
+<li>总体上，NativeBlur 和 RSBlur 的耗时会少于 JavaBlur 和 StackBlur</li>
+<li>JavaBlur 和 StackBlur 方式，如果先对 Bitmap 进行缩小，再高斯模糊，最后再放大，耗时会大大缩短</li>
+<li>radius 增大会增加耗时，但影响不大，但视图呈现效果会越模糊</li>
+<li>scale 对原图缩小倍数越多，耗时越短，但视图呈现效果同样会越模糊</li>
+<li>分辨率越高的图片，高斯模糊的就越耗时</li>
+<li>对于大图而言，如果要使用 JavaBlur 或 StackBlur，最好设置 scale 先缩小再模糊，否则将非常耗时且容易内存溢出</li>
+<li>如果已经通过 scale 方式进行优化，那么最好 radius 值可以相对小一点，否则两者的值都大会对图片的模糊效果特别强烈，也许会过了头</li>
+</ul>
+<h3 id="性能优化"><a href="#性能优化" class="headerlink" title="性能优化"></a>性能优化</h3><p>高斯模糊的优化考虑点，其实就三个：</p>
+<ul>
+<li>选择不同的高斯模糊方式</li>
+<li>通过 scale 对原图先缩小，再模糊，最后再放大方式</li>
+<li>优化高斯模糊算法</li>
+</ul>
+<p>最后一点就不考虑了，毕竟难度太大。那么，其实就剩下两种，要么是从高斯模糊的方案上选择，要么从待模糊的图片上做手脚。</p>
+<p>虽然有四种高斯模糊方案，但每种都有各自优缺点：</p>
+<ul>
+<li>RSBlur 在低端机上可能无法兼容</li>
+<li>NativeBlur 需要生成对应 CPU 架构的 so 文件支持</li>
+<li>JavaBlur 和 StackBlur 耗时会较长</li>
+</ul>
+<p>优化的考虑点大体上这几种：</p>
+<ul>
+<li>大体上，使用 NativeBlur 或者 RSBlur 即可，如果出现一些问题，那么此时可考虑切到 JavaBlur 或 StackBlur 方案，但记得结合 scale 方式优化处理。</li>
+<li>如果高斯模糊的图片有实时性要求，要求模糊得同步进行处理，主线程后续的工作需要等待高斯模糊后才能够处理的话，那么尽量选择 scale 方式进行优化，减少耗时。</li>
+<li>如果对实时性没要求，但对图片模糊程度有要求，那其实，只要后台异步去进行高斯模糊即可，此时 scale 可不用缩小太多，而利用 radius 来控制模糊效果，以达到理想的要求。</li>
+<li>如果两者都有要求，那就自行尝试寻找折中点吧。</li>
+</ul>
+<p>最后说一点，因为已经封装成组件库了，RSBlur 也是引入的 support 包，so 文件也打包好了，那么使用这两种方案足够满足绝大部分场景了，所以，没有特意指定，组件默认的方案为 RSBlur。</p>
+<h1 id="二次封装"><a href="#二次封装" class="headerlink" title="二次封装"></a>二次封装</h1><h3 id="需求场景"><a href="#需求场景" class="headerlink" title="需求场景"></a>需求场景</h3><p>为什么要二次封装？那肯定是因为有自己的各种需求场景的，我的需求如下：</p>
+<ul>
+<li>要能够对当前页面（Activity）截图后，进行模糊</li>
+<li>要能够对 drawable 资源图片进行模糊、或者对指定 View 的视图进行模糊</li>
+<li>模糊完成后，要能够自动以淡入的动画方式显示在指定的控件上</li>
+<li>存在这种需求场景：对当前界面截图、并且模糊，模糊后的图片展示的时机可能在其他界面，因此需要支持缓存功能，可以根据指定 cacheKey 值获取缓存</li>
+<li>当然，可以根据各种配置使用高斯模糊，当不指定配置时，有默认配置</li>
+</ul>
+<p>总结一下，其实封装要做的事也就是要实现：</p>
+<ul>
+<li>截图、缓存、淡入动画、默认配置</li>
+<li>可以的话，组件最好可以达到，其他人在不看文档，不看源码前提下，以最少的成本接入直接上手使用</li>
+</ul>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>截图、缓存、动画这些都属于纯功能代码的封装了，具体就不说了。</p>
+<p>这里想来讲讲，如何设计，可以让其他人以最少的成本接入直接上手使用。</p>
+<p>我的想法是，利用 AndroidStudio 的代码提示功能，具体的说就是，你只需要了解组件的入口是 DBlur 即可，至于后续怎么使用，全靠 AndroidStudio 来提示，跟着 AndroidStudio 走就行。</p>
+<p>例如：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-7eb4707f967a5577.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="DBlur入口.png">  </p>
+<p>当敲完 DBlur. 时，会弹出代码提示框，入口很少，是吧，就两个，看命名也能猜到作用：<code>getCacheBitmap()</code> 明显是用来取缓存的，那么要高斯模糊自然是另外一个入口 <code>source()</code>，这个方法有多个重载函数，看参数，其实也能知道，这就对应着要模糊的图片的不同来源类型，如：</p>
+<ul>
+<li>直接传入 Bitmap 对其进行模糊</li>
+<li>传入 Activity/View，内部会对这个界面/控件进行截图后再模糊</li>
+<li>传入 resId，对 drawable 资源图片进行模糊</li>
+</ul>
+<p>那么，可能想问了，哪里进行高斯模糊配置，哪里设置同步或异步，哪里注册回调等等。别急，既然只给你开了一个入口，那么就跟着入口走下去，自然会一步步引导你走到最后。如：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-9efa2fb81a12cd2d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BlurConfigBuilder入口.png">  </p>
+<p>第一步、第二步该做什么，我都给你规定好了，你也只能按照步骤一步步来。想要设置高斯模糊配置，你得先指定图片来源，才能进入第二步，在这里，可以进行的配置也都给你列出来了，想要哪个，直接设置即可。如：</p>
+<ul>
+<li><code>mode()</code>，<code>modeRs()</code>，<code>modeNative()</code> 等等类似 mode 开头的方法，用于指定要使用哪种高斯模糊方案，一共四种，每种内部都有提供对应的常量标志，但如果你不知道哪里找，那么直接调用 modeXXX 方法即可。</li>
+<li><code>radius()</code> 用于设置高斯模糊计算的半径，内部默认为 4。</li>
+<li><code>sampling()</code> 用于设置对原图的缩小比例，内部默认为 8，即默认先缩小 8 倍，再模糊，最后再放大。</li>
+<li><code>cache()</code> 用于设置缓存此次模糊后的图片，没有调用默认不缓存。</li>
+<li><code>animAlpha()</code> 用于设置使用淡入动画，需要结合 <code>intoTarget()</code> 使用，否则不生效。</li>
+<li><code>intoTarget()</code> 用于设置模糊完成后，自动显示到指定控件上。</li>
+</ul>
+<p>另外，看每个方法返回的类名，其实这个过程都是在设置配置项，如果有对 Builder 模式了解的话，应该清楚，这个大多用来解决构造函数参数过多的场景，最后一般都会有一个 <code>build()</code> 或者 <code>create()</code> 类型的方法。参考的是 Android 源码中 AlertDialog。</p>
+<p>也就是说，要进入下一个步骤，需要调用 <code>build()</code> 方法，如：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-96ce20f8a2154350.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="doblur.png">  </p>
+<p>显然，已经到最后一个步骤了，这里就是发起高斯模糊工作的地方了。</p>
+<ul>
+<li><code>doBlur()</code> 会指定此次高斯模糊工作异步进行，所以需要注册回调的在这里传入。</li>
+<li><code>doBlurSync()</code> 指定高斯模糊同步进行，模糊后的 Bitmap 直接返回。</li>
+</ul>
+<p>至此，接入结束。</p>
+<p>使用这个高斯模糊的组件，只需要知道 DBlur 入口，其他都跟随着 AndroidStudio 代码提示一步步往下走即可，当然你也可以直接看源码，注释里也写得蛮清楚的了。</p>
+<p>这个就是我的想法，能力不足，只能想出这种方案，如果有哪里需要改进，哪里不合理，或者有其他思路，欢迎指点一下。</p>
+<h3 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">compile <span class="string">'com.dasu.image:blur:0.0.4'</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//使用默认配置，最短调用链</span></span><br><span class="line">Bitmap bitmap = DBlur.source(MainActivity.<span class="keyword">this</span>).build().doBlurSync();</span><br><span class="line"></span><br><span class="line"><span class="comment">//同步模糊，将imageView控制的视图进行模糊，完成后自动显示到 imageView1 控件上，以淡入动画方式</span></span><br><span class="line">DBlur.source(imageView).intoTarget(imageView1).animAlpha().build().doBlurSync();</span><br><span class="line"></span><br><span class="line"><span class="comment">//异步模糊，将drawable资源文件中的图片以 NATIVE 方式进行模糊，注册回调，完成时手动显示到 imageView1 控件上</span></span><br><span class="line">DBlur.source(<span class="keyword">this</span>, R.drawable.background).mode(BlurConfig.MODE_NATIVE).build()</span><br><span class="line">      .doBlur(<span class="keyword">new</span> OnBlurListener() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBlurSuccess</span><span class="params">(Bitmap bitmap)</span> </span>&#123;</span><br><span class="line">                imageView1.setImageBitmap(bitmap);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBlurFailed</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="comment">//do something</span></span><br><span class="line">            &#125;&#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="Github"><a href="#Github" class="headerlink" title="Github"></a><a href="https://github.com/woshidasusu/base-module/tree/master/blur" target="_blank" rel="noopener">Github</a></h3><p><a href="https://github.com/woshidasusu/base-module/tree/master/blur" target="_blank" rel="noopener">DBlur 的 Github 链接：https://github.com/woshidasusu/base-module/tree/master/blur</a>  </p>
+]]></content>
+      <categories>
+        <category>Android组件</category>
+      </categories>
+  </entry>
+  <entry>
     <title>Android中一张图片占据的内存大小是如何计算</title>
     <url>/2018/10/14/Android%E7%9F%A5%E8%AF%86/Android%E4%B8%AD%E4%B8%80%E5%BC%A0%E5%9B%BE%E7%89%87%E5%8D%A0%E6%8D%AE%E7%9A%84%E5%86%85%E5%AD%98%E5%A4%A7%E5%B0%8F%E6%98%AF%E5%A6%82%E4%BD%95%E8%AE%A1%E7%AE%97/</url>
     <content><![CDATA[<blockquote>
@@ -8217,189 +8409,6 @@ b.y; <span class="comment">//1</span>
 ]]></content>
       <categories>
         <category>Android知识</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>封装个-Android-的高斯模糊组件</title>
-    <url>/2018/10/14/Android%E7%BB%84%E4%BB%B6/%E5%B0%81%E8%A3%85%E4%B8%AA-Android-%E7%9A%84%E9%AB%98%E6%96%AF%E6%A8%A1%E7%B3%8A%E7%BB%84%E4%BB%B6/</url>
-    <content><![CDATA[<blockquote>
-<p><strong>本篇文章已授权微信公众号 hongyangAndroid （鸿洋）独家发布</strong>  </p>
-</blockquote>
-<p>最近基于 <a href="https://github.com/kikoso/android-stackblur" target="_blank" rel="noopener">Android StackBlur</a> 开源库，根据自己碰到的需求场景，封装了个高斯模糊组件，顺便记录一下。  </p>
-<p><strong>为什么要自己重复造轮子？</strong>  </p>
-<p>其实也谈不上重头自己造轮子，毕竟是基于大神的开源库，做了二次封装。封装的目的在于，方便外部使用。毕竟有着自己的编程习惯，大神的开源库也只是提供了基础的功能，现实编程中，产品的需求是各种各样的。</p>
-<p>导致每次使用时，都蛮麻烦的，需要额外自己处理蛮多东西。而一旦新的项目又需要接入高斯模糊了，又得重新写一些代码，复制粘贴也麻烦，经常由于各种业务耦合报错。</p>
-<p>既然如此，干脆花时间抽个基础、公用的高斯模糊组件，需要时直接依赖即可。</p>
-<h1 id="基础理论"><a href="#基础理论" class="headerlink" title="基础理论"></a>基础理论</h1><h3 id="高斯模糊"><a href="#高斯模糊" class="headerlink" title="高斯模糊"></a>高斯模糊</h3><p>高斯模糊的原理和算法就不介绍了，我也不懂，没深入，这里就大概讲讲我的粗坯理解：</p>
-<p>我们知道，一张图片，本质上其实是一个个像素点构成的，虽然经过计算机处理后，呈现在我们眼前的是具体的图像。但在计算机中，其实就是一堆数组数据。</p>
-<p>数组中每个单位就是一个个像素点，那么每个像素点是存储什么内容呢，其实也就是 RGB 或者 ARGB 之类格式的数据。</p>
-<p>高斯模糊，大体上就是对这张图片中的每个像素点都重新进行计算，每个像素点的新值等于以它为中心，半径为 r 的周围区域内所有像素点各自按照不同权重相加之和的平均值。</p>
-<p>可以粗坯的理解为，<strong>本来这个像素点是要呈现它自己本身的内容，但经过高斯模糊计算后，掺杂进它周围区域像素点的内容了。就像加水稀释类似的道理，既然都掺杂进周围的内容了，那么它呈现的内容相比最初，肯定就不那么清晰了</strong>。</p>
-<p>而如果掺杂的半径越大，混合进的内容也就越多，那么它本身的内容就越淡了，是不是这个理。所以，这就是为什么每个开源的高斯模糊组件库，使用时基本都需要我们传入一个 radius 半径的参数。而且，半径越大，越模糊。</p>
-<p>这么一粗坯的解释，就理解多了，是吧。</p>
-<p>为什么需要大概掌握这个理论基础呢？</p>
-<p>想想，高斯模糊是遍历所有像素点，对每个像素点都重新计算。那么，这自然是一个耗时的工作，掌握了理论基础，我们要优化时也才有方向去优化。</p>
-<h3 id="性能对比"><a href="#性能对比" class="headerlink" title="性能对比"></a>性能对比</h3><p>大神的开源库中提供了三种高斯模糊方式，而我在 <a href="https://github.com/Blankj/AndroidUtilCode" target="_blank" rel="noopener">Blankj 的 AndroidUtilCode</a> 开源库中发现了另外一种，所以我将他们都整合起来，一共有四种：</p>
-<ul>
-<li>Google 官方提供的 RenderScript 方式 （RSBlur）</li>
-<li>C 编写的高斯算法 blur.c 方式 （NativeBlur）</li>
-<li>Java 编写的高斯算法方式1（JavaBlur）</li>
-<li>Java 编写的高斯算法方式2（StackBlur）</li>
-</ul>
-<p>其实，大体上就三种：Google 官方提供的，大神用 C 写的高斯模糊算法，大神用 Java 写的高斯模糊算法。至于后面两种，看了下，算法的代码不一样，我就把它们当做是两种不同的算法实现了。也许是一样，但我没深入去看，反正代码不一样，我就这么认为了。</p>
-<p>下面我们来做个实验，在如下相同条件下，不同高斯模糊方案的耗时比较：</p>
-<ul>
-<li>radius=10, scale=1, bitmap=200*200(11.69KB)</li>
-</ul>
-<p>ps: radius 表示高斯算法计算过程中的半径取值，scale=1表示对 bitmap 原图进行高斯模糊。这些前提条件需要了解一下，不然你在看网上其他类似性能比对的文章时，发现它们动不动就优化到几 ms 级别的，然而你自己尝试却始终达不到。这是因为也许所使用的这些前提都不一致，不一致的前提下，耗时根本无从比较。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">testBlur</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="keyword">int</span> sum = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">		<span class="keyword">long</span> time = SystemClock.uptimeMillis();</span><br><span class="line">		DBlur.source(<span class="keyword">this</span>, R.drawable.image).modeRs().radius(<span class="number">10</span>).sampling(<span class="number">1</span>).build().doBlurSync();</span><br><span class="line">		<span class="keyword">long</span> end = SystemClock.uptimeMillis();</span><br><span class="line">		sum += (end - time);</span><br><span class="line">	&#125;</span><br><span class="line">    Log.e(<span class="string">"DBlur"</span>, <span class="string">"RSBlur cast "</span> + (sum/<span class="number">100</span>) + <span class="string">"ms"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>代码模板如上，分别运行 100 次后取平均值，四种不同方式的耗时如下表：</p>
-<table>
-<thead>
-<tr>
-<th align="center">前提条件</th>
-<th align="center">RSBlur</th>
-<th align="center">NativeBlur</th>
-<th align="center">JavaBlur</th>
-<th align="center">StackBlur</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">radius=<strong>10</strong>, scale=1, bitmap=200*200</td>
-<td align="center">51ms</td>
-<td align="center">13ms</td>
-<td align="center">162ms</td>
-<td align="center">384ms</td>
-</tr>
-<tr>
-<td align="center">radius=<strong>20</strong>, scale=1, bitmap=200*200</td>
-<td align="center">56ms</td>
-<td align="center">12ms</td>
-<td align="center">164ms</td>
-<td align="center">435ms</td>
-</tr>
-<tr>
-<td align="center">radius=10, scale=<strong>2</strong>, bitmap=200*200</td>
-<td align="center">48ms</td>
-<td align="center">11ms</td>
-<td align="center">75ms</td>
-<td align="center">110ms</td>
-</tr>
-<tr>
-<td align="center">radius=10, scale=<strong>8</strong>, bitmap=200*200</td>
-<td align="center">45ms</td>
-<td align="center">7ms</td>
-<td align="center">14ms</td>
-<td align="center">19ms</td>
-</tr>
-<tr>
-<td align="center">radius=10, scale=8, bitmap=<strong>1920*1180</strong></td>
-<td align="center">183ms</td>
-<td align="center">143ms</td>
-<td align="center">346ms</td>
-<td align="center">460ms</td>
-</tr>
-<tr>
-<td align="center">radius=<strong>20</strong>, scale=8, bitmap=1920*1180</td>
-<td align="center">204ms</td>
-<td align="center">145ms</td>
-<td align="center">353ms</td>
-<td align="center">510ms</td>
-</tr>
-<tr>
-<td align="center">radius=20, scale=<strong>1</strong>, bitmap=1920*1180</td>
-<td align="center">474ms</td>
-<td align="center">444ms</td>
-<td align="center">8663ms</td>
-<td align="center">内存溢出</td>
-</tr>
-</tbody></table>
-<p>100 次样本可能不多，但大体上我们也能比较出不同类型的高斯模糊之前的区别，及其适用场景：</p>
-<ul>
-<li>总体上，NativeBlur 和 RSBlur 的耗时会少于 JavaBlur 和 StackBlur</li>
-<li>JavaBlur 和 StackBlur 方式，如果先对 Bitmap 进行缩小，再高斯模糊，最后再放大，耗时会大大缩短</li>
-<li>radius 增大会增加耗时，但影响不大，但视图呈现效果会越模糊</li>
-<li>scale 对原图缩小倍数越多，耗时越短，但视图呈现效果同样会越模糊</li>
-<li>分辨率越高的图片，高斯模糊的就越耗时</li>
-<li>对于大图而言，如果要使用 JavaBlur 或 StackBlur，最好设置 scale 先缩小再模糊，否则将非常耗时且容易内存溢出</li>
-<li>如果已经通过 scale 方式进行优化，那么最好 radius 值可以相对小一点，否则两者的值都大会对图片的模糊效果特别强烈，也许会过了头</li>
-</ul>
-<h3 id="性能优化"><a href="#性能优化" class="headerlink" title="性能优化"></a>性能优化</h3><p>高斯模糊的优化考虑点，其实就三个：</p>
-<ul>
-<li>选择不同的高斯模糊方式</li>
-<li>通过 scale 对原图先缩小，再模糊，最后再放大方式</li>
-<li>优化高斯模糊算法</li>
-</ul>
-<p>最后一点就不考虑了，毕竟难度太大。那么，其实就剩下两种，要么是从高斯模糊的方案上选择，要么从待模糊的图片上做手脚。</p>
-<p>虽然有四种高斯模糊方案，但每种都有各自优缺点：</p>
-<ul>
-<li>RSBlur 在低端机上可能无法兼容</li>
-<li>NativeBlur 需要生成对应 CPU 架构的 so 文件支持</li>
-<li>JavaBlur 和 StackBlur 耗时会较长</li>
-</ul>
-<p>优化的考虑点大体上这几种：</p>
-<ul>
-<li>大体上，使用 NativeBlur 或者 RSBlur 即可，如果出现一些问题，那么此时可考虑切到 JavaBlur 或 StackBlur 方案，但记得结合 scale 方式优化处理。</li>
-<li>如果高斯模糊的图片有实时性要求，要求模糊得同步进行处理，主线程后续的工作需要等待高斯模糊后才能够处理的话，那么尽量选择 scale 方式进行优化，减少耗时。</li>
-<li>如果对实时性没要求，但对图片模糊程度有要求，那其实，只要后台异步去进行高斯模糊即可，此时 scale 可不用缩小太多，而利用 radius 来控制模糊效果，以达到理想的要求。</li>
-<li>如果两者都有要求，那就自行尝试寻找折中点吧。</li>
-</ul>
-<p>最后说一点，因为已经封装成组件库了，RSBlur 也是引入的 support 包，so 文件也打包好了，那么使用这两种方案足够满足绝大部分场景了，所以，没有特意指定，组件默认的方案为 RSBlur。</p>
-<h1 id="二次封装"><a href="#二次封装" class="headerlink" title="二次封装"></a>二次封装</h1><h3 id="需求场景"><a href="#需求场景" class="headerlink" title="需求场景"></a>需求场景</h3><p>为什么要二次封装？那肯定是因为有自己的各种需求场景的，我的需求如下：</p>
-<ul>
-<li>要能够对当前页面（Activity）截图后，进行模糊</li>
-<li>要能够对 drawable 资源图片进行模糊、或者对指定 View 的视图进行模糊</li>
-<li>模糊完成后，要能够自动以淡入的动画方式显示在指定的控件上</li>
-<li>存在这种需求场景：对当前界面截图、并且模糊，模糊后的图片展示的时机可能在其他界面，因此需要支持缓存功能，可以根据指定 cacheKey 值获取缓存</li>
-<li>当然，可以根据各种配置使用高斯模糊，当不指定配置时，有默认配置</li>
-</ul>
-<p>总结一下，其实封装要做的事也就是要实现：</p>
-<ul>
-<li>截图、缓存、淡入动画、默认配置</li>
-<li>可以的话，组件最好可以达到，其他人在不看文档，不看源码前提下，以最少的成本接入直接上手使用</li>
-</ul>
-<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>截图、缓存、动画这些都属于纯功能代码的封装了，具体就不说了。</p>
-<p>这里想来讲讲，如何设计，可以让其他人以最少的成本接入直接上手使用。</p>
-<p>我的想法是，利用 AndroidStudio 的代码提示功能，具体的说就是，你只需要了解组件的入口是 DBlur 即可，至于后续怎么使用，全靠 AndroidStudio 来提示，跟着 AndroidStudio 走就行。</p>
-<p>例如：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/1924341-7eb4707f967a5577.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="DBlur入口.png">  </p>
-<p>当敲完 DBlur. 时，会弹出代码提示框，入口很少，是吧，就两个，看命名也能猜到作用：<code>getCacheBitmap()</code> 明显是用来取缓存的，那么要高斯模糊自然是另外一个入口 <code>source()</code>，这个方法有多个重载函数，看参数，其实也能知道，这就对应着要模糊的图片的不同来源类型，如：</p>
-<ul>
-<li>直接传入 Bitmap 对其进行模糊</li>
-<li>传入 Activity/View，内部会对这个界面/控件进行截图后再模糊</li>
-<li>传入 resId，对 drawable 资源图片进行模糊</li>
-</ul>
-<p>那么，可能想问了，哪里进行高斯模糊配置，哪里设置同步或异步，哪里注册回调等等。别急，既然只给你开了一个入口，那么就跟着入口走下去，自然会一步步引导你走到最后。如：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/1924341-9efa2fb81a12cd2d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BlurConfigBuilder入口.png">  </p>
-<p>第一步、第二步该做什么，我都给你规定好了，你也只能按照步骤一步步来。想要设置高斯模糊配置，你得先指定图片来源，才能进入第二步，在这里，可以进行的配置也都给你列出来了，想要哪个，直接设置即可。如：</p>
-<ul>
-<li><code>mode()</code>，<code>modeRs()</code>，<code>modeNative()</code> 等等类似 mode 开头的方法，用于指定要使用哪种高斯模糊方案，一共四种，每种内部都有提供对应的常量标志，但如果你不知道哪里找，那么直接调用 modeXXX 方法即可。</li>
-<li><code>radius()</code> 用于设置高斯模糊计算的半径，内部默认为 4。</li>
-<li><code>sampling()</code> 用于设置对原图的缩小比例，内部默认为 8，即默认先缩小 8 倍，再模糊，最后再放大。</li>
-<li><code>cache()</code> 用于设置缓存此次模糊后的图片，没有调用默认不缓存。</li>
-<li><code>animAlpha()</code> 用于设置使用淡入动画，需要结合 <code>intoTarget()</code> 使用，否则不生效。</li>
-<li><code>intoTarget()</code> 用于设置模糊完成后，自动显示到指定控件上。</li>
-</ul>
-<p>另外，看每个方法返回的类名，其实这个过程都是在设置配置项，如果有对 Builder 模式了解的话，应该清楚，这个大多用来解决构造函数参数过多的场景，最后一般都会有一个 <code>build()</code> 或者 <code>create()</code> 类型的方法。参考的是 Android 源码中 AlertDialog。</p>
-<p>也就是说，要进入下一个步骤，需要调用 <code>build()</code> 方法，如：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/1924341-96ce20f8a2154350.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="doblur.png">  </p>
-<p>显然，已经到最后一个步骤了，这里就是发起高斯模糊工作的地方了。</p>
-<ul>
-<li><code>doBlur()</code> 会指定此次高斯模糊工作异步进行，所以需要注册回调的在这里传入。</li>
-<li><code>doBlurSync()</code> 指定高斯模糊同步进行，模糊后的 Bitmap 直接返回。</li>
-</ul>
-<p>至此，接入结束。</p>
-<p>使用这个高斯模糊的组件，只需要知道 DBlur 入口，其他都跟随着 AndroidStudio 代码提示一步步往下走即可，当然你也可以直接看源码，注释里也写得蛮清楚的了。</p>
-<p>这个就是我的想法，能力不足，只能想出这种方案，如果有哪里需要改进，哪里不合理，或者有其他思路，欢迎指点一下。</p>
-<h3 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">compile <span class="string">'com.dasu.image:blur:0.0.4'</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//使用默认配置，最短调用链</span></span><br><span class="line">Bitmap bitmap = DBlur.source(MainActivity.<span class="keyword">this</span>).build().doBlurSync();</span><br><span class="line"></span><br><span class="line"><span class="comment">//同步模糊，将imageView控制的视图进行模糊，完成后自动显示到 imageView1 控件上，以淡入动画方式</span></span><br><span class="line">DBlur.source(imageView).intoTarget(imageView1).animAlpha().build().doBlurSync();</span><br><span class="line"></span><br><span class="line"><span class="comment">//异步模糊，将drawable资源文件中的图片以 NATIVE 方式进行模糊，注册回调，完成时手动显示到 imageView1 控件上</span></span><br><span class="line">DBlur.source(<span class="keyword">this</span>, R.drawable.background).mode(BlurConfig.MODE_NATIVE).build()</span><br><span class="line">      .doBlur(<span class="keyword">new</span> OnBlurListener() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBlurSuccess</span><span class="params">(Bitmap bitmap)</span> </span>&#123;</span><br><span class="line">                imageView1.setImageBitmap(bitmap);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBlurFailed</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="comment">//do something</span></span><br><span class="line">            &#125;&#125;);</span><br></pre></td></tr></table></figure>
-
-<h3 id="Github"><a href="#Github" class="headerlink" title="Github"></a><a href="https://github.com/woshidasusu/base-module/tree/master/blur" target="_blank" rel="noopener">Github</a></h3><p><a href="https://github.com/woshidasusu/base-module/tree/master/blur" target="_blank" rel="noopener">DBlur 的 Github 链接：https://github.com/woshidasusu/base-module/tree/master/blur</a>  </p>
-]]></content>
-      <categories>
-        <category>Android组件</category>
       </categories>
   </entry>
   <entry>
@@ -9754,6 +9763,15 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
+    <title>Android技能树</title>
+    <url>/2018/05/27/%E6%8A%80%E8%83%BD%E6%A0%91/Android%E6%8A%80%E8%83%BD%E6%A0%91/</url>
+    <content><![CDATA[<p><img src="https://upload-images.jianshu.io/upload_images/1924341-d23f4ef9f50304cc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Android技能树.png"></p>
+]]></content>
+      <categories>
+        <category>技能树</category>
+      </categories>
+  </entry>
+  <entry>
     <title>Gradle 系列博客梳理</title>
     <url>/2018/05/27/Gradle/Gradle-%E7%B3%BB%E5%88%97%E5%8D%9A%E5%AE%A2%E6%A2%B3%E7%90%86/</url>
     <content><![CDATA[<blockquote>
@@ -9825,15 +9843,6 @@ b.y; <span class="comment">//1</span>
 ]]></content>
       <categories>
         <category>Gradle</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>Android技能树</title>
-    <url>/2018/05/27/%E6%8A%80%E8%83%BD%E6%A0%91/Android%E6%8A%80%E8%83%BD%E6%A0%91/</url>
-    <content><![CDATA[<p><img src="https://upload-images.jianshu.io/upload_images/1924341-d23f4ef9f50304cc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Android技能树.png"></p>
-]]></content>
-      <categories>
-        <category>技能树</category>
       </categories>
   </entry>
   <entry>
@@ -10792,6 +10801,30 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
+    <title>如何用Android Studio查看build.gradle源码</title>
+    <url>/2018/03/31/Gradle/%E5%A6%82%E4%BD%95%E7%94%A8Android-Studio%E6%9F%A5%E7%9C%8Bbuild-gradle%E6%BA%90%E7%A0%81/</url>
+    <content><![CDATA[<blockquote>
+<p><strong>本篇文章已授权微信公众号 dasu_Android（大苏）独家发布</strong>  </p>
+</blockquote>
+<p><strong>2019-7-30 更新：</strong><br>感谢评论区指出，gradle源码下载地址：<a href="http://services.gradle.org/distributions/" target="_blank" rel="noopener">http://services.gradle.org/distributions/</a></p>
+<hr>
+<p>上一篇博客里讲过 build.gradle 里的每一行代码基本都是在调用一个方法，既然是这样，我们就可以用 android studio(下面简称as) 去查看它源码的方法注释说明，这样就可以理解每个方法是做什么的了，就算是在大神的 build.gradle 遇见一些没看懂的代码，也可以点进去看方法介绍来理解。就像我们在查看 SDK 里的各种方法一样。    </p>
+<p>但是有个问题，应该也有小伙伴跟我一样吧，每次在大神的 build.gradle 看到一堆不懂的代码时，按住 <code>Ctrl</code> 键后，鼠标移到代码上时有个跳转的手势时总是很开心，总是心想原来可以看源码啊，那就点进去看看介绍，看这个是干嘛的吧。可是每次一点进去，打开的却是 class 代码文件，顶多就只有方法名，一点注释都没有，而且方法参数命名还混淆过，也猜不出来是干嘛的。又不懂怎么去官方文档里查找，只能去网上用关键字查找，找出来的又跟自己碰到的问题不一样，越找越气干脆不找了，放一边去，以后再说。  </p>
+<p>是吧，如果可以直接通过 as 看源码的注释该多好。好了，废话到这，下面开始正文。    </p>
+<hr>
+<h1 id="系列索引"><a href="#系列索引" class="headerlink" title="系列索引"></a>系列索引</h1><p>build.gradle系列一：<a href="http://www.jianshu.com/p/a3805905a5c7" target="_blank" rel="noopener">看不懂的build.gradle代码</a><br>build.gradle系列二：<a href="http://www.jianshu.com/p/501726c979b1" target="_blank" rel="noopener">学点Groovy来理解build.gradle代码</a><br>build.gradle系列三：<a href>如何用Adnroid Studio查看build.gradle源码</a><br>…  </p>
+<hr>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>我们来举个例子，就像系列一的博客里介绍的 build.gradle 里有这样一段代码：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-d46a0d67f548a7aa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="build.gradle"><br>咦！这代码是第一次在 build.gradle 里看见过，是什么意思呢？不怕，我有绝招：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-5d5db8368916117f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Ctrl + 左键"><br>Android Studio大法—看源码，还有什么是不能通过看源码注释解决的么<br><img src="http://upload-images.jianshu.io/upload_images/1924341-4b6cd41069f7fa21.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.class"><br>是跳到源码了，可是为什么没有方法的注释说明呢，这方法是什么鬼谁知道啊。再仔细看看 as 的提示，原来打开的是个 class 文件啊。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-c55417ff2530580f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="as提示"><br>as 的提示那里应该会有个下载和选择源码位置的按钮的啊，搞不懂为什么不出现。  </p>
+<p>另外，我们知道，as 一般会默认先打开 xxx-sources.jar 也就是 xxx 的 java 文件源码，如果没有源码文件，才会打开 xxx.jar 的 class 代码。我们看一下，打开的是什么文件。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-9692f8b22bf2eda3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle-2.3.0.jar"><br>没错，as 打开的是 gradle-2.3.0.jar，说明 as 没有找到 gradle-2.3.0-sources.jar 源码文件，我们看一下到底是不是这样<br><img src="http://upload-images.jianshu.io/upload_images/1924341-53c68923912bf799.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="as标题栏"><br>as 标题栏会显示你当前打开的文件的具体位置，好了，知道了 gradle-2.3.0.jar 在电脑里的位置了，我们到那个目录下看看<br><img src="http://upload-images.jianshu.io/upload_images/1924341-f9da8ad2908b540e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle-2.3.0.jar本地路径"><br>只有一个 gradle-2.3.0.jar 文件和一个 pom 文件，正常的话应该还要有个 xxx-sources.jar 文件才对，就像下面这样<br><img src="http://upload-images.jianshu.io/upload_images/1924341-f7700195cd081102.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="三个文件"><br>因为这里没有 gradle-2.3.0-sources.jar 文件，所以 as 没办法打开带有方法注释的源码文件了。既然知道问题，那么就好解决了，as 的提示条也没有下载的按钮，那我们就自己去下载好了<br><img src="http://upload-images.jianshu.io/upload_images/1924341-ac54a39b3846d1d4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="seach.maven.org"><br>打开 maven 网站，在这里可以下载 gradle 插件。在搜索框中输入 <code>com.android.tools.build</code>，为什么输入这个，你打开 project 下的 build.gradle 文件看看就知道了<br><img src="http://upload-images.jianshu.io/upload_images/1924341-4796f2199f748565.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="com.android.tools.build"><br><img src="http://upload-images.jianshu.io/upload_images/1924341-374001fbc95ace5c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="search result"><br>这些就是 gradle 插件，我们在根目录下的 build.gradle 配置的 gradle 版本其实就是来这里下载的，应该是吧。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-b9b6f2c35d82ede4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="下载的文件"><br>下载后得到的就是这些文件了，接下去就是找到相应文件的位置，复制一份过去<br><img src="http://upload-images.jianshu.io/upload_images/1924341-139f310de6d6dfc5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle的本地路径"><br>打开相应的插件文件夹，选择相应的版本，最后将下载的 xxx-sources.jar 复制一份进去，最后的样子如下<br><img src="http://upload-images.jianshu.io/upload_images/1924341-9dbac486701a27fa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="三个文件"><br>好了，大功告成，我们再打开 as，记得 ReBuild 一下，然后再试试查看 build.gradle 源码会是什么样子<br><img src="http://upload-images.jianshu.io/upload_images/1924341-327042d04c7edab6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.java"><br><img src="http://upload-images.jianshu.io/upload_images/1924341-5723f731293b39a7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="LintOptions.java"><br>翻译一下英文大概就是说， lintOptions.abortOnError = false 是设置即使 lint 检查时发现错误也不停止构建程序的运行。  </p>
+<p>这种方法比去官方的 api 文档里查阅方便多了吧。再来看看几个效果。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-19e3e3f8353694db.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.java"><br>这里就可以看到源码里介绍 Plugin 的值都有哪些，分别对应哪个类，该去哪个类看它的作用是什么，干什么的。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-3024eb6a6819fd42.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="AndroidConfig.java"><br>借助 as，我们甚至可以很容易的查到 <code>android{...}</code> 这个括号里能使用的方法都有哪些，如果要看各自的作用是干什么的，再继续点进去查看注释就行了。是不是发现，我们在 build.gradle 里的 <code>android{...}</code> 使用过的标签名原来都在这里的啊。  </p>
+<p>以后就算是再碰到大神的 build.gradle 文件里各种没看见过的标签名，不用再担心看不懂了。不懂就看源码注释嘛，so easy!  </p>
+<p>当然，大神的 build.gradle 文件里还是会出现一些 groovy 代码或者是 task 之类的，这些就不是 gradle 源码里能够查到的了，需要稍微了解一下 groovy 和 gradle 语言的基础，有兴趣的可以继续阅读下我写的这个系列里的相关博客，当然能力不够，如果你希望更好的学习，网上资料也很多。   </p>
+]]></content>
+      <categories>
+        <category>Gradle</category>
+      </categories>
+  </entry>
+  <entry>
     <title>分享两个提高效率的AndroidStudio小技巧</title>
     <url>/2018/03/31/%E6%95%99%E7%A8%8B%E7%B1%BB/%E5%88%86%E4%BA%AB%E4%B8%A4%E4%B8%AA%E6%8F%90%E9%AB%98%E6%95%88%E7%8E%87%E7%9A%84AndroidStudio%E5%B0%8F%E6%8A%80%E5%B7%A7/</url>
     <content><![CDATA[<blockquote>
@@ -10884,30 +10917,6 @@ b.y; <span class="comment">//1</span>
 ]]></content>
       <categories>
         <category>教程类</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>如何用Android Studio查看build.gradle源码</title>
-    <url>/2018/03/31/Gradle/%E5%A6%82%E4%BD%95%E7%94%A8Android-Studio%E6%9F%A5%E7%9C%8Bbuild-gradle%E6%BA%90%E7%A0%81/</url>
-    <content><![CDATA[<blockquote>
-<p><strong>本篇文章已授权微信公众号 dasu_Android（大苏）独家发布</strong>  </p>
-</blockquote>
-<p><strong>2019-7-30 更新：</strong><br>感谢评论区指出，gradle源码下载地址：<a href="http://services.gradle.org/distributions/" target="_blank" rel="noopener">http://services.gradle.org/distributions/</a></p>
-<hr>
-<p>上一篇博客里讲过 build.gradle 里的每一行代码基本都是在调用一个方法，既然是这样，我们就可以用 android studio(下面简称as) 去查看它源码的方法注释说明，这样就可以理解每个方法是做什么的了，就算是在大神的 build.gradle 遇见一些没看懂的代码，也可以点进去看方法介绍来理解。就像我们在查看 SDK 里的各种方法一样。    </p>
-<p>但是有个问题，应该也有小伙伴跟我一样吧，每次在大神的 build.gradle 看到一堆不懂的代码时，按住 <code>Ctrl</code> 键后，鼠标移到代码上时有个跳转的手势时总是很开心，总是心想原来可以看源码啊，那就点进去看看介绍，看这个是干嘛的吧。可是每次一点进去，打开的却是 class 代码文件，顶多就只有方法名，一点注释都没有，而且方法参数命名还混淆过，也猜不出来是干嘛的。又不懂怎么去官方文档里查找，只能去网上用关键字查找，找出来的又跟自己碰到的问题不一样，越找越气干脆不找了，放一边去，以后再说。  </p>
-<p>是吧，如果可以直接通过 as 看源码的注释该多好。好了，废话到这，下面开始正文。    </p>
-<hr>
-<h1 id="系列索引"><a href="#系列索引" class="headerlink" title="系列索引"></a>系列索引</h1><p>build.gradle系列一：<a href="http://www.jianshu.com/p/a3805905a5c7" target="_blank" rel="noopener">看不懂的build.gradle代码</a><br>build.gradle系列二：<a href="http://www.jianshu.com/p/501726c979b1" target="_blank" rel="noopener">学点Groovy来理解build.gradle代码</a><br>build.gradle系列三：<a href>如何用Adnroid Studio查看build.gradle源码</a><br>…  </p>
-<hr>
-<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>我们来举个例子，就像系列一的博客里介绍的 build.gradle 里有这样一段代码：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-d46a0d67f548a7aa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="build.gradle"><br>咦！这代码是第一次在 build.gradle 里看见过，是什么意思呢？不怕，我有绝招：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-5d5db8368916117f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Ctrl + 左键"><br>Android Studio大法—看源码，还有什么是不能通过看源码注释解决的么<br><img src="http://upload-images.jianshu.io/upload_images/1924341-4b6cd41069f7fa21.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.class"><br>是跳到源码了，可是为什么没有方法的注释说明呢，这方法是什么鬼谁知道啊。再仔细看看 as 的提示，原来打开的是个 class 文件啊。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-c55417ff2530580f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="as提示"><br>as 的提示那里应该会有个下载和选择源码位置的按钮的啊，搞不懂为什么不出现。  </p>
-<p>另外，我们知道，as 一般会默认先打开 xxx-sources.jar 也就是 xxx 的 java 文件源码，如果没有源码文件，才会打开 xxx.jar 的 class 代码。我们看一下，打开的是什么文件。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-9692f8b22bf2eda3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle-2.3.0.jar"><br>没错，as 打开的是 gradle-2.3.0.jar，说明 as 没有找到 gradle-2.3.0-sources.jar 源码文件，我们看一下到底是不是这样<br><img src="http://upload-images.jianshu.io/upload_images/1924341-53c68923912bf799.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="as标题栏"><br>as 标题栏会显示你当前打开的文件的具体位置，好了，知道了 gradle-2.3.0.jar 在电脑里的位置了，我们到那个目录下看看<br><img src="http://upload-images.jianshu.io/upload_images/1924341-f9da8ad2908b540e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle-2.3.0.jar本地路径"><br>只有一个 gradle-2.3.0.jar 文件和一个 pom 文件，正常的话应该还要有个 xxx-sources.jar 文件才对，就像下面这样<br><img src="http://upload-images.jianshu.io/upload_images/1924341-f7700195cd081102.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="三个文件"><br>因为这里没有 gradle-2.3.0-sources.jar 文件，所以 as 没办法打开带有方法注释的源码文件了。既然知道问题，那么就好解决了，as 的提示条也没有下载的按钮，那我们就自己去下载好了<br><img src="http://upload-images.jianshu.io/upload_images/1924341-ac54a39b3846d1d4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="seach.maven.org"><br>打开 maven 网站，在这里可以下载 gradle 插件。在搜索框中输入 <code>com.android.tools.build</code>，为什么输入这个，你打开 project 下的 build.gradle 文件看看就知道了<br><img src="http://upload-images.jianshu.io/upload_images/1924341-4796f2199f748565.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="com.android.tools.build"><br><img src="http://upload-images.jianshu.io/upload_images/1924341-374001fbc95ace5c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="search result"><br>这些就是 gradle 插件，我们在根目录下的 build.gradle 配置的 gradle 版本其实就是来这里下载的，应该是吧。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-b9b6f2c35d82ede4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="下载的文件"><br>下载后得到的就是这些文件了，接下去就是找到相应文件的位置，复制一份过去<br><img src="http://upload-images.jianshu.io/upload_images/1924341-139f310de6d6dfc5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle的本地路径"><br>打开相应的插件文件夹，选择相应的版本，最后将下载的 xxx-sources.jar 复制一份进去，最后的样子如下<br><img src="http://upload-images.jianshu.io/upload_images/1924341-9dbac486701a27fa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="三个文件"><br>好了，大功告成，我们再打开 as，记得 ReBuild 一下，然后再试试查看 build.gradle 源码会是什么样子<br><img src="http://upload-images.jianshu.io/upload_images/1924341-327042d04c7edab6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.java"><br><img src="http://upload-images.jianshu.io/upload_images/1924341-5723f731293b39a7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="LintOptions.java"><br>翻译一下英文大概就是说， lintOptions.abortOnError = false 是设置即使 lint 检查时发现错误也不停止构建程序的运行。  </p>
-<p>这种方法比去官方的 api 文档里查阅方便多了吧。再来看看几个效果。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-19e3e3f8353694db.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.java"><br>这里就可以看到源码里介绍 Plugin 的值都有哪些，分别对应哪个类，该去哪个类看它的作用是什么，干什么的。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-3024eb6a6819fd42.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="AndroidConfig.java"><br>借助 as，我们甚至可以很容易的查到 <code>android{...}</code> 这个括号里能使用的方法都有哪些，如果要看各自的作用是干什么的，再继续点进去查看注释就行了。是不是发现，我们在 build.gradle 里的 <code>android{...}</code> 使用过的标签名原来都在这里的啊。  </p>
-<p>以后就算是再碰到大神的 build.gradle 文件里各种没看见过的标签名，不用再担心看不懂了。不懂就看源码注释嘛，so easy!  </p>
-<p>当然，大神的 build.gradle 文件里还是会出现一些 groovy 代码或者是 task 之类的，这些就不是 gradle 源码里能够查到的了，需要稍微了解一下 groovy 和 gradle 语言的基础，有兴趣的可以继续阅读下我写的这个系列里的相关博客，当然能力不够，如果你希望更好的学习，网上资料也很多。   </p>
-]]></content>
-      <categories>
-        <category>Gradle</category>
       </categories>
   </entry>
   <entry>
