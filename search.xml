@@ -1,8 +1,302 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>从输入 URL 到页面加载都发生了什么</title>
+    <url>/2020/02/27/%E9%9D%A2%E8%AF%95%E9%A2%98/%E4%BB%8E%E8%BE%93%E5%85%A5URL%E5%88%B0%E9%A1%B5%E9%9D%A2%E5%8A%A0%E8%BD%BD%E8%BF%99%E8%BF%87%E7%A8%8B%E9%83%BD%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88/</url>
+    <content><![CDATA[<h1 id="从输入-URL-到页面加载都发生了什么"><a href="#从输入-URL-到页面加载都发生了什么" class="headerlink" title="从输入 URL 到页面加载都发生了什么"></a>从输入 URL 到页面加载都发生了什么</h1><blockquote>
+<p>本文参考：<a href="https://github.com/ljianshu/Blog/issues/24" target="_blank" rel="noopener">从URL输入到页面展现到底发生什么？</a></p>
+</blockquote>
+<p>这面试题简直神了，也不知道第一个想出这道题的是哪位大佬，这题说好答也好答，说难答也很难答</p>
+<p>好答是因为，由于这题在面试中的高频出现，网上已经有一大堆讲这个的文章，比如现在又多了我这篇</p>
+<p>难答是因为，这题涉及了前端里绝大部分的领域了</p>
+<p>你想想，仅一道题，就把前端各领域的知识点都囊括了，每个知识点，面试官跟你深入的话，都可以单独作为一个面试点了</p>
+<p>一句话来回答这道题的话，这过程中一共发生了这么几件事：</p>
+<ol>
+<li>URL 解析</li>
+<li>浏览器缓存机制工作</li>
+<li>DNS 域名解析</li>
+<li>TCP 三次握手建立连接</li>
+<li>HTTP 请求</li>
+<li>服务端响应</li>
+<li>浏览器解析 HTML 页面，进行渲染</li>
+<li>TCP 四次挥手断开连接</li>
+</ol>
+<p>可能你会觉得这跟你在其他文章里看到的不大一样，其实差不了多少，我这里列得更详细了点，大多数文章讲的都是主要流程，比如：DNS，TCP 连接，HTTP 请求，页面渲染这四个过程，我把其中一些额外的工作也列出来了而已</p>
+<p>就这个流程，从大的方面来看，就几个工作而已，但深入了来看的话，可以考你一大堆不同领域的知识点掌握情况，比如：</p>
+<ul>
+<li>浏览器的缓存机制清不清楚<ul>
+<li>什么是强缓存、什么是协商缓存</li>
+<li>Service Worker 知不知道</li>
+<li>HTTP2 的 Push Cache 呢</li>
+</ul>
+</li>
+<li>网络基础牢不牢固（TCP，HTTP 一大堆可以考的）<ul>
+<li>讲讲 TCP 的三次握手，为什么需要三次握手，顺道讲讲四次挥手</li>
+<li>讲讲 TCP 有哪些特点，为什么 TCP 是可靠传输，超时重传是什么，快速重传又是什么，拥塞控制也讲讲</li>
+<li>HTTP 几个版本的区别、特点讲讲</li>
+<li>HTTP 常见头部、常见响应码讲讲<ul>
+<li>206 知道吗，知道那讲讲断点续传</li>
+<li>重定向知道吗，知道那讲讲 301,302,303,307,308 的区别和场景</li>
+<li>401 知道吗，知道那讲讲你们是怎么鉴权的，单点登录流程也讲讲</li>
+</ul>
+</li>
+<li>HTTP 有哪些请求方法，各自应用场景是什么，POST 和 PUT 有什么区别 </li>
+<li>HTTPS 也讲讲，TLS 是如何实现安全连接的，密钥协商流程讲讲</li>
+<li>常见的网络攻击讲讲，什么是 XSS，CSRF，中间人攻击，该怎么预防</li>
+</ul>
+</li>
+<li>浏览器的同源策略知不知道，知道那讲讲跨域请求的方案有哪些</li>
+<li>页面渲染流程了解吗，讲讲<ul>
+<li>知道浏览器的事件循环机制吗，HTML 解析在哪个阶段、页面渲染呢</li>
+<li>那顺道讲讲宏任务、微任务</li>
+<li>要不再顺道讲讲任务源有哪些</li>
+</ul>
+</li>
+<li>你们页面首屏渲染时长怎么样，做过哪些优化处理</li>
+<li>…</li>
+</ul>
+<p>不用意外，上面的知识点，完全都是可以从这一道面试题来深入考你的，所以你说这题神不神</p>
+<p>而且，上面的知识点，还只是我个人这种小白层面能想到、也提前准备准备的知识点，对于那些大佬面试官，能往深了考到你怀疑人生</p>
+<p>当回答面试官时，可以先大概从广的角度就简单介绍下，这个过程涉及到几个步骤，每个步骤的目的简单说说</p>
+<p>至于深入的问题，就等待面试官，看他想在哪个知识点着重展开时，再去相应回答</p>
+<h3 id="1-URL-解析"><a href="#1-URL-解析" class="headerlink" title="1. URL 解析"></a>1. URL 解析</h3><p>我之所以列出了这个过程，是因为，浏览器的 URL 里能输入的不一定非得是 http 或 https 地址，也可以输入 <code>file://</code> 来访问本地资源</p>
+<p>当使用 file 来访问本地的网页资源时，这种场景，下面那些涉及网络的步骤就都没有了，直接进入到页面解析、渲染步骤了</p>
+<h3 id="2-浏览器缓存机制工作"><a href="#2-浏览器缓存机制工作" class="headerlink" title="2. 浏览器缓存机制工作"></a>2. 浏览器缓存机制工作</h3><p>服务端的资源是可以通过响应头来让浏览器进行缓存的，如果是首次访问，那自然是找不到缓存，直接继续往下处理去向服务端请求</p>
+<p>但如果本地有缓存时，那么，是有可能不需要重新发起请求的，直接使用本地缓存资源即可，这个时候，也同样就跳过下面那些网络相关的步骤，进入页面解析、渲染步骤了</p>
+<p>而浏览器缓存分强缓存和协商缓存，通常是用 http 1.1 版本新增的 cache-control 头部字段来进行控制，不同取值时，有不同的缓存策略</p>
+<p>涉及到缓存相关的 http 头部字段还有：expires，last-modified，if-modified-since，etag，if-none-match</p>
+<p>Service Worker 是一种可以让开发者自行决定缓存行为的机制，想缓存什么资源，缓存多久，都交由开发者决定，通常用来实现离线缓存功能</p>
+<p>Push Cache 是 HTTP2 中的一种新特性，允许服务端主动向客户端推送缓存</p>
+<p>具体内容的，我有在<a href="http://gitbook.dasu.fun/面试题积累/" target="_blank" rel="noopener">面试题系列</a>里写过一篇，在网络分类下，自行查阅</p>
+<h3 id="3-DNS-域名解析"><a href="#3-DNS-域名解析" class="headerlink" title="3. DNS 域名解析"></a>3. DNS 域名解析</h3><p>DNS 域名解析是指域名到 ip 的映射工作</p>
+<p>http 是应用层协议、基于传输层的 tcp 协议，而 tcp 基于网络层的 ip 协议，ip 报文包里，首部有个字段是目标 ip 地址，需要知道 ip 地址，才能知道要跟谁建立连接通信</p>
+<p>DNS 解析其实就是去一张映射表中寻找域名和 ip 的映射关系，而这个过程涉及到很多缓存，比如浏览器本身就有 DNS 缓存，接着去本地电脑的 host 文件里寻找映射，再然后路由也有缓存，否则就去提供商查询了，当然提供商又分了很多层级</p>
+<h3 id="4-TCP-三次握手建立连接"><a href="#4-TCP-三次握手建立连接" class="headerlink" title="4. TCP 三次握手建立连接"></a>4. TCP 三次握手建立连接</h3><p>当 DNS 解析了 ip 地址后，就可以与对方建立连接，这过程是通过 TCP 的三次握手</p>
+<p>所谓的三次握手，也就是：</p>
+<ul>
+<li>客服端发生 SYN 包给服务端</li>
+<li>服务端返回 ACK 给客户端</li>
+<li>客户端返回 ACK 给服务端</li>
+</ul>
+<p>连接建立</p>
+<p>SYN 是请求连接的意思，ACK 是表示已经接收到对方发送的请求</p>
+<p>因为需要明确告知对方，我是接收到你发的哪个请求，所以每个请求都会携带 seq 信息</p>
+<p>那么，为什么需要三次握手呢？</p>
+<p>这是因为，三次是双方都能明确对方已经接收到我发送的信息的最小交互次数</p>
+<p>至于 TCP 还可以扩展考一下 TCP 知识点内容，比如</p>
+<p>TCP 因为有超时重传机制、请求应答机制，保证了可靠的传输</p>
+<p>重传是指一个请求发送出去后，如果一段时间后，仍旧没有接收到对方的应答响应，那么就会重发该请求</p>
+<p>快速重传机制是指，TCP 因为可以流线式发请求，如果第一个请求丢失，那么发送方是有可能连续接收到同一个应答，当连续三次时，即使还没到超时时间，就可以重发丢失的请求</p>
+<p>应答机制是指，发送方发送的每个请求都会携带 seq，表示此次请求中携带的数据开始的序列号，接收方接收该请求后，会返回一个 ACK 值为 seq + content-length + 1 的序号，表示该序号前面的数据我都接收了，你可以发送下个序号的数据了</p>
+<p>如果接收方想要接收的序列号为 1，但发送方发送的序列号为 1 的请求丢失了，同时也发送了后续的请求，那么接收方接收到很多请求，但就是没有序列号为 1 的，那么它都会返回 ACK = 1，表明你应该发的是这个请求，不是其他的，但接收到的其他请求并不会丢掉，而是放入接收窗口中，等待前面丢失的接收到后，一次性应答给发送方</p>
+<p>发送方接到多个相同的 ACK 就知道它的这个请求丢失了，就会重发了</p>
+<p>拥塞控制是指，当 TCP 发现经常重传时，会认为是网络状态不好，就会降低发送速率</p>
+<p>具体内容的，我有在<a href="http://gitbook.dasu.fun/面试题积累/" target="_blank" rel="noopener">面试题系列</a>里写过一篇，在网络分类下，自行查阅 </p>
+<h3 id="5-HTTP-请求"><a href="#5-HTTP-请求" class="headerlink" title="5. HTTP 请求"></a>5. HTTP 请求</h3><p>TCP 连接建立后，就可以发送 HTTP 请求了，在 HTTP 1.0 版本，默认是短链接，意思就是一次 HTTP 请求结束后就断开 TCP 连接，下次请求需要重新建立</p>
+<p>在 HTTP 1.1 版本时，默认就是长链接了，也就是 connection: keep-aive，一个 TCP 连接可以发送多个 HTTP 请求</p>
+<p>到了 HTTP 2.0 版本时，已经支持一个 TCP 连接并行发送多个 HTTP 请求</p>
+<p>HTTP 请求其实指请求报文，请求报文由请求行、请求头、请求体三部分组成</p>
+<figure class="highlight"><table><tr><td class="code"><pre><span class="line"><span class="keyword">POST</span> <span class="string">/home/msg/data/personalcontent</span> HTTP/1.1</span><br><span class="line"><span class="attribute">Host</span>: www.baidu.com</span><br><span class="line"><span class="attribute">Connection</span>: keep-alive</span><br><span class="line"><span class="attribute">Pragma</span>: no-cache</span><br><span class="line"><span class="attribute">Content-Type</span>: application/json</span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">  <span class="attribute">a</span>: 1</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第一行就是请求行，包括请求方法、请求URL、HTTP 版本</p>
+<p>接下去是请求头，键值对形式，不同头部字段有各种功能</p>
+<p>请求头和请求体以换行隔开，请求体的数据类型可以有多种，由 Content-Type 字段控制</p>
+<p>具体请求头字段用途内容的，我有在<a href="http://gitbook.dasu.fun/面试题积累/" target="_blank" rel="noopener">面试题系列</a>里写过一篇，在网络分类下，自行查阅 </p>
+<h3 id="6-服务端响应"><a href="#6-服务端响应" class="headerlink" title="6. 服务端响应"></a>6. 服务端响应</h3><p>一次完整的 HTTP 请求的过程是包括，客户端发送请求报文，服务端返回响应报文</p>
+<p>响应报文由响应行、响应头、响应体三部分组成</p>
+<figure class="highlight"><table><tr><td class="code"><pre><span class="line">HTTP/1.1 <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Cache-Control</span>: private</span><br><span class="line"><span class="attribute">Connection</span>: keep-alive</span><br><span class="line"><span class="attribute">Content-Encoding</span>: gzip</span><br><span class="line"><span class="attribute">Content-Type</span>: text/html;charset=utf-8</span><br><span class="line"></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>第一行就是响应行，包括 HTTP 版本，状态码，状态信息三者</p>
+<p>接下去就是响应头，然后跟响应体以换行隔开</p>
+<p>HTTP 请求时，客户端其实跟服务端在很多场景下是可以进行协商的，通过头部字段来进行协商，协商结果通常以不同响应码呈现</p>
+<p>比如客户端通过 Cache-Control，if-None-Match，Last-Modified-Since 字段来跟服务端协商是否可以使用缓存，如果可用，那么服务端会返回 304 的状态码，告知客户端可直接使用缓存，否则返回 200 状态码，并下发新资源，以及新资源的 ETag 和 Last-Modified</p>
+<p>响应码是有分类的，2xx 表示成功、3xx 表示资源需要再多个步骤去获取、4xx 表示客户端的问题、5xx 表示服务端的问题</p>
+<p>常见的比如：</p>
+<ul>
+<li>206 表示请求的是部分资源，也就是断点续传，涉及的头部字段有 Range，If-Range，Content-Range 等</li>
+<li>304 表示缓存资源可用</li>
+<li>301 表示永久重定向，302 临时重定向，303，307，308 也都是重定向，对前两个的扩展</li>
+<li>400 表示参数错误，401 表示未鉴权，403 表示无权限，404 表示资源不存在</li>
+<li>500 表示服务器内部错误</li>
+<li>等等</li>
+</ul>
+<p>另外，如果使用 HTTPS 协议的话，那么在 TCP 连接建立后，还会有一个 TLS 层的密钥协商过程，最后才发送 HTTP 请求</p>
+<p>密钥协商过程其实是这样：</p>
+<ul>
+<li>客户端请求公钥证书并进行验证</li>
+<li>验证通过则随机生成一个密钥，并用公钥加密发送给服务端</li>
+<li>服务端用私钥解密得到客户端发送的密钥</li>
+<li>之后双方就使用对称加密策略即相同密钥来加密解密传输的数据</li>
+</ul>
+<p>在密钥协商的过程，存在中间人攻击的风险，即中间人会分别连接客户端和服务端，对于客户端来说，中间人就相当于它的服务端，它会下发假的公钥给客户端，对于服务端，中间人就相当于它的客户端</p>
+<p>每次客户端发送的数据都先经过中间人，中间人解密就可以窃取到信息，甚至可以篡改后再发送给服务端，这就是中间人攻击</p>
+<p>避免这种被攻击的风险就是客户端需要对公钥进行验证，如何验证呢，也就是引入三方的权威机构</p>
+<p>还有一个考点就是浏览器接收到响应了，但如果发现这是一个跨域请求，就是拦截数据，也就是浏览器的同源限制策略</p>
+<p>同源是协议、域名、端口三者都需要一致才能算是同源，浏览器会对 XMLHttpRequest，fetch 请求，CSS 中的 @font-face 加载的字体资源等做同源限制，对于 script 标签，img 标签等并不会限制</p>
+<p>但有些时候，资源并不都是放置于同一个域中的，这时候就需要能够跨域请求，所以有响应的跨域请求方案，比较常用的是 nginx + CORS</p>
+<p>HTTP 相关内容的，我有在<a href="http://gitbook.dasu.fun/面试题积累/" target="_blank" rel="noopener">面试题系列</a>里写了好几篇，在网络分类下，自行查阅 </p>
+<h3 id="7-浏览器解析-HTML-页面，进行渲染"><a href="#7-浏览器解析-HTML-页面，进行渲染" class="headerlink" title="7. 浏览器解析 HTML 页面，进行渲染"></a>7. 浏览器解析 HTML 页面，进行渲染</h3><p>当浏览器接收到 HTML 文档资源时，就进入了 HTML 的解析渲染工作了</p>
+<p>网上介绍 HTML 解析流程的基本都会说是这么个流程：</p>
+<ul>
+<li>解析 HTML 建立 DOM 树</li>
+<li>解析 CSS 建立 CSSOM 树</li>
+<li>合并 DOM 和 CSSOM，生成渲染树 Render Tree</li>
+<li>layout（布局），计算每个节点在页面呈现的信息</li>
+<li>paint（绘制），绘制呈现</li>
+</ul>
+<p>当页面刷新时，还会涉及两个概念：重绘、回流</p>
+<ul>
+<li>重绘：重新进行 paint 过程，通常是指元素的背景、颜色发生变化时，不影响整体布局</li>
+<li>回流：因为影响了页面元素的布局，需要重新计算渲染树</li>
+</ul>
+<p>这就是大体上的整个流程，但细节上还有很多可以考，比如说</p>
+<p>这些步骤其实是流水线形式进行的，并不是需要 HTML 文档全部解析完，创建完 DOM 才进行下一步，而是解析 HTML 过程中，识别了某个元素节点，就可以转交下一步处理</p>
+<p>而且，解析 HTML 过程中，是还有可能去下载一些资源的，比如脚本</p>
+<p>这个时候，HTML 的解析是会被阻塞的，因为需要等脚本下载并执行完才能继续往下解析</p>
+<p>另外，CSS 的解析是会阻塞 JS 脚本的执行</p>
+<p>而 HTML 的解析是一个任务源，会创建一个 task 放置到队列里等待浏览器主线程的事件循环去处理</p>
+<p>而浏览器的事件循环在每一轮里，会依次先处理 task，再处理 mircotask，最后才进行渲染工作</p>
+<p>所以，加载网页时，有时会出现一段时间的白屏，最后才呈现，其实就是因为需要等待等个 HTML 解析工作都进行完，才轮到渲染工作，页面也才会被绘制出来</p>
+<p>但有时加载网页时，加载进度并没有完成，网页却已经提前绘制出了部分元素内容了</p>
+<p>这是因为，事件循环在处理 HTML 解析工作时，当解析到某个脚本，这个脚本还没下载完，或者被 CSS 阻塞住了，那么就会暂存当前 task，继续执行 eventloop，也就是处理渲染工作，后续再恢复 task 继续解析 HTML</p>
+<p>还有，当 HTML 解析过程中，遇到需要下载的资源，转而去下载资源，且阻塞 HTML 的解析，虽然解析工作不进行，但还是会进行一些预扫描处理的，也就是扫描后面那些需要下载的资源，并发起下载</p>
+<p>所以，HTML 里的资源并不是一个个同步下载，而是可以并行下载的，这样才能以最快效率完成解析</p>
+<p>这一块的知识点都记得零零散散，因为确实不好理解，我也是看了很多篇博客，一篇参考一点过来，有错误再来改正</p>
+<h3 id="8-TCP-四次挥手断开连接"><a href="#8-TCP-四次挥手断开连接" class="headerlink" title="8. TCP 四次挥手断开连接"></a>8. TCP 四次挥手断开连接</h3><p>当一段时间后，不需要发送请求了，就会断开连接，TCP 连接的断开需要四次交互：</p>
+<ul>
+<li>发送方发送 FIN 给接收方</li>
+<li>接收方返回 ACK</li>
+<li>一段时间后，接收方发送 FIN 给发送方</li>
+<li>发送方返回 ACK，接收方接收到后关闭连接，发送方一段时间后也断开连接</li>
+</ul>
+<p>FIN 表示想要断开连接，这里之所以用发送方接收方，是因为，断开连接哪方都可以主动断开</p>
+<p>而之所以需要四次交互，之所以比连接时的三次还多一次，是因为，并不是每时每刻双方都准备好要断开连接了</p>
+<p>也就是说，发送方想断开连接表示它已没什么数据需要发送，随时可断，但接收方此时有可能还处于发送数据阶段，所以它只能先告知发送方说知道了，再等等</p>
+<p>等到接收方也没数据需要发送了，此时再告知发送方说，好了，现在就可以断了</p>
+<p>发送方接收到就回说，好，你断吧，这样接收方就可以断开连接了，然后一段时间后，发送方也自己断开了</p>
+<p>所以，当接收方接到发送方想要端口连接的请求时，如果它此时也随时可断的状态，那么 ACK 和 FIN 是可以一起返回的，也就是可以简化成三次交互了</p>
+]]></content>
+      <categories>
+        <category>面试题</category>
+        <category>前端</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>内存分配以及垃圾回收机制</title>
+    <url>/2020/02/25/%E9%9D%A2%E8%AF%95%E9%A2%98/%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/</url>
+    <content><![CDATA[<h1 id="内存分配以及垃圾回收机制"><a href="#内存分配以及垃圾回收机制" class="headerlink" title="内存分配以及垃圾回收机制"></a>内存分配以及垃圾回收机制</h1><blockquote>
+<p>本文参考：</p>
+<ol>
+<li><a href="https://juejin.im/post/597c5b71f265da3e3d122a3b" target="_blank" rel="noopener">可视化分析js的内存分配与回收</a></li>
+</ol>
+<p>本文面向面试，只罗列些概念</p>
+</blockquote>
+<p>内存分配或者有的文章里叫内存模型，关于这类的文章，网上是真的多，你抄我，我抄你，不同文章里可能讲的还不一样，真令人头大</p>
+<p>没办法，还没有能力能直接去阅读源码，直接去看规范，所以我这篇，也是抄来抄去的</p>
+<p>顶多，我这是面向面试准备，所以只会罗列些概念，以及看了这么多篇文章后的一些疑惑、思考</p>
+<p>疑惑还不是一点两点！</p>
+<h3 id="疑惑"><a href="#疑惑" class="headerlink" title="疑惑"></a>疑惑</h3><p><strong>Q：都说基本类型存栈，引用类型存堆，那么，基本类型是指什么，某个对象里的属性值也是基本类型，这个算吗？</strong></p>
+<p>对于这点，我个人看法是，这句话是针对变量而已，那么变量是什么东西，就是通过 <code>var function let const</code> 关键词声明的标识符就叫变量，其他的比如对象里某个属性值类型也是基本类型的不算</p>
+<p>而根据变量声明位置不同，可分为全局变量（函数外声明）和局部变量（函数内声明），所以不管是在全局声明的变量，还是函数内声明的变量，都遵循这点：</p>
+<blockquote>
+<p>基本类型的变量值存储在栈中，引用类型的变量值存储在堆中</p>
+<p>记住是变量值，所有的变量都会指向栈内一块地址，只是该内存地址上存的是具体基本类型值，还是一个引用（堆内存地址）</p>
+</blockquote>
+<p><strong>Q：有人说，基本类型的变量直接指向栈内地址，所以对基本类型变量的赋值等操作都是直接修改内存空间，拷贝时也才会是值拷贝现象，而引用类型的变量在栈内存的只是堆内存地址，因此对引用类型的拷贝也就只是引用拷贝；但又有人说，基本类型的数据都是不可变的，对基本类型数据的操作其实是会重新生成一份基本类型数据后，再将原来变量指向新的内存地址；那这两种说法不是就相互矛盾了吗？</strong></p>
+<p>有这个疑惑是因为看到了这篇文章：<a href="https://juejin.im/post/5de357e8f265da05ca2e14db" target="_blank" rel="noopener">JavaScript的内存模型</a></p>
+<p>截个里面的图给你们看看：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-a0e8663dffdc4ad0.jpg" alt></p>
+<p>他这篇文章里的说法，跟通常的理解不大一样啊</p>
+<p>不都说，对一个基本类型变量的拷贝，是直接将值拷贝一份到新变量指向的内存地址吗？那照他的说法，其实并没有拷贝值，而是两个变量都指向了同一个内存地址，而且修改某个变量值时，也不是直接在内存地址上修改值，而是重新指向一个新的内存地址</p>
+<p>看完这篇后，就有点懵，你要说他的说法是错的吧，那基本类型数据都是不可变的这点该怎么解释</p>
+<p>你要说他的说法才是对的吧，那基本类型的拷贝还能算是值拷贝吗，值拷贝这种说法不是很流行了吗</p>
+<p>对于这点，我个人啊，个人的理解：</p>
+<p>其实这两种说法都没错的，只是作者的角度不同吧，值拷贝、引用拷贝这种说法，可能是基于结果的一个角度，也就是程序运行之后，从结果来看，对于基本类型确实是值拷贝的现象，因为两个变量互不影响，相互独立，而对于引用类型的两个变量，修改对象某个属性会影响到另外一个，这是因为其实指向同个堆内存，所以现象是引用拷贝</p>
+<p>但上面这篇的作者，他可能是基于机器在处理这些程序的方式上的角度来写的吧，可能对于机器来说，它处理基本类型数据确实是让其不可变，那这样一来，对基本类型变量的赋值操作，其实是会改变变量指向的内存地址，但这个行为对于开发者来说是隐藏的，无感知的，开发者只能感知到结果现象</p>
+<p>我只能这么理解了，毕竟栈内的数据好像没办法调试、抓取，开发者工具里能抓取的关于内存的数据全是堆内存数据</p>
+<p><strong>Q：有些文章里经常说的函数调用栈、执行环境栈、基本类型变量的入栈出栈，这些栈都是同一个栈吗？</strong></p>
+<p>很多人在分析内存分配时，总会随便定义些变量，然后画张图，图里有个栈存储着基本类型的变量，有个堆存储着对象，由栈内存储的引用类型变量会指向这个堆，如（图片盗自<a href="https://juejin.im/post/5c8a065c6fb9a049de6e3f2f" target="_blank" rel="noopener"> https://juejin.im/post/5c8a065c6fb9a049de6e3f2f ，侵删</a>）：</p>
+<p><img src="https://user-gold-cdn.xitu.io/2019/3/19/169953a13558fd19" alt></p>
+<p>我总感觉这种图，尤其是里面的栈画得无头无尾的，这个栈是哪里来的栈，栈里就没有其他数据了吗</p>
+<p>假如我们这张图画的对应代码是这样的吧：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> a = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">var</span> b = <span class="number">2</span>;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">a</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> a1 = <span class="number">0</span>;   <span class="comment">// 变量对象</span></span><br><span class="line">    <span class="keyword">var</span> a2 = <span class="string">'this is string'</span>; <span class="comment">// 变量对象</span></span><br><span class="line">    <span class="keyword">var</span> a3 = <span class="literal">null</span>; <span class="comment">// 变量对象</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> b = &#123; <span class="attr">m</span>: <span class="number">20</span> &#125;; <span class="comment">// 变量b存在于变量对象中，&#123;m: 20&#125; 作为对象存在于堆内存中</span></span><br><span class="line">    <span class="keyword">var</span> c = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]; <span class="comment">// 变量c存在于变量对象中，[1, 2, 3] 作为对象存在于堆内存中</span></span><br><span class="line">&#125;</span><br><span class="line">a();</span><br></pre></td></tr></table></figure>
+
+<p>画的是 a 函数执行时，对于函数 a 内部变量的处理吧，那这个时候，函数外部不还有一些全局变量吗，这些呢？</p>
+<p>正疑惑时，还看到有人这么画（盗自<a href="https://juejin.im/post/5dd8b3a851882572f56b578f" target="_blank" rel="noopener"> https://juejin.im/post/5dd8b3a851882572f56b578f ，侵删</a>）：</p>
+<p><img src="https://user-gold-cdn.xitu.io/2019/11/23/16e96b6b57b734c1" alt></p>
+<p>图中出现函数执行上下文，那这个栈应该就是所谓的执行上下文栈 ECS 了吧，应该也俗称叫函数调用栈吧</p>
+<p>那这图意思是执行上下文栈跟变量存储的栈其实是同一个？</p>
+<p>还有的文章里虽然不画图，但至少有描述了一下，说：</p>
+<blockquote>
+<p>每个执行上下文内的变量都会存储在一个单独的栈内空间里，生命周期跟随执行上下文在 ECS 中的生命周期</p>
+</blockquote>
+<p>忘记原话是什么了，大概是这么个意思，所以我想，上图想表达应该也是这么个意思</p>
+<p>每个执行上下文都会作为一个类似内存基址一样，这个执行上下文内的变量都会根据这个基址的偏移量计算出它们的栈内地址，所以每个函数内的变量都只跟该函数绑定、生命周期由自己决定</p>
+<p><strong>Q：对于基本类型变量值存栈、引用类型变量值存堆的说法，有人说，除了闭包除外，因为闭包不管基本类型还是引用类型都存在堆里，这是什么意思？</strong></p>
+<p>先看下偶然间在其他文章里看到的这么一句描述：</p>
+<blockquote>
+<p>基本类型的变量存在栈里，引用类型的变量存在堆里，但除了闭包，闭包里不管基本类型还是引用类型都存在堆里</p>
+</blockquote>
+<p>我觉得这种说法不对，会有误导的意思</p>
+<p>这种说法，好像会让人理解成，有闭包的时候，函数内的变量就都存在堆里了</p>
+<p>个人看法，闭包是闭包，不影响内存的分配</p>
+<p>闭包里的变量之所以存在堆里，是因为，闭包本来就是因为函数会有一个持有外部词法环境的特性：</p>
+<p>函数本身就是个对象，在定义时，这个函数对象就会被存在堆内存中里了，然后它有一个内部属性 [[scope]]，用来存储需要使用到的外部词法环境里的变量</p>
+<p>我们经常会说当函数返回一个函数时，返回的函数称为闭包，其实想想我们通常是怎么做的，不都是外部会有个变量指向返回的这个函数吗</p>
+<p>那对于外部这个变量来说，它的变量值就是函数对象，这个函数对象存储在堆中，对象里还有个内部属性 [[scope]]，存储着需要使用到的这个函数定义时所在的词法环境中的变量</p>
+<p>所以闭包里的变量存在堆中不是很正常的行为吗，因为这些变量挂靠在函数这个对象上面啊，对象不存堆里存哪</p>
+<p><strong>Q：有人说闭包是在外部函数执行结束后，才将闭包捕获的外部函数里的变量转存到堆里，这种说法对吗？</strong></p>
+<p>这个问题其实就是问，函数的内部属性 [[scope]] 是什么时候，如何存储外部函数里的变量的</p>
+<p>函数定义完就会创建内部属性 [[scope]] 来存储了，至于它怎么知道要捕获哪些变量来存，可能会对函数内的代码做扫描吧，把使用到的外部变量都存进来了吧</p>
+<p>至于如何存储我也不知道，因为没想通，它是不是就是简单的将外部变量拷贝一份过来，如果是这样，外部变量值变化时，岂不是还要再拷贝一遍？</p>
+<p>所以对于这道题，我也不知道这种说法对不对，因为关键取决于函数的内部属性 [[scope]] 是如何存的那些外部变量？</p>
+<p>我说说我的个人理解啊，不知道对不对，但感觉有些说得通：</p>
+<p>函数本身是个对象是不是，而 [[scope]] 只是它的一个内部属性，需要用来存储使用到的外部变量，那么它的属性值应该也还是对象类型，是吧。既然是用对象来存储，那其实就是在这个对象上添加一些跟外部变量同名的属性，然后拷贝过来存储，同时想办法解决修改的同步就好了，所以，并不是外部函数执行结束时，才将栈内变量拷贝到堆里，而是一开始，堆里就有一份栈内变量的副本了</p>
+<p><strong>Q：有人说闭包是会让内部函数持有它外部函数的词法环境，那么是持有所有外部函数的变量吗，还是只是有使用到的才捕获？</strong></p>
+<p>上面那题里也提到了，只会捕获使用到的变量，没有使用的变量不会存储</p>
+<p>但有一个特性：一个函数里面定义的所有函数共享一个闭包，也就是捕获的是内部所有函数需要使用的变量的并集，而不是简单我这个函数没使用，我就不捕获，即使我不使用，但其他函数里使用了，我用样需要捕获，因为所有内部函数的 [[scope]] 属性其实存储的是同一个对象</p>
+<h3 id="内存分配"><a href="#内存分配" class="headerlink" title="内存分配"></a>内存分配</h3><p>内存分配指的是如何对变量进行内存的分配存储，注意是变量，也只有对变量，也只有变量才需要存储</p>
+<p>当全局代码执行时，其实会有一个全局执行环境入栈，这个栈叫执行环境栈，也可以通俗理解成函数调用栈，反正栈顶一直表示当前正在运行的代码环境</p>
+<p>内存的分配行为，只有代码运行时才会进行，也就是说，只有当程序运行到变量赋值那行代码，才会进行一个内存分配</p>
+<p>分配的时候，如果变量类型是基本类型，那就直接将基本类型值存储在栈中，如果是引用类型也就是对象的话，那么这个对象会被存在堆中，而栈里存的只是引用地址，也就是这个对象的堆内存地址</p>
+<p>简单来说，所有变量标识符都会指向栈，但栈内存的是具体值，还是一个引用地址，取决于变量类型</p>
+<p>当调用一个函数时，此时会有一个函数执行上下文入栈，之后，函数内代码执行中，对于变量赋值的内存分配行为也还是一样的处理</p>
+<p>每当一个执行上下文出栈时，就会把该环境里存在栈上的所有变量标识符都清空掉</p>
+<p>对于变量类型是函数对象时，会有特殊的处理，因为函数会有一个内部属性 [[scope]] 存储着函数定义时所在的词法环境的副本</p>
+<p>闭包里的变量，之所以能够在函数执行结束后，仍旧可以使用，就是因为此时虽然函数执行上下文的栈被清空了，但函数的内部属性 [[scope]] 里还有一份副本，保存在堆中</p>
+<p>这份副本并不会保存所有的外部变量，而是只捕获那些需要使用到的变量，需要使用到的是指，所有内部函数需要使用到的</p>
+<h3 id="垃圾回收机制"><a href="#垃圾回收机制" class="headerlink" title="垃圾回收机制"></a>垃圾回收机制</h3><p>垃圾回收机制针对的是堆内存中的数据，因为栈内的数据清理是由执行上下文出栈时会顺带处理</p>
+<p>垃圾回收机制其实有两个核心点：</p>
+<ul>
+<li>如何识别目标内存是否可被回收</li>
+<li>效率问题</li>
+</ul>
+<p>现在的垃圾回收策略都是标记-清除法，简单说就是标记那些需要被清除的对象，一一清除掉</p>
+<p>标记-清除策略的思路，用的是从根节点出发，目标对象是否可达来判定是否需要被清除，可达表示还需要使用，不能清除，不可达就认为是垃圾，需要回收，这就是简单的思路</p>
+<p>但具体的做法，考虑到性能、效率等问题，设计成了新生代、老生代，以及解决内存碎片化所进行的移动处理</p>
+<p>新生代：存储那些存活时间短的对象，所以分配给新生代的内存也比较小，因为经常换来换去，总会有空位空出来</p>
+<p>老生代：存储那些存活时间长、常驻内存的对象，所以分配给新生代的内存也比较大，需要在新生代中经受次多次筛选，才会晋升到老生代</p>
+<p>对于新生代的处理，通常默认大小是 32M/16M，对应 64/32 位系统。为了解决内存碎片化，将新生代划分成两个区域 from（正在使用中） 和 to（闲置中），每个新生成的对象都先放入 from 区，每次处理时，都会遍历 from 区的对象，检查对象是否可达，不可达直接清除，可达则将其放入 to 区，全部处理完毕后，to 区就空出来，from   区就按顺序重新存放了，这样就解决了内存碎片化，然后 from 和 to 身份交换，循环处理</p>
+<p>当在新生代中经历了：</p>
+<ul>
+<li>经历一次 scavenge 回收（也就是 from 到 to 交换）</li>
+<li>to （闲置）空间的内存占用超过 25%</li>
+</ul>
+<p>当有以上两种情况任意一种出现时，就把 to 区的对象晋升到老生代</p>
+<p>对于老生代的处理，就不再是 scavenge 算法了，而是利用标记-清除：第一步先把所有对象做上可清除标记，然后遍历一次，检测对象是否可达，可达的表示还需使用，则去掉标记，遍历结束后，把所有带有标记的都清理掉；然后再整理内存碎片即可。</p>
+<p>大伙基本都清楚，不管什么语言，讲到内存模型时，总会说到这么经典的一句：</p>
+<blockquote>
+<p>基本类型数据保存在栈中，对象类型保存在堆中</p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>面试题</category>
+        <category>前端</category>
+      </categories>
+  </entry>
+  <entry>
     <title>内存泄漏的场景、监控以及分析</title>
-    <url>/2020/01/15/%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%B5%8F%E8%A7%88%E5%99%A8%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F%E5%9C%BA%E6%99%AF%E5%92%8C%E7%9B%91%E6%8E%A7%E5%92%8C%E5%88%86%E6%9E%90/</url>
+    <url>/2020/02/24/%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%B5%8F%E8%A7%88%E5%99%A8%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F%E5%9C%BA%E6%99%AF%E5%92%8C%E7%9B%91%E6%8E%A7%E5%92%8C%E5%88%86%E6%9E%90/</url>
     <content><![CDATA[<h1 id="内存泄漏的场景、监控以及分析"><a href="#内存泄漏的场景、监控以及分析" class="headerlink" title="内存泄漏的场景、监控以及分析"></a>内存泄漏的场景、监控以及分析</h1><p>Q：什么是内存泄漏？</p>
 <p>字面上的意思，申请的内存没有及时回收掉，被泄漏了</p>
 <p>Q：为什么会发生内存泄漏？</p>
@@ -156,6 +450,486 @@
 <p>其实，这里应该考虑的代码有没有问题，为什么需要局部变量存储，为什么需要 unused 函数的存在，这个函数的目的又是什么，如果只是为了在将来某个时刻用来判断上个全局变量 t 是否可用，那么为什么不直接再使用个全局变量来存储，为什么选择了局部变量？</p>
 <p>所以，当写代码时，当涉及到闭包的场景时，应该要特别注意，如果使用不当，很可能会造成一些严重的内存泄漏场景</p>
 <p>应该铭记，闭包会让函数持有外部的词法环境，导致外部词法环境的某些变量无法被回收，还有共享一个闭包这种特性，只有清楚这两点，才能在涉及到闭包使用场景时，正确考虑该如何实现，避免造成严重的内存泄漏</p>
+]]></content>
+      <categories>
+        <category>面试题</category>
+        <category>前端</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>讲讲 EventLoop 以及任务源</title>
+    <url>/2020/02/22/%E9%9D%A2%E8%AF%95%E9%A2%98/%E8%AE%B2%E8%AE%B2EventLoop%E4%BB%A5%E5%8F%8A%E4%BB%BB%E5%8A%A1%E6%BA%90/</url>
+    <content><![CDATA[<h1 id="讲讲-EventLoop-以及任务源"><a href="#讲讲-EventLoop-以及任务源" class="headerlink" title="讲讲 EventLoop 以及任务源"></a>讲讲 EventLoop 以及任务源</h1><blockquote>
+<p>本文参考：<a href="https://www.404forest.com/2017/07/18/how-javascript-actually-works-eventloop-and-uirendering/" target="_blank" rel="noopener">深入探究 eventloop 与浏览器渲染的时序问题</a></p>
+</blockquote>
+<h3 id="EventLoop"><a href="#EventLoop" class="headerlink" title="EventLoop"></a>EventLoop</h3><p>EventLoop 也叫事件循环，是浏览器主线程的执行机制，用来协调浏览器各部分的工作，如 DOM 事件、用户交互、脚本、UI 渲染、网络请求等等</p>
+<p>这些各部分的工作，基本都会作为任务源产生一个 task 队列，等待事件循环去处理</p>
+<p>而事件循环则类似于一个 <code>while(true)</code> 的死循环，不断的重复协调工作，以轮为单位，所以有的文章会有每一个 eventloop 这种说法，其实也就是想表明在一轮事件循环中，浏览器都需要处理哪些事：</p>
+<ol>
+<li>选择优先级高的 task 队列执行</li>
+<li>清空 microtask 队列</li>
+<li>执行 UI Render（有必要的话）</li>
+</ol>
+<p>简单来说，就是任务源会产生宏任务 task 队列，事件循环在每一轮中，会在多个 task 队列中先挑一个处理，执行完宏任务后，再去清空微任务队列，最后去处理渲染工作</p>
+<p>不同任务源产生的 task 可能会被放入不同的队列中，不同队列有优先级之分</p>
+<h3 id="任务源和宏任务-task"><a href="#任务源和宏任务-task" class="headerlink" title="任务源和宏任务 task"></a>任务源和宏任务 task</h3><p>这里涉及任务源和宏任务 task 两种概念，简单来说，任务源是指某类工作，而 task 则是具体到代码层面的某个工作，通常是回调函数，如：</p>
+<p>任务源包括：</p>
+<ul>
+<li>DOM 操作任务源</li>
+<li>用户交互任务源，如鼠标键盘点击事件等</li>
+<li>网络任务源，如 XHR 回调</li>
+<li>history 回溯任务源</li>
+<li>setTimeout 及数据库操作等任务源</li>
+</ul>
+<p>宏任务 task 则是：</p>
+<ul>
+<li><p>DOM 绑定的事件回调函数</p>
+</li>
+<li><p>XHR 注册的回调函数</p>
+</li>
+<li><p>setTimeout 注册的回调函数</p>
+</li>
+</ul>
+<h3 id="微任务-microtask"><a href="#微任务-microtask" class="headerlink" title="微任务 microtask"></a>微任务 microtask</h3><p>前端中里会产生微任务的，常见的是 Promise 的回调</p>
+<p>微任务关键的点在于它的执行时机，通常来说，在每一轮的 eventloop 中，处理完宏任务后，就会去处理微任务队列</p>
+<p>有个现象则是，不管是处于执行宏任务还是处于执行微任务期间，再次产生的微任务都会直接丢到当前微任务队列末尾，直接在当前轮就被处理</p>
+<p>另外，上面只是微任务被处理的一种场景，微任务队列其实是见缝插针，只要有机会，浏览器就会去清空，比如执行完 script 脚本代码后，js 执行栈空闲了，就会去清理微任务</p>
+<h3 id="渲染工作"><a href="#渲染工作" class="headerlink" title="渲染工作"></a>渲染工作</h3><p>UI Render 渲染阶段是在一轮 eventloop 中最后被处理的事情，但它并不是每一轮都会被触发执行</p>
+<p>因为渲染工作要做的事就是计算渲染树、触发 resize、scroll 事件、建立媒体查询、运行 CSS 动画等等，这些会导致界面刷新的，其实只要保证一定的频率如 60Hz 就可以了</p>
+<p>而 eventloop 每一轮处理的工作量、耗时是不固定且非常快的，那么，是没必要每一次都去进行渲染工作的，即使渲染了，浏览器也无法及时显示，所以保证一定频率即可</p>
+]]></content>
+      <categories>
+        <category>面试题</category>
+        <category>前端</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>讲讲浏览器渲染过程</title>
+    <url>/2020/02/22/%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%B5%8F%E8%A7%88%E5%99%A8%E6%B8%B2%E6%9F%93%E8%BF%87%E7%A8%8B/</url>
+    <content><![CDATA[<h1 id="浏览器渲染过程"><a href="#浏览器渲染过程" class="headerlink" title="浏览器渲染过程"></a>浏览器渲染过程</h1><blockquote>
+<p>本文参考：</p>
+<ol>
+<li><a href="https://juejin.im/entry/590801780ce46300617c89b8" target="_blank" rel="noopener">浏览器渲染详细过程：重绘、重排和 composite 只是冰山一角</a></li>
+<li><a href="https://juejin.im/post/5ca0c0abe51d4553a942c17d" target="_blank" rel="noopener">你不知道的浏览器页面渲染机制</a></li>
+</ol>
+<p>本文面向面试，只罗列些概念</p>
+</blockquote>
+<h3 id="event-loop-规范"><a href="#event-loop-规范" class="headerlink" title="event loop 规范"></a>event loop 规范</h3><ol>
+<li>任务源产生任务，放入任务队列</li>
+<li>eventloop 从不同优先级队列中取出 task 执行（一轮 eventloop 起点）</li>
+<li>清空微任务队列（mircotask）</li>
+<li>渲染工作，如有需要的话（一轮 eventloop 终点）</li>
+<li>返回第 2 步，循环</li>
+</ol>
+<p>在执行 2-4 步骤过程中，不同任务源仍旧会产生任务放入任务队列里，等待下一轮 event loop 时进行处理</p>
+<p>每一轮 event loop 都是先处理 task，然后清空微任务队列，而微任务队列被清空的时机不仅仅在 task 执行之后，还有其他时机，比如 javascript 执行栈空闲时等，反正见缝插针</p>
+<p>渲染工作是在一轮 event loop 的最后一步去处理，但并不是每一轮 event loop 都会进行渲染工作，因为只要画面的更新只需保持一定的频率，如 60Hz 即可，而一轮 event loop 耗时可能非常短，几毫秒之内，所以没必要每次都进行渲染工作</p>
+<p>常见任务源有：网络操作、数据库 IO 操作、用户交互事件、setTimeout 等</p>
+<p>产生微任务通常是 Promise</p>
+<h3 id="渲染过程"><a href="#渲染过程" class="headerlink" title="渲染过程"></a>渲染过程</h3><p>渲染的基本流程：</p>
+<p>对于网页页面的初次渲染，自然是从解析 HTML 开始：</p>
+<ol>
+<li>解析 HTML</li>
+<li>构建 DOM 树 </li>
+<li>构建 CSSOM 规则树 </li>
+<li>合成 Render Tree 渲染树</li>
+<li>布局 Layout 计算节点元素的布局信息：位置、大小</li>
+<li>绘制 Paint，计算节点元素显示内容</li>
+<li>呈现</li>
+</ol>
+<p>以上是从整体角度上，一个很简略的过程</p>
+<p>1-3 过程是一个流水线形式进行的工作，每解析一个元素后，就可以交由下一步</p>
+<p>DOM 树根据 HTML 文档构建，与 HTML 文档一一对应，包括注释的节点元素，文本节点元素，通过 css 不显示的节点元素</p>
+<p>CSSOM 规则树则是各个节点元素的样式属性</p>
+<p>Render Tree 渲染树则是最终需要呈现绘制出来的节点元素结构，它就剔除了 DOM 树中那些不显示的节点元素了</p>
+<p>以上过程是理想状态下，也就是纯静态网页时的渲染过程，不涉及外部 css 文件，也不涉及 js 脚本文件</p>
+<p>但一个网页通常都缺不了这两种，那么，在进行上面的过程中，如果遇到 js 脚本文件，会先暂停整个解析流程，等待 js 脚本下载并执行结束后再继续，这是因为，js 脚本里可能会通过 DOM API 来生成、删除、修改 DOM 节点元素</p>
+<p>css 的下载和解析并不会阻塞 HTML 的解析，但会阻塞 js 的执行（因为 js 里可能通过 API 操作一些 CSS 属性），而 js 的执行又会阻塞 HTML 的解析，所以，css 是会间接的阻塞 HTML 解析</p>
+<p>这也是为什么一些优化的文章里会说，将引用外部 css 文件的 link 标签放置在 HTML 文档开头，script 标签放置在底部的原因，就是为了不让 css 阻塞 js 从而阻塞住页面的解析</p>
+<p>那么当 js 脚本里修改了 DOM 结构或样式的场景，页面的刷新流程又是怎么样：</p>
+<p><img src="https://user-gold-cdn.xitu.io/2017/5/2/869e322f9239edbfa82548d9688c023a" alt="盗自开头链接的文章，侵权删"></p>
+<ol>
+<li>js 修改 DOM 结构或样式</li>
+<li>重新修改 CSSOM 规则树，如有需要</li>
+<li>重新计算布局信息，也叫回流或重排</li>
+<li>重新计算绘制信息，也就重绘</li>
+<li>合成层渲染工作，主要处理平移、缩放、旋转等动画行为的优化</li>
+</ol>
+<p>其实，这图还不够全，再看张图：</p>
+<p><img src="https://user-gold-cdn.xitu.io/2018/12/28/167f068e4de6c7ce" alt="盗自开头链接文章，侵权删"></p>
+<p>这图里有很多箭头，箭头指向空中的表示，该操作并不会造成页面刷新，无需进行下个步骤</p>
+<p>所以，其实 js 代码的操作，可能并没改动 DOM 或 CSSOM，也无需重新计算布局信息，只需进行重绘即可</p>
+<p>常见的会造成回流（重排）的操作：</p>
+<ul>
+<li>添加或删除可见 DOM 元素</li>
+<li>元素尺寸改变（边距、边框、宽高）</li>
+<li>内容变化</li>
+<li>计算 offsetWidth、offsetHeigth</li>
+<li>计算 style 属性值</li>
+</ul>
+<p>常见会引起重绘的操作：</p>
+<ul>
+<li>修改字体颜色 color，背景色 background，是否可见 visibility 等</li>
+</ul>
+<h3 id="渲染时机"><a href="#渲染时机" class="headerlink" title="渲染时机"></a>渲染时机</h3><p>通常来说，我们在 js 里修改的 DOM 结构触发了页面的更新，但其实，渲染工作并不会马上进行，因为 event loop 是按照 task，mircotask，渲染工作的流程在轮询的</p>
+<p>也就是 js 里触发的页面更新，通常来说，并不是立马就导致了重排、重绘的工作进行，而是都会等到渲染工作在进行</p>
+<p>比如你在 js 里写个几十行改 CSS 的语句，但这些代码只会在下一次渲染里进行一次重排或重绘工作而已，比如：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-a229ddf1b9dd0ef6.jpg" alt></p>
+<p>紫色的是 Recalculate Style（重新计算 CSS 规则），Layout （重排），Update Layer Tree（更新渲染树）</p>
+<p>绿色是 Paint（绘制）</p>
+<p>setTimeout 的回调 task 里通过 js 修改了元素的 width，即使多次修改，但也只是会在渲染工作中进行回流</p>
+<p>所以，图中应该有两个 task，第一个是 Timer fired 也就是 setTimeout 的回调任务，第二个是渲染工作，包括 Recalculate Style、Layout、Update Layer Tree、Paint</p>
+<p>这里之所以说通常，是因为，有一些场景，一些特别的操作，会导致立马进行重排或重绘的工作，比如</p>
+<p>当元素 layout 状态为 dirty 时，访问了 offsetTop、scrollHeight 等属性，那么，浏览器会立即重新 layout，以保证读取的是正确的信息</p>
+<p>如果元素 layout 状态正常，那么访问 offsetTop 这些属性并不需要重排，因为布局信息是可用的，但如果通过修改元素 width 等属性导致 layout 状态 dirty 之后，再访问 offsetTop 时就需要重新计算，就会立即触发重排工作了</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-503e7d297405ba8c.jpg" alt></p>
+<p>原本正常来说，一轮 event loop 应该是先去任务队列里取一个 task，比如这里的 setTimeout 的回调执行，当该 task 执行结束后，再清空微任务队列，最后再进行渲染工作</p>
+<p>但当元素 layout 状态为 dirty 时，此时 js 里访问了 offsetTop，就会立即先去进行 Layout 重排的计算工作了，图中第一个红框里的紫色也就表明确实在当前 task 里就执行去处理渲染工作的计算了</p>
+<p>但这个目的仅在于让 js 可以拿到正确的布局信息，所以只需要进行 layout 工作即可，后续的 paint 等还是会继续等待当前 task 执行结束，在该轮 event loop 的最后一个渲染步骤里进行</p>
+<h3 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h3><p>其实上面内容都是一些概念性的东西，扫盲用而已</p>
+<p>渲染工作实际上并没有这么简单，比如在浏览器上，就包括了渲染进程、GPU 进程</p>
+<p>渲染进程（Renderer）是每个 tab 页一个，负责执行 js 和页面渲染，包括 Compositor Thread、Main Thread 等线程</p>
+<p>GPU 进程整个浏览器共用一个，主要是将渲染进程中绘制好的位图作为纹理上传给 GPU，调用 GPU 方法显示到屏幕上</p>
+<p>Compositor Thread 线程既负责接收浏览器传过来的垂直同步信息 Vsync，也负责接收 OS 系统传来的用户交互、比如滚动、输入、点击、鼠标移动等事件，如果可能，Compositor Thread 会直接处理这些输入事件，并将新的帧直接 commit 给 GPU Thread，从而直接刷新页面。而如果你在这些输入事件上绑定了回调数据，那么 Compositor Thread 就会唤醒 Main Thread，让后者去执行 js、完成 layout，paint 等过程，最后再将页面数据交由 Compositor Thread 来 commit 给 GPU</p>
+<p>Main Thread 主要负责 js 的执行，渲染工作的计算（回流、重绘、更新渲染树、合成层工作等）</p>
+<p>有时候主线程很卡，导致页面动画很卡时，此时滚动页面，浏览器却仍旧可以做出响应，原因就是因为，渲染的工作其实分多个进程、线程协调合作</p>
+<p>再来，Render Tree 上每个节点，其实要么是 Render Layer，要么是 Render Object。后者是 DOM 和 CSSOM 节点合并后的渲染节点对象，而前者则是用来处理一些多层的布局，比如当使用 position 或者 float 或者 z-index 时造成的多层效果时，就会生成一个 Render Layer 来存储当前节点的布局层次信息</p>
+<p>还有其他的概念，比如位图、纹理、光栅化等</p>
+<p>Main Thread 线程所进行的一系列渲染工作（Layout、Paint）最后得到的是位图数据，也就是页面长什么样的意思</p>
+<p>然后需要经过 Compositor Thread 提交给 Raster 线程进程光栅化，光栅化本质就是进行坐标变化、几何离散化、然后填充到 GPU 接收的纹理数据结构</p>
+<p>你可以试着用 Performance 抓取一段时间，就可以看到这些线程间的合作进行了</p>
+<p>通常界面的刷新过程都是绘制过程，也就是绘制下一帧的界面，但当出现动画，video，canvas 等这些东西时，意味着界面每一帧都在变化，如果每一帧的画面都需要重绘，那么是非常耗性能的，所以针对这种场景，又有一种叫做 Compositing Layer 合成层的来优化</p>
+<p>Render Tree 渲染树里的某个节点，当涉及到动画相关时，就会从 Render Layer 或 Render Object 提升为 Graphics Layer，它优化动画的原理在于，动画导致的界面刷新其实原本长什么样基本不变，只是通过一些动画如平移、缩放等来变化界面，所以合成层在处理时，会对原本缓存的纹理使用不同参数重新合成最后的画面，这样就省略了重排、重绘的开销，达到优化的目的了</p>
+<p>另外，重绘时，是以合成层作为单位的，也就是每次重绘，并不会重绘整个页面，而是该元素所在的合成层，重绘过程可以在开发者工具里查看</p>
+]]></content>
+      <categories>
+        <category>面试题</category>
+        <category>前端</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>讲讲强缓存和协商缓存，F5 和 Ctrl + F5 的区别</title>
+    <url>/2020/02/21/%E9%9D%A2%E8%AF%95%E9%A2%98/%E6%B5%8F%E8%A7%88%E5%99%A8%E7%BC%93%E5%AD%98/</url>
+    <content><![CDATA[<h1 id="讲讲强缓存和协商缓存，F5-和-Ctrl-F5-的区别"><a href="#讲讲强缓存和协商缓存，F5-和-Ctrl-F5-的区别" class="headerlink" title="讲讲强缓存和协商缓存，F5 和 Ctrl + F5 的区别"></a>讲讲强缓存和协商缓存，F5 和 Ctrl + F5 的区别</h1><blockquote>
+<p>本文参考： <a href="https://www.jianshu.com/p/54cc04190252" target="_blank" rel="noopener">深入理解浏览器的缓存机制</a></p>
+</blockquote>
+<p>PS：本文面向面试题，所以只讲些知识点扫盲，详细分析自行查阅参考链接</p>
+<h3 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h3><p>网上常讲的强缓存和协商缓存（也有叫对比缓存）都是浏览器的缓存策略</p>
+<p>需要先明确一点，既然是浏览器的缓存，缓存的数据都是存放于客户端的机子上的，只是根据优先级不同，存储位置不同，还可以进行细分而已，比如 Service Worker，Memory Cache，Disk Cache</p>
+<p><strong>那么，强缓存和协商缓存的区别是什么？</strong></p>
+<p>就我个人理解，它们的区别其实在于交给谁来做决策，谁来决定是否要使用缓存</p>
+<p>强缓存：浏览器在发请求前，会自行去做一些缓存判断工作，自行决定到底要不要发请求，要不要直接使用缓存</p>
+<p>协商缓存：浏览器决定不了，必须发个请求给服务端，交由服务端来告知浏览器到底能不能使用缓存</p>
+<p>所以，其实，对于强缓存来说，是有可能不用发请求的，体现在浏览器的开发者工具 Network 抓包中就是，size 一栏会明确显示该请求从本地缓存读取</p>
+<p>对于协商缓存来说，请求是必须要发的，但服务端判定客户端可以使用缓存时，就不会返回响应体了，体现在响应头中就是 304</p>
+<h3 id="相关-header-字段"><a href="#相关-header-字段" class="headerlink" title="相关 header 字段"></a>相关 header 字段</h3><p>强缓存、协商缓存都是通过请求头和响应头中的字段来实现的，相关的 header 字段有：Expires，Cache-Control，Last-Modified，If-Modified-Since，ETag，If-None-Match</p>
+<p>这些字段，有的是在请求头中使用，有的是在响应头里使用，下面就来讲讲：</p>
+<ul>
+<li>请求头</li>
+</ul>
+<figure class="highlight http"><table><tr><td class="code"><pre><span class="line"><span class="keyword">GET</span> <span class="string">/</span> HTTP/1.1</span><br><span class="line"><span class="attribute">Host</span>: gitbook.dasu.fun</span><br><span class="line"><span class="attribute">Cache-Control</span>: max-age=0</span><br><span class="line"><span class="attribute">If-None-Match</span>: "5e0a2038-4714"</span><br><span class="line"><span class="attribute">If-Modified-Since</span>: Mon, 30 Dec 2019 16:05:12 GMT</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>响应头</li>
+</ul>
+<figure class="highlight http"><table><tr><td class="code"><pre><span class="line">HTTP/1.1 <span class="number">200</span> OK</span><br><span class="line"><span class="attribute">Server</span>: nginx/1.17.5</span><br><span class="line"><span class="attribute">Date</span>: Tue, 31 Dec 2019 05:48:07 GMT</span><br><span class="line"><span class="attribute">Last-Modified</span>: Mon, 30 Dec 2019 16:05:12 GMT</span><br><span class="line"><span class="attribute">Cache-Control</span>: no-cache</span><br><span class="line"><span class="attribute">Pragma</span>: no-cache</span><br><span class="line"><span class="attribute">Expires</span>: 0</span><br><span class="line"><span class="attribute">ETag</span>: "5e0a2038-4714"</span><br></pre></td></tr></table></figure>
+
+<h4 id="expires"><a href="#expires" class="headerlink" title="expires"></a>expires</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">// 响应头</span><br><span class="line">Expires: Thu, 10 Nov 2017 08:45:11 GMT</span><br></pre></td></tr></table></figure>
+
+<p>这是响应头中的字段， http 1.0 就有了，内容表示一个绝对时间，含义也就是缓存的到期时间</p>
+<p>这样，当浏览器接收到这样的响应头，它就知道，这份资源的下次请求，只要在过期时间前，就没必要再发起请求，直接使用本地缓存即可</p>
+<p>缺点则是，由于是绝对时间，需要依赖于客户端本地时间</p>
+<h4 id="Cache-Control"><a href="#Cache-Control" class="headerlink" title="Cache-Control"></a>Cache-Control</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">// 请求头</span><br><span class="line">Cache-Control: max-age=0</span><br><span class="line">// 响应头</span><br><span class="line">Cache-Control: no-cache</span><br></pre></td></tr></table></figure>
+
+<p>这个是 http 1.1 新增的字段，请求头和响应头中都可以使用</p>
+<p>这字段的内容有多个取值，不同取值对应不同缓存行为，客户端和服务端就是通过这字段来进行沟通缓存事宜</p>
+<p>这里列举一些取值，更多请查阅 <a href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Cache-Control" target="_blank" rel="noopener">MDN</a></p>
+<ul>
+<li><p><strong>max-age</strong>：设置缓存最大有效期，相对时间，单位 s</p>
+</li>
+<li><p><strong>must-revalidate</strong>：一旦缓存过期，需要重新向服务端发请求验证</p>
+</li>
+<li><p><strong>no-cache</strong>：本地缓存能不能用，交由服务端决定，所以需先发请求给服务端</p>
+</li>
+<li><p><strong>no-store</strong>：禁止缓存，不使用缓存，包括内存、磁盘缓存</p>
+</li>
+<li><p><strong>public</strong>：代理和客户端都可以缓存</p>
+</li>
+<li><p><strong>private</strong>：只有客户端可以缓存，代理不能缓存</p>
+</li>
+</ul>
+<p>这个字段其实就是用来替代 http 1.0 中的 Expires 字段</p>
+<p>开头所说的强缓存、协商缓存也是通过这个字段来实现，比如当响应头中带有 <code>Cache-Control: max-age=60</code>，浏览器如果发现在缓存过期前再次请求该资源，就可以直接使用本地缓存了，这就是强缓存</p>
+<p>当响应头中带有 <code>Cache-Control: no-cache</code> 时，浏览器就知道，本地的缓存它做不了主，需要它再次向服务端发请求确认是否可以使用本地缓存</p>
+<h4 id="Last-Modified-amp-If-Modified-Since"><a href="#Last-Modified-amp-If-Modified-Since" class="headerlink" title="Last-Modified &amp; If-Modified-Since"></a>Last-Modified &amp; If-Modified-Since</h4><p>强缓存时，浏览器可以直接自行决定是否使用本地缓存，但协商缓存时，是需要跟服务端进行交互，那么，服务端是如何确认客户端的缓存是否可用的呢？</p>
+<p>这就是这两字段的用途了，其中 Last-Modified 是响应头中的字段，服务端返回给客户端资源时，可用携带上该字段，表明这份资源最近一次更新的时间</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">// 响应头</span><br><span class="line">Last-Modified: Mon, 30 Dec 2019 16:05:12 GMT</span><br><span class="line"></span><br><span class="line">// 请求头</span><br><span class="line">If-Modified-Since: Mon, 30 Dec 2019 16:05:12 GMT</span><br></pre></td></tr></table></figure>
+
+<p>而当浏览器向服务端协商本地缓存是否可用时，就需要把本地缓存的资源中记录的 Last-Modified 值写入请求头的 If-Modified-Since 字段中，服务端接收到后，读取该字段值，就可以去进行验证了，如果客户端可使用缓存，那么就返回 304，否则返回 200 将新资源下发</p>
+<h4 id="ETag-amp-If-None-Match"><a href="#ETag-amp-If-None-Match" class="headerlink" title="ETag &amp; If-None-Match"></a>ETag &amp; If-None-Match</h4><p>Last-Modified 的协商方式有些局限性，比如当资源的更新是秒级别以内时，或者资源文件确实有改动，但内容没变化时，这些场景，它无法识别出来</p>
+<p>所以，引入的 ETag 和 If-None-Match 字段可以用来弥补这些场景</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">// 响应头</span><br><span class="line">ETag: &quot;5e0a2038-4714&quot;</span><br><span class="line"></span><br><span class="line">// 请求头</span><br><span class="line">If-None-Match: &quot;5e0a2038-4714&quot;</span><br></pre></td></tr></table></figure>
+
+<p>同样，ETag 是响应头中的字段，If-None-Match 是请求头中的字段</p>
+<p>服务端可以对资源内容生成 hash 值返回给客户端，一旦资源内容更新，hash 值也就不一样了，客户端的请求中携带了缓存资源的 hash 值，服务端通过比对，就可以确认资源是否有发生变化，就可以告知客户端是否可以直接使用缓存</p>
+<p>但相对而言，较耗性能</p>
+<h3 id="用户行为"><a href="#用户行为" class="headerlink" title="用户行为"></a>用户行为</h3><p>用户有三种行为会涉及到缓存：</p>
+<ul>
+<li>新打开 Tab，输入 url，加载网页</li>
+<li>F5 刷新或者地址栏回车（等同于F5）</li>
+<li>Ctrl + F5 刷新</li>
+</ul>
+<p>当新打开一个 Tab 来加载网页，或者在当前 Tab 输入新的 url 加载新网页时，此时浏览器的内存缓存就没有使用场景了，缓存策略就是根据相关 header 字段来决定是走强缓存还是协商缓存</p>
+<p>F5 刷新页面时，如果允许缓存，那么会优先从内存缓存中寻找，再根据 header 字段来判断走强缓存还是协商缓存</p>
+<p>Ctrl + F5 也叫强制刷新，此时发给服务端的请求头中不会携带 If-Modified-Since 或 ETag 字段，那么服务端自然只能重新下发资源</p>
+<h3 id="知识点"><a href="#知识点" class="headerlink" title="知识点"></a>知识点</h3><p>面试时遇到该题，记住这些知识点，然后根据需要，扩展来讲：</p>
+<ul>
+<li><p>强缓存、协商缓存</p>
+</li>
+<li><p>Expires、Cache-Control</p>
+</li>
+<li><p>Cache-Control 的几种取值</p>
+<ul>
+<li>no-cache</li>
+<li>max-age</li>
+<li>no-store</li>
+</ul>
+</li>
+<li><p>Last-Modified &amp; If-Mofidied-Since</p>
+</li>
+<li><p>ETag &amp; If-None-Match</p>
+</li>
+<li><p>F5 &amp; Ctrl + F5</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>面试题</category>
+        <category>前端</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>讲讲同源策略以及跨域解决方案</title>
+    <url>/2020/02/20/%E9%9D%A2%E8%AF%95%E9%A2%98/%E8%AE%B2%E8%AE%B2%E5%90%8C%E6%BA%90%E7%AD%96%E7%95%A5%E4%BB%A5%E5%8F%8A%E8%B7%A8%E5%9F%9F%E8%AF%B7%E6%B1%82%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/</url>
+    <content><![CDATA[<h1 id="讲讲同源策略以及跨域解决方案"><a href="#讲讲同源策略以及跨域解决方案" class="headerlink" title="讲讲同源策略以及跨域解决方案"></a>讲讲同源策略以及跨域解决方案</h1><blockquote>
+<p>本文参考：</p>
+<ol>
+<li><a href="https://developer.mozilla.org/zh-CN/docs/Web/Security/Same-origin_policy" target="_blank" rel="noopener">浏览器的同源策略</a></li>
+<li><a href="https://juejin.im/post/5c23993de51d457b8c1f4ee1#comment" target="_blank" rel="noopener">九种跨域方式实现原理（完整版）</a></li>
+</ol>
+</blockquote>
+<h3 id="同源策略"><a href="#同源策略" class="headerlink" title="同源策略"></a>同源策略</h3><p>同源限制策略是浏览器的行为，对于一个网页 （html），当它内部的脚本发起一个请求时，浏览器会对这个请求的资源做同源检测</p>
+<p>只有协议、域名、端口三者都一致的，才算是同源，才能够正常拿到响应数据，否则，都称为跨域请求，浏览器会将响应结果进行拦截，请求虽然是发出去了，但代码上读取不到响应</p>
+<p>以下这些操作都会进行同源限制策略：</p>
+<ul>
+<li>XMLHttpRequest 请求和 fetch 请求</li>
+<li>Web 字体（CSS 中通过 @font-face 加载的字体）</li>
+<li>WebGL 和 Canvas 绘制 image/video</li>
+</ul>
+<h3 id="跨域解决方案"><a href="#跨域解决方案" class="headerlink" title="跨域解决方案"></a>跨域解决方案</h3><p>解决方案有很多种，比如 jsonp，CORS，websocket，nginx 等等，每种方案基本都有各自的适用场景，优缺点，目前普遍场景用的是 nginx + CORS</p>
+<h4 id="方案一：CORS"><a href="#方案一：CORS" class="headerlink" title="方案一：CORS"></a>方案一：CORS</h4><p>CORS：跨域资源共享，通过响应头中的 Access-Control-Allow-Origin 字段来声明，本资源是否允许外域访问</p>
+<p>这种方案需要依赖于后端，请求的资源可以是某个资源文件，也可以是 json 接口，但后端需要对这些请求的响应头中添加字段，来声明，本资源或接口允许外域访问</p>
+<p>这样，浏览器在看到响应头中有这个字段，就不会对跨域请求的响应结果做拦截</p>
+<p>这是一种根本解决方案，缺点是需要依赖后端</p>
+<h4 id="方案二：-nginx"><a href="#方案二：-nginx" class="headerlink" title="方案二： nginx"></a>方案二： nginx</h4><p>借助 nginx 可以有两种方案，一种是直接用 nginx 做代理转发，另一种则是结合 CORS</p>
+<ul>
+<li>代理转发</li>
+</ul>
+<p>浏览器有同源限制，那只要保证请求的是同源的也就没问题了</p>
+<p>假如 <a href="http://domain1.com" target="_blank" rel="noopener">http://domain1.com</a> 的网页里有对 <a href="http://domain2.com" target="_blank" rel="noopener">http://domain2.com</a> 的请求，因为域名不一样，请求的结果被浏览器拦截了</p>
+<p>借助 nginx 的转发，那么，前端可以这么处理跨域的请求：将所有对 <a href="http://domain2.com" target="_blank" rel="noopener">http://domain2.com</a> 也就是非本源的请求，都修改成类似 <a href="http://domain1.com/domain2" target="_blank" rel="noopener">http://domain1.com/domain2</a> 的请求，也就是使用同协议、同域名、同端口，但根据不同路径来区分，这样就不存在跨域问题</p>
+<p>前端这样修改后，因为实际请求是需要发送到 <a href="http://domain2.com" target="_blank" rel="noopener">http://domain2.com</a> 的，所以，就需要 nginx 在接收到请求时，根据不同路径，将请求转发到真正的目的地，拿到结果后再返回</p>
+<p>这种方案，需要前端配合，让前端访问一个同源的虚假 url，再交由 nginx 做转发，去访问真正的 url</p>
+<p>缺点就是，划分的路径需要区分同源的原本请求以及虚假 url 请求</p>
+<p>这种方案也挺常用的</p>
+<ul>
+<li>结合 CORS</li>
+</ul>
+<p>只利用 nginx 代理转发的话，就需要保证所有请求都是同协议、同域名、同端口的，只能根据路径不同做区分，这样灵活性不高</p>
+<p>所以，还可以结合 CORS，因为只要响应头中返回跨域资源共享的相关字段，浏览器就不会进行同源限制</p>
+<p>所以，只要保证前端的请求都经过 nginx，那么协议、域名、端口一不一样无所谓了，在 nginx 上配置这些跨域请求返回的响应头中都加上跨域资源共享允许的字段，就可以了</p>
+<p>这种方案其实就是利用 nginx 的转发 + CORS，是目前比较常用的一种</p>
+<h4 id="方案三：jsonp"><a href="#方案三：jsonp" class="headerlink" title="方案三：jsonp"></a>方案三：jsonp</h4><p>jsonp 原理是利用 script 标签没有同源限制，依赖服务端的一种方案，局限性是只能发送 get 请求</p>
+<p>浏览器在遇到 script 标签时，会去访问 src 属性的地址，将 js 文件下载下来，并执行</p>
+<p>那么，只要把 src 属性赋值需要跨域请求的 url，然后本地先声明一个 callback 函数，这样，服务端在接收到请求时，返回的 js 代码就是调用 callback，需要返回的数据以参数传递给 callback，浏览器在下载完这 js 并执行时，就等效于调用了 callback</p>
+<p>所以这方案需要依赖于后端，前端需要告知后端这请求的回调函数名，由后端来写调用的代码</p>
+<h4 id="方案四：postMessage"><a href="#方案四：postMessage" class="headerlink" title="方案四：postMessage"></a>方案四：postMessage</h4><p>这个是 HTML5 中新增的可以用于跨文档消息传递使用的 api</p>
+<p>没用过，不清楚，但应该是适用于在多个网页间，或者有 iframe 嵌套网页间的消息传递，对于普通的跨域访问后端的场景好像不适用</p>
+<h4 id="方案五：websocket"><a href="#方案五：websocket" class="headerlink" title="方案五：websocket"></a>方案五：websocket</h4><p>websocket 是 HTML5 的一个持久化协议，实现了浏览器与服务器的全双工通信，双方都可以主动发送数据，没有同源的限制</p>
+<p>有它的适用场景，对于普通的调接口，一次性拿数据这种场景，应该也不适用</p>
+<h4 id="其他方案"><a href="#其他方案" class="headerlink" title="其他方案"></a>其他方案</h4><p>还有一些比如 window.name + iframe 或者 location.hash + iframe 或者 document.domain + iframe 等方案，没遇到过，也没深究过，暂不了解</p>
+]]></content>
+      <categories>
+        <category>面试题</category>
+        <category>前端</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>讲讲 XSS、CSRF、中间人攻击等</title>
+    <url>/2020/02/17/%E9%9D%A2%E8%AF%95%E9%A2%98/%E8%AE%B2%E8%AE%B2XSS%E5%92%8CCSRF%E7%AD%89%E6%94%BB%E5%87%BB%E5%8F%8A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/</url>
+    <content><![CDATA[<h1 id="讲讲-XSS、CSRF、中间人攻击等"><a href="#讲讲-XSS、CSRF、中间人攻击等" class="headerlink" title="讲讲 XSS、CSRF、中间人攻击等"></a>讲讲 XSS、CSRF、中间人攻击等</h1><blockquote>
+<p>本文参考：<a href="https://juejin.im/post/5c6d142151882503b3271f4b" target="_blank" rel="noopener">前端面试查漏补缺–(七) XSS攻击与CSRF攻击</a></p>
+</blockquote>
+<h3 id="XSS-攻击"><a href="#XSS-攻击" class="headerlink" title="XSS 攻击"></a>XSS 攻击</h3><h4 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h4><p>XSS：Cross-Site Script 跨站脚本攻击，是一种<strong>代码注入攻击</strong></p>
+<p>顾名思义，XSS 攻击就是将非源站的脚本注入到网页中执行来进行攻击，只要能将外部脚本注入到网页并让脚本代码运行，那么就可以通过 js 来获取一些隐私如 Cookie 等信息，甚至让网页重定向到危险网站或者直接让网页瘫痪</p>
+<p>所以，XSS 攻击的关键在于代码注入</p>
+<p>那么，什么地方会存在代码被注入且执行的场景呢？</p>
+<p>无外乎就是用户可以输入的地方，且输入的信息又会被显示到页面的时候</p>
+<p>输入提供了注入的方式，显示则提供了脚本的运行，常见的功能有评论区</p>
+<h4 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h4><p>那么它是如何将代码注入并运行来进行攻击的呢？</p>
+<p>假如有个输入框，输入的内容会被显示到页面上，那如果我们输入：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&quot;/&gt; &lt;script&gt;alert(1)&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<p> 类似于 sql 注入攻击一样，通过输入提前结束符，让后续的 script 能够被作为一个 html 标签识别运行，那么后面这段脚本代码就会被执行，而这个脚本代码并非本站，而是来自其他恶意源站，所以这种攻击叫跨站脚本攻击</p>
+<p>除了提前结束符外，也可以利用标签的 src 或者 onerror 等这些可以执行 js 代码的机制，来注入脚本</p>
+<h4 id="预防"><a href="#预防" class="headerlink" title="预防"></a>预防</h4><p>预防措施分两方面，一是避免被攻击，二是被攻击了，但尽可能减少危害</p>
+<p>要避免攻击，其实就是要阻止代码的注入，所以对那些用户的输入都应该做处理，比如对输入做过滤、做检查、是否符合格式要求，如果是 HTML，那么对其进行转义，避免直接在页面上显示 HTML 代码，如果是有富文本需求，那么可以结合白名单的机制</p>
+<p>其实，现在前端的开发基本都会基于三大框架，而这些处理，在框架层面已经帮忙做了，所以现在很少需要自己再去做这些安全防范工作，但框架仍旧会留有原生接口，所以一旦使用到，还是需要知道这些思路的</p>
+<p>再来，如果没考虑全，被攻击了，那么应该尽量将危害降到最低，说白了，就是不能让攻击者可以获取到一些隐私信息，比如将 Cookie 设置成 HttpOnly，这样 js 就读取不到了</p>
+<h3 id="CSRF-攻击"><a href="#CSRF-攻击" class="headerlink" title="CSRF 攻击"></a>CSRF 攻击</h3><h4 id="概念-1"><a href="#概念-1" class="headerlink" title="概念"></a>概念</h4><p>CSRF：Cross-site request forgery 跨站请求伪造攻击，是一种利用后端程序漏洞的攻击</p>
+<p>顾名思义，跨站请求伪造攻击，就是利用伪造成真实用户对服务器发起请求来进行攻击</p>
+<p>那么，要如何伪造成真实用户呢？</p>
+<p>其实，也就是利用了 HTTP 在发请求时，会自动携带上 Cookie 的机制，而后端通常又是通过 Cookie 来保存一个用户的登录状态</p>
+<p>所以攻击者甚至都不用去窃取 Cookie，只要用户登录过目标网站，那么浏览器就会保存 Cookie，在过期前，恶意网站内部可以隐式的对目标网站接口发起请求，就可以伪装成真实用户去访问了</p>
+<p>因为对于后端来说，他并无法区分此次的请求是用户自己操作的，还是恶意网站内部发起的请求</p>
+<h4 id="原理-1"><a href="#原理-1" class="headerlink" title="原理"></a>原理</h4><blockquote>
+<p>下图来自：<a href="https://www.cnblogs.com/hyddd/archive/2009/04/09/1432744.html" target="_blank" rel="noopener">浅谈CSRF攻击方式</a>，侵权删</p>
+</blockquote>
+<p><img src="https://pic002.cnblogs.com/img/hyddd/200904/2009040916453171.jpg" alt></p>
+<p>所以，完成一次 CSRF 攻击，必须有两个步骤：</p>
+<ul>
+<li>登录网站 A</li>
+<li>在不登出网站 A 情况下，访问危险网站 B</li>
+</ul>
+<h4 id="预防-1"><a href="#预防-1" class="headerlink" title="预防"></a>预防</h4><p>这种攻击其实可以算是后端程序的漏洞，后端对接口请求者的身份验证存在漏洞</p>
+<p>所以预防这种攻击，需要后端对接口请求者的身份加强认证</p>
+<p>但这肯定会造成一些性能问题，所以，通常是涉及一些敏感接口时，来加强二次认证</p>
+<p>认证方式可以是验证码、或者 token、或者检查请求来源</p>
+<h3 id="中间人攻击"><a href="#中间人攻击" class="headerlink" title="中间人攻击"></a>中间人攻击</h3><h4 id="概念-2"><a href="#概念-2" class="headerlink" title="概念"></a>概念</h4><p>本来正常的用户使用网站的流程是，用户的客户端与服务端双方建立连接，进行通信</p>
+<p>而中间人攻击，就是攻击者分别与客户端和服务端建立连接，用户访问的实际上攻击者伪造的网站，然后攻击者将用户的请求转发给真正的服务端，再将服务端返回的信息丢给用户的客户端</p>
+<p>也就是中间人攻击的情况下：用户客户端 &lt;=&gt; 攻击者 &lt;=&gt; 服务端</p>
+<p>这样一来，攻击者其实就完全监视了双方的通信，就可以窃取一些隐私，甚至是伪造、修改通信信息</p>
+<h4 id="预防-2"><a href="#预防-2" class="headerlink" title="预防"></a>预防</h4><p>网络的请求可能经过很多代理，所以很难从避免请求被中间人监听这方面去预防</p>
+<p>但可以从攻击者有哪些攻击角度来预防，对于中间人攻击，它能进行的攻击无外乎两者：一是窃取隐式、二是伪造、修改通信信息</p>
+<p>对于第一点，就需要对通信的信息进行加密处理，可以客户端服务端双方自行实现加密机制，也可以直接使用 HTTPS 协议</p>
+<p>对于第二点，则是保证请求响应的完整性、一致性，通常可以用 token 来处理，但其实，只要对通信信息进行加密后，攻击者也就无从去伪造了</p>
+<h3 id="MDN-web安全"><a href="#MDN-web安全" class="headerlink" title="MDN web安全"></a><a href="https://developer.mozilla.org/zh-CN/docs/Web/Security" target="_blank" rel="noopener">MDN web安全</a></h3><p>这里介绍下 MDN web 安全系列里的一些内容</p>
+<h4 id="内容安全策略（CSP）"><a href="#内容安全策略（CSP）" class="headerlink" title="内容安全策略（CSP）"></a>内容安全策略（CSP）</h4><ul>
+<li>概念</li>
+</ul>
+<p>内容安全策略（CSP）是一个额外的安全层，可以用来检测并削弱某些特定类型的攻击，比如跨站脚本工具（XSS）和数据注入攻击等</p>
+<p>CSP 是通过指定有效域来让浏览器明确知道，只有哪些认可的域的脚本是信任的，是可以执行的，其他域的脚本浏览器一概忽略不执行</p>
+<ul>
+<li>使用方式</li>
+</ul>
+<p>有两种使用方式，一是通过响应头中的 Content-Security-Policy 字段来启用，二是通过 html 的 meat 标签，如：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">// 所有内容只允许来自站点的同一个源，不包括其子域名</span><br><span class="line">Content-Security-Policy: default-src &apos;self&apos;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">// 允许内容来自信任的域名及其子域名</span><br><span class="line">Content-Security-Policy: default-src &apos;self&apos; *.trusted.com</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">// 允许图片来自任何源，但音视频和脚本只能来自信任的源</span><br><span class="line">Content-Security-Policy: default-src &apos;self&apos;; img-src *; media-src media1.com media2.com; script-src userscripts.example.com</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">// 该服务器仅允许通过HTTPS方式并仅从onlinebanking.jumbobank.com域名来访问文档</span><br><span class="line">Content-Security-Policy: default-src https://onlinebanking.jumbobank.com</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;meta http-equiv=&quot;Content-Security-Policy&quot; content=&quot;default-src &apos;self&apos;; img-src https://*; child-src &apos;none&apos;;&quot;&gt;</span><br></pre></td></tr></table></figure>
+
+<p>可以配置各种策略，如：</p>
+<p>default-src：默认策略，下面这些策略的默认配置</p>
+<p>child-src：文档里 iframe 嵌套的源配置</p>
+<p>connect-src：指定 XMLHttpRequest、WebSocket、EventSource 的连接来源</p>
+<p>font-src：指定通过 @font-face 加载字体的来源</p>
+<p>img-src：指定能被 img 标签加载的来源</p>
+<p>media-src：指定能被 audio 和 video 加载的来源</p>
+<p>object-src：指定能被 object 和 embed 和 applet 加载的来源</p>
+<p>script-src：禁止使用内联 script 脚本和 eval，除非设置 unsafe-inline 和 unsafe-eval 来开启，且指定可执行脚本的来源</p>
+<ul>
+<li>发送报告</li>
+</ul>
+<p>如果被攻击了，还可以设置 report-uri 来发送报告到指定的 uri</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Content-Security-Policy: default-src &apos;self&apos;; report-uri http://reportcollector.example.com/collector.cgi</span><br></pre></td></tr></table></figure>
+
+<h4 id="子资源完整性（SRI）"><a href="#子资源完整性（SRI）" class="headerlink" title="子资源完整性（SRI）"></a>子资源完整性（SRI）</h4><p>SRI：Subresource Integrity 子资源完整性</p>
+<p>是一种允许浏览器检查其获得的资源是否被篡改的安全特性，通过获取文件的 hash 值和提供的 hash 值比对来判断</p>
+<p>缓存在 CDN 上的资源存在被攻击、篡改、替换的危险，可以通过该安全特性，来让浏览器在使用这些资源前进行完整性检测</p>
+<ul>
+<li>使用</li>
+</ul>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"https://example.com/example-framework.js"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">integrity</span>=<span class="string">"sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">crossorigin</span>=<span class="string">"anonymous"</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>浏览器在 script 或 link 标签中遇到 integrity 属性后，会在执行脚本或应用样式表之前比对所加载的文件 hash 值与期望的是否一致，当不一致时，浏览器会拒绝使用，并报告错误</p>
+<h4 id="X-Frame-Options"><a href="#X-Frame-Options" class="headerlink" title="X-Frame-Options"></a>X-Frame-Options</h4><p>这是响应头中的字段，虽然非标准，但被广泛浏览器支持，用来指示是否允许页面被使用到 frame，iframe，embed，object 中，即可以确保网站有没有被嵌入到别人的网页中，这样可以来避免一些点击劫持攻击</p>
+<p>CSP 中的 Content-Security-Policy 也有支持该功能</p>
+<ul>
+<li>使用</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">X-Frame-Options: deny</span><br><span class="line">X-Frame-Options: sameorigin</span><br><span class="line">X-Frame-Options: allow-from https://example.com/</span><br></pre></td></tr></table></figure>
+
+<p>deny：表示该页面不允许在 frame 中展示</p>
+<p>sameorigin：表示该页面允许在同域页面的 frame 中展示</p>
+<p>allow-from xxx：表示页面可以在指定来源的 frame 中展示</p>
+<h4 id="HTTP-Strict-Transport-Security（HSTS）"><a href="#HTTP-Strict-Transport-Security（HSTS）" class="headerlink" title="HTTP Strict Transport Security（HSTS）"></a>HTTP Strict Transport Security（HSTS）</h4><p>这是一种安全功能，用来告诉浏览器只能通过 HTTPS 访问当前资源</p>
+<p>通过在响应头中使用 Strict-Transport-security 字段来启用</p>
+<ul>
+<li>使用方式</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Strict-Transport-Security: max-age=&lt;expire-time&gt;</span><br><span class="line">Strict-Transport-Security: max-age=&lt;expire-time&gt;; includeSubDomains</span><br></pre></td></tr></table></figure>
+
+<p>max-age：过期时间</p>
+<p>includeSubDomains：此规则适用于该网站所有子域名</p>
+]]></content>
+      <categories>
+        <category>面试题</category>
+        <category>前端</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>说说 ES5 的几种继承方式</title>
+    <url>/2020/02/15/%E9%9D%A2%E8%AF%95%E9%A2%98/%E8%AF%B4%E8%AF%B4es5%E7%9A%84%E7%BB%A7%E6%89%BF%E6%96%B9%E5%BC%8F/</url>
+    <content><![CDATA[<h1 id="说说-ES5-的几种继承方式"><a href="#说说-ES5-的几种继承方式" class="headerlink" title="说说 ES5 的几种继承方式"></a>说说 ES5 的几种继承方式</h1><p>在 ES6 还没出来前，让你写个继承，你会怎么写</p>
+<p>比如，给你个场景：父类 A 具有属性 a 和方法 b，子类 B 继承父类 A</p>
+<h3 id="ES6-继承"><a href="#ES6-继承" class="headerlink" title="ES6 继承"></a>ES6 继承</h3><p>用 ES6 来写的话，就很简单：</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span> </span>&#123;</span><br><span class="line">    <span class="keyword">constructor</span>() &#123;</span><br><span class="line">        <span class="keyword">this</span>.a = <span class="string">"A"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    b() &#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">"A"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span> </span>&#123;</span><br><span class="line">    <span class="keyword">constructor</span>() &#123;</span><br><span class="line">        <span class="keyword">super</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> b = <span class="keyword">new</span> B(); <span class="comment">// &#123;a: "A"&#125;</span></span><br><span class="line">b.__proto__; <span class="comment">// &#123;&#125;</span></span><br><span class="line">b.__proto__.__proto__; <span class="comment">// &#123;b: f&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>如果你仔细去看对象 b 的属性和原型链上的属性，你会发现：</p>
+<ul>
+<li>属性 a 是属于对象 b 的自有属性，并不是原型里的属性</li>
+<li>方法 b 是属于对象 b 的原型的原型里的方法</li>
+</ul>
+<p>之所以这样，是因为，在 js 里，并没有类的概念，对象是基于原型的继承，但却有构造函数这东西，然后构造函数的作用更类似于一个工具方法</p>
+<p>它做的是，其实就是处理 this，同时让 this 继承 prototype 原型</p>
+<p>所以，在 ES6 里，如果是写在 constructor 方法里，通过赋值语句给 this 添加的属性，子类继承时，这些属性都当做实例对象的自有属性，也就是只借用父类 constructor 来加工 this 而已，并不是继承</p>
+<p>而写在 class 内的其他方法，则是会被定义在 prototype 对象上，由子类继承</p>
+<p><strong>其实 ES6 的 class 语法只是语法糖，它的实际实现也是基于 ES5 的构造函数和原型，但如果不好好考虑的话，用 ES5 的写继承，很容易出问题</strong></p>
+<p>比如，下面这些就是欠缺考虑的场景：</p>
+<h3 id="原型链继承（未考虑父类构造可传参的场景）"><a href="#原型链继承（未考虑父类构造可传参的场景）" class="headerlink" title="原型链继承（未考虑父类构造可传参的场景）"></a>原型链继承（未考虑父类构造可传参的场景）</h3><p>所谓原型链继承，就是让子类构造函数的 prototype 指向父类的实例对象</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">A</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">this</span>.a = <span class="string">"a"</span>;</span><br><span class="line">&#125;</span><br><span class="line">A.prototype.b = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">"b"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">B</span>(<span class="params"></span>) </span>&#123;&#125;</span><br><span class="line">B.prototype = <span class="keyword">new</span> A();</span><br><span class="line"><span class="keyword">var</span> b = <span class="keyword">new</span> B(); <span class="comment">// &#123;&#125;</span></span><br><span class="line">b.__proto__; <span class="comment">// &#123;a: "a"&#125;</span></span><br><span class="line">b.__proto__.__proto__; <span class="comment">// &#123;b: f&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>这种和 es6 的实现有个很大的区别就在于，父类构造函数里通过赋值语句给 this 添加的属性，用这种方式，就归算于原型里了，对于子对象 b 来说，这些就属于继承属性了</p>
+<p>网上对于这种方式的缺陷基本都有说：</p>
+<ul>
+<li>原型共用问题，修改原型属性会影响到所有子对象</li>
+<li>未考虑父构造函数可传参的场景</li>
+</ul>
+<p>个人觉得第一个不是问题，毕竟这就是原型继承语言的特点，倒是第二个在某些场景就有问题了：</p>
+<p>当父构造函数需要参数，且参数来自于调用子构造函数时传递进去的，那显然，只有在子构造函数内才能知道参数是什么，但由于操作原型继承的语句是在构造函数外部的，所以这种场景就无法适用了</p>
+<h3 id="组合继承（多余的原型属性）"><a href="#组合继承（多余的原型属性）" class="headerlink" title="组合继承（多余的原型属性）"></a>组合继承（多余的原型属性）</h3><p>不推荐使用该方式</p>
+<p>所谓组合继承，就是在上面原型链继承方式下，在子构造函数内，手动调用父构造函数，并传入子类 this</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">A</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">this</span>.a = <span class="string">"a"</span>;</span><br><span class="line">&#125;</span><br><span class="line">A.prototype.b = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">"b"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">B</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  A.call(<span class="keyword">this</span>);</span><br><span class="line">&#125;</span><br><span class="line">B.prototype = <span class="keyword">new</span> A();</span><br><span class="line"><span class="keyword">var</span> b = <span class="keyword">new</span> B(); <span class="comment">// &#123;a: "a"&#125;</span></span><br><span class="line">b.__proto__; <span class="comment">// &#123;a: "a"&#125;</span></span><br><span class="line">b.__proto__.__proto__; <span class="comment">// &#123;b: f&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>这种最大的问题在于，父构造函数上的属性既添加到子对象上，也添加到原型对象上了，也就是父构造函数被调用了两次，虽然两次针对的目标并不一样，但针对原型的这次调用是多余的</p>
+<h3 id="寄生组合（推荐）"><a href="#寄生组合（推荐）" class="headerlink" title="寄生组合（推荐）"></a>寄生组合（推荐）</h3><p>（这些方式的名字也不知道谁起的）</p>
+<p>寄生组合的方式其实就是改进组合继承法，其实也是 es6 的 class 的实现方式，思路很简单，就是子构造函数调用父构造函数来处理对 this 的加工，然后子构造函数的 prototype 继承父构造函数的 prototype</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">A</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">this</span>.a = <span class="string">"a"</span>;</span><br><span class="line">&#125;</span><br><span class="line">A.prototype.b = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">"b"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">B</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  A.call(<span class="keyword">this</span>);</span><br><span class="line">&#125;</span><br><span class="line">B.prototype = <span class="built_in">Object</span>.create(A.prototype);</span><br><span class="line">B.prototype.constructor = B;</span><br><span class="line"><span class="keyword">var</span> b = <span class="keyword">new</span> B(); <span class="comment">// &#123;a: "a"&#125;</span></span><br><span class="line">b.__proto__; <span class="comment">// &#123;&#125;</span></span><br><span class="line">b.__proto__.__proto__; <span class="comment">// &#123;b: f&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>这就和 es6 里的实现是一样的了，当然，如果能考虑到，默认构造函数的原型里会有个 constructor 属性指向构造函数，但当手动修改构造函数的原型时，这个属性就丢失掉了，所以，能够手动加回来，就最好了</p>
+<hr>
+<p>其实，我一直没觉得继承这个面试点要考什么，我觉得每种方式都有使用场景，当然，最后一种的通用法</p>
+<p>但如果没有需要往构造函数里传参的场景的话，那第一种原型链法也是可以用的啊，你说它存在修改原型属性影响子对象的缺陷存在？</p>
+<p>有点懵，这是缺陷吗，这不就是基于原型继承语言的特点，那 es6 的 class 方式，上面寄生组合通用法就没有这个问题吗，不也一样可以改原型上的方法来影响到子对象</p>
+<p>当然，网上还有介绍一种借用构造函数法的，就是全程都通过调用父类构造函数来实现继承，不借用构造函数的 prototype，这种方式，在我看来，就称不上是继承的写法，就是一种错误写法而已，哪有基于原型继承的语言不用原型来实现继承的</p>
+<p>还有组合继承法，这种方式，其实我也觉得是一种粗心下的错误写法而已，既然想到了用构造函数加工子对象的 this，用构造函数原型来实现继承，那继承的时候，干嘛还要去继承父构造函数的实例对象，直接继承父构造函数的原型不就好了</p>
+<p>综上，在我看来，继承其实就两种，一种是通过原型继承父构造函数的实例对象，一种是通过借助父构造函数加工子对象 this 和继承父构造函数原型，前一种写法简单，但使用场景有限，后一种写法通用</p>
+<p>所以，没明白考点是什么，可能就是考，你会不会写错代码，用错方法的吧</p>
 ]]></content>
       <categories>
         <category>面试题</category>
@@ -3949,68 +4723,6 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
-    <title>前端16-JavaScript执行上下文EC和变量对象VO（进阶）</title>
-    <url>/2018/11/02/%E5%89%8D%E7%AB%AF/%E8%BF%9B%E9%98%B6/%E5%89%8D%E7%AB%AF%E5%85%A5%E9%97%A816-JavaScript%E8%BF%9B%E9%98%B6%E4%B9%8BEC%E5%92%8CVO/</url>
-    <content><![CDATA[<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本系列文章内容全部梳理自以下几个来源：</p>
-<ul>
-<li>《JavaScript权威指南》</li>
-<li><a href="https://developer.mozilla.org/zh-CN/docs/Web" target="_blank" rel="noopener">MDN web docs</a></li>
-<li><a href="https://github.com/smyhvae/Web" target="_blank" rel="noopener">Github:smyhvae/web</a></li>
-<li><a href="https://github.com/goddyZhao/Translation/tree/master/JavaScript" target="_blank" rel="noopener">Github:goddyZhao/Translation/JavaScript</a></li>
-</ul>
-<p>作为一个前端小白，入门跟着这几个来源学习，感谢作者的分享，在其基础上，通过自己的理解，梳理出的知识点，或许有遗漏，或许有些理解是错误的，如有发现，欢迎指点下。</p>
-<p>PS：梳理的内容以《JavaScript权威指南》这本书中的内容为主，因此接下去跟 JavaScript 语法相关的系列文章基本只介绍 ES5 标准规范的内容、ES6 等这系列梳理完再单独来讲讲。</p>
-<h1 id="正文-执行上下文EC和变量对象VO"><a href="#正文-执行上下文EC和变量对象VO" class="headerlink" title="正文-执行上下文EC和变量对象VO"></a>正文-执行上下文EC和变量对象VO</h1><p>EC：Execution Context，中文翻译执行上下文，也有翻译成执行环境的。</p>
-<p>VO：Variable object，中文翻译变量对象。</p>
-<p>这两个概念很重要，涉及到作用域以及作用域链的原理。</p>
-<h3 id="执行上下文-EC"><a href="#执行上下文-EC" class="headerlink" title="执行上下文 EC"></a>执行上下文 EC</h3><p>先说说Android中的上下文： </p>
-<ul>
-<li>Android</li>
-</ul>
-<p>Android 中也有上下文：Context，四大组件都是上下文，还有一个全局的 Application上下文。在 Android 中基本是以四大组件为界限，每创建一个四大组件，都会产生一个上下文，比如每个 Activity 都是独立的上下文。</p>
-<p>在 Android 中，上下文 Context 的作用大体上用于标识各种资源的所属，要加载一张图片、创建一个 View、弹一个 Dialog 等等，你需要告诉系统，这些是谁发出的指令，要挂载到哪个上下文，这些资源依赖于上下文的生命周期。</p>
-<p>所以才会出现，有时弹 Dialog 或者更新某个 View 时抛异常说 Context 已销毁，因为它需要挂载的上下文已经销毁了，那么就没有上下文来统筹管理这些资源了，自然会抛异常。</p>
-<ul>
-<li>JavaScript</li>
-</ul>
-<p>在 JavaScript 中，上下文是指执行上下文，通俗点理解，代码执行的上下文，所以也有翻译成执行环境，可以通俗的把它理解成一个对象，对象名 EC，表示代码的执行上下文。</p>
-<p>既然理解成一个对象，那么就有它创建的时机，在 JavaScript 中，每当要执行不同类型的代码时，就会创建一个执行上下文 EC。</p>
-<p>而代码的类型分三种：</p>
-<ul>
-<li>全局代码</li>
-<li>函数代码</li>
-<li>eval()执行的代码</li>
-</ul>
-<p>最后一种不讨论，全局代码就是指写在函数外的代码，在前端里，当 HTML 加载一个 js 文件时，全局代码就会被执行，那么在全局代码执行前就会先创建一个全局的执行上下文 EC，之后每调用一次函数，要执行函数内的代码时，会再创建一个函数执行上下文 EC。</p>
-<p>也就是说，不讨论 eval 的话，那么在 JavaScript 有两种执行上下文，一种是全局执行上下文，一种是函数执行上下文。</p>
-<p>而每次创建一个执行上下文时，都会将其放入一个栈结构，这个栈就称为执行上下文栈（ECS），也有翻译成执行环境栈。</p>
-<p>所以执行 js 文件代码期间，这个栈底一直是全局执行上下文，直到 js 文件代码执行结束。全局代码执行过程中，每调用一次函数，新创建一个函数执行上下文，就放入栈内。</p>
-<p>因此，栈顶就表示当前执行的代码，如果栈顶是全局执行上下文，表示正在执行全局代码；如果栈顶是函数执行上下文，表示正在执行函数内的代码。当函数执行结束时，这个函数执行上下文就从栈中移出。</p>
-<p>那么执行上下文（EC）有什么用呢？</p>
-<p>用途可多了，跟 Android 不一样，Android 里由于是各种资源的组合使用，但在 JavaScript 中更多的是嵌套函数的变量使用。所以，用途之一就是保存各个变量。</p>
-<p>将 EC 理解成一个对象的话，它有两个属性，一个是变量对象（VO），另一个是作用域链（Scope Chain）。对于全局执行上下文，当 HTML 加载一个 js 文件时，就会创建一个全局 EC，此时会创建它的两个属性：变量对象和作用域链。之后，每调用一次函数，创建这次函数执行的上下文，函数内部的变量的使用就依赖于这个函数执行上下文中的变量对象和作用域链。</p>
-<p>也就是说，内部函数之所以可以使用外部函数内的变量，之所以可以使用全局变量，都是依赖于当前这个内部函数的执行上下文。</p>
-<p>而且，变量之所以会提前声明也是因为执行上下文的因素。这些当讲解了执行上下文 EC 的创建过程就清楚了。</p>
-<h3 id="变量对象-VO"><a href="#变量对象-VO" class="headerlink" title="变量对象 VO"></a>变量对象 VO</h3><p>变量对象只是一个抽象的概念，可以通俗的理解成保存当前上下文所有变量的对象。</p>
-<p>在不同的执行上下文中，它有不同的具体表现。</p>
-<p>在全局执行上下文中，变量对象 VO 的具体表现就是全局对象，因为所有的全局变量其实都是全局对象的属性，而变量对象 VO 的作用是要保存当前上下文中的所有变量，所以此时的变量对象 VO 实际上是指向的全局对象。</p>
-<p>尤其在前端中，全局对象就是 window，所以全局执行上下文的变量对象 VO = window。</p>
-<p>在函数执行上下文中，因为变量对象 VO 是要保存当前上下文中所有的变量，一个函数内的变量包括：形参变量、局部变量、自身函数对象引用变量、arguments、this。</p>
-<p>针对函数执行上下文，为了保存这些变量，特意创建了一个对象，称它为活动对象 AO，函数内所需的变量就都保存在 AO 中，所以在函数执行上下文中，变量对象 VO 的具体表现也就是 AO。</p>
-<p>小结：变量对象 VO 是一个抽象概念，用于保存当前执行上下文中所有的变量。所以在全局执行上下文中，因为全局对象已经保存着当前上下文所有的变量，所以 VO 在这里的具体实现就是全局对象。在函数执行上下文中，由于要保存函数形参、局部变量、自身函数对象引用变量、arguments、this，所以新创建了一个叫活动对象 AO 来保存，此时 VO 的具体实现就是 AO。</p>
-<h3 id="作用域链"><a href="#作用域链" class="headerlink" title="作用域链"></a>作用域链</h3><p>每次函数调用时，都会创建一个函数执行上下文 EC，但其中的变量对象 VO 只保存着当前上下文中的变量而已，那么函数内如果需要使用到外部函数的变量，甚至是使用全局的变量时，此时就需要依赖于执行上下文的另一个属性：作用域链。</p>
-<p>作用域链本质上，其实是将有嵌套层次关系的执行上下文的 VO 拼接起来。</p>
-<p>所以大部分场景作用域链只有两个节点：当前函数执行上下文的 VO –&gt; 全局执行上下文的 VO。所以函数内才可以根据作用域链访问全局内的变量。</p>
-<p>当出现函数内再嵌套函数时，此时作用域链就会比较长：</p>
-<p>内层函数执行上下文的 VO –&gt; 外层函数执行上下文的 VO –&gt; 全局执行上下文 VO。</p>
-<p>至于作用域链是如何将有嵌套层次的执行上下文的 VO 拼接起来，需要借助函数对象的内部属性 [[Scope]]，[[]]表示执行引擎为对象创建的内部属性，我们访问不了，也操作不了。具体原理在作用域链一节中讲解。  </p>
-]]></content>
-      <categories>
-        <category>前端</category>
-        <category>进阶</category>
-      </categories>
-  </entry>
-  <entry>
     <title>前端15-JavaScript原型链（进阶）</title>
     <url>/2018/11/02/%E5%89%8D%E7%AB%AF/%E8%BF%9B%E9%98%B6/%E5%89%8D%E7%AB%AF%E5%85%A5%E9%97%A815-JavaScript%E8%BF%9B%E9%98%B6%E4%B9%8B%E5%8E%9F%E5%9E%8B%E9%93%BE/</url>
     <content><![CDATA[<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本系列文章内容全部梳理自以下几个来源：</p>
@@ -4118,6 +4830,68 @@ b.y; <span class="comment">//1</span>
 <p>而且，建议看这张图时，每次都将某条原型链跟踪到底，再去看另一条，这过程不要过多关注在分支上，否则很容易混乱。</p>
 <p>对于新手，如果能够对这张稍作备注，而不是直接将这张图放出来，我觉得会更好，如下：</p>
 <p><img src="https://upload-images.jianshu.io/upload_images/1924341-ed3572ea96c33df5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt>  </p>
+]]></content>
+      <categories>
+        <category>前端</category>
+        <category>进阶</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>前端16-JavaScript执行上下文EC和变量对象VO（进阶）</title>
+    <url>/2018/11/02/%E5%89%8D%E7%AB%AF/%E8%BF%9B%E9%98%B6/%E5%89%8D%E7%AB%AF%E5%85%A5%E9%97%A816-JavaScript%E8%BF%9B%E9%98%B6%E4%B9%8BEC%E5%92%8CVO/</url>
+    <content><![CDATA[<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>本系列文章内容全部梳理自以下几个来源：</p>
+<ul>
+<li>《JavaScript权威指南》</li>
+<li><a href="https://developer.mozilla.org/zh-CN/docs/Web" target="_blank" rel="noopener">MDN web docs</a></li>
+<li><a href="https://github.com/smyhvae/Web" target="_blank" rel="noopener">Github:smyhvae/web</a></li>
+<li><a href="https://github.com/goddyZhao/Translation/tree/master/JavaScript" target="_blank" rel="noopener">Github:goddyZhao/Translation/JavaScript</a></li>
+</ul>
+<p>作为一个前端小白，入门跟着这几个来源学习，感谢作者的分享，在其基础上，通过自己的理解，梳理出的知识点，或许有遗漏，或许有些理解是错误的，如有发现，欢迎指点下。</p>
+<p>PS：梳理的内容以《JavaScript权威指南》这本书中的内容为主，因此接下去跟 JavaScript 语法相关的系列文章基本只介绍 ES5 标准规范的内容、ES6 等这系列梳理完再单独来讲讲。</p>
+<h1 id="正文-执行上下文EC和变量对象VO"><a href="#正文-执行上下文EC和变量对象VO" class="headerlink" title="正文-执行上下文EC和变量对象VO"></a>正文-执行上下文EC和变量对象VO</h1><p>EC：Execution Context，中文翻译执行上下文，也有翻译成执行环境的。</p>
+<p>VO：Variable object，中文翻译变量对象。</p>
+<p>这两个概念很重要，涉及到作用域以及作用域链的原理。</p>
+<h3 id="执行上下文-EC"><a href="#执行上下文-EC" class="headerlink" title="执行上下文 EC"></a>执行上下文 EC</h3><p>先说说Android中的上下文： </p>
+<ul>
+<li>Android</li>
+</ul>
+<p>Android 中也有上下文：Context，四大组件都是上下文，还有一个全局的 Application上下文。在 Android 中基本是以四大组件为界限，每创建一个四大组件，都会产生一个上下文，比如每个 Activity 都是独立的上下文。</p>
+<p>在 Android 中，上下文 Context 的作用大体上用于标识各种资源的所属，要加载一张图片、创建一个 View、弹一个 Dialog 等等，你需要告诉系统，这些是谁发出的指令，要挂载到哪个上下文，这些资源依赖于上下文的生命周期。</p>
+<p>所以才会出现，有时弹 Dialog 或者更新某个 View 时抛异常说 Context 已销毁，因为它需要挂载的上下文已经销毁了，那么就没有上下文来统筹管理这些资源了，自然会抛异常。</p>
+<ul>
+<li>JavaScript</li>
+</ul>
+<p>在 JavaScript 中，上下文是指执行上下文，通俗点理解，代码执行的上下文，所以也有翻译成执行环境，可以通俗的把它理解成一个对象，对象名 EC，表示代码的执行上下文。</p>
+<p>既然理解成一个对象，那么就有它创建的时机，在 JavaScript 中，每当要执行不同类型的代码时，就会创建一个执行上下文 EC。</p>
+<p>而代码的类型分三种：</p>
+<ul>
+<li>全局代码</li>
+<li>函数代码</li>
+<li>eval()执行的代码</li>
+</ul>
+<p>最后一种不讨论，全局代码就是指写在函数外的代码，在前端里，当 HTML 加载一个 js 文件时，全局代码就会被执行，那么在全局代码执行前就会先创建一个全局的执行上下文 EC，之后每调用一次函数，要执行函数内的代码时，会再创建一个函数执行上下文 EC。</p>
+<p>也就是说，不讨论 eval 的话，那么在 JavaScript 有两种执行上下文，一种是全局执行上下文，一种是函数执行上下文。</p>
+<p>而每次创建一个执行上下文时，都会将其放入一个栈结构，这个栈就称为执行上下文栈（ECS），也有翻译成执行环境栈。</p>
+<p>所以执行 js 文件代码期间，这个栈底一直是全局执行上下文，直到 js 文件代码执行结束。全局代码执行过程中，每调用一次函数，新创建一个函数执行上下文，就放入栈内。</p>
+<p>因此，栈顶就表示当前执行的代码，如果栈顶是全局执行上下文，表示正在执行全局代码；如果栈顶是函数执行上下文，表示正在执行函数内的代码。当函数执行结束时，这个函数执行上下文就从栈中移出。</p>
+<p>那么执行上下文（EC）有什么用呢？</p>
+<p>用途可多了，跟 Android 不一样，Android 里由于是各种资源的组合使用，但在 JavaScript 中更多的是嵌套函数的变量使用。所以，用途之一就是保存各个变量。</p>
+<p>将 EC 理解成一个对象的话，它有两个属性，一个是变量对象（VO），另一个是作用域链（Scope Chain）。对于全局执行上下文，当 HTML 加载一个 js 文件时，就会创建一个全局 EC，此时会创建它的两个属性：变量对象和作用域链。之后，每调用一次函数，创建这次函数执行的上下文，函数内部的变量的使用就依赖于这个函数执行上下文中的变量对象和作用域链。</p>
+<p>也就是说，内部函数之所以可以使用外部函数内的变量，之所以可以使用全局变量，都是依赖于当前这个内部函数的执行上下文。</p>
+<p>而且，变量之所以会提前声明也是因为执行上下文的因素。这些当讲解了执行上下文 EC 的创建过程就清楚了。</p>
+<h3 id="变量对象-VO"><a href="#变量对象-VO" class="headerlink" title="变量对象 VO"></a>变量对象 VO</h3><p>变量对象只是一个抽象的概念，可以通俗的理解成保存当前上下文所有变量的对象。</p>
+<p>在不同的执行上下文中，它有不同的具体表现。</p>
+<p>在全局执行上下文中，变量对象 VO 的具体表现就是全局对象，因为所有的全局变量其实都是全局对象的属性，而变量对象 VO 的作用是要保存当前上下文中的所有变量，所以此时的变量对象 VO 实际上是指向的全局对象。</p>
+<p>尤其在前端中，全局对象就是 window，所以全局执行上下文的变量对象 VO = window。</p>
+<p>在函数执行上下文中，因为变量对象 VO 是要保存当前上下文中所有的变量，一个函数内的变量包括：形参变量、局部变量、自身函数对象引用变量、arguments、this。</p>
+<p>针对函数执行上下文，为了保存这些变量，特意创建了一个对象，称它为活动对象 AO，函数内所需的变量就都保存在 AO 中，所以在函数执行上下文中，变量对象 VO 的具体表现也就是 AO。</p>
+<p>小结：变量对象 VO 是一个抽象概念，用于保存当前执行上下文中所有的变量。所以在全局执行上下文中，因为全局对象已经保存着当前上下文所有的变量，所以 VO 在这里的具体实现就是全局对象。在函数执行上下文中，由于要保存函数形参、局部变量、自身函数对象引用变量、arguments、this，所以新创建了一个叫活动对象 AO 来保存，此时 VO 的具体实现就是 AO。</p>
+<h3 id="作用域链"><a href="#作用域链" class="headerlink" title="作用域链"></a>作用域链</h3><p>每次函数调用时，都会创建一个函数执行上下文 EC，但其中的变量对象 VO 只保存着当前上下文中的变量而已，那么函数内如果需要使用到外部函数的变量，甚至是使用全局的变量时，此时就需要依赖于执行上下文的另一个属性：作用域链。</p>
+<p>作用域链本质上，其实是将有嵌套层次关系的执行上下文的 VO 拼接起来。</p>
+<p>所以大部分场景作用域链只有两个节点：当前函数执行上下文的 VO –&gt; 全局执行上下文的 VO。所以函数内才可以根据作用域链访问全局内的变量。</p>
+<p>当出现函数内再嵌套函数时，此时作用域链就会比较长：</p>
+<p>内层函数执行上下文的 VO –&gt; 外层函数执行上下文的 VO –&gt; 全局执行上下文 VO。</p>
+<p>至于作用域链是如何将有嵌套层次的执行上下文的 VO 拼接起来，需要借助函数对象的内部属性 [[Scope]]，[[]]表示执行引擎为对象创建的内部属性，我们访问不了，也操作不了。具体原理在作用域链一节中讲解。  </p>
 ]]></content>
       <categories>
         <category>前端</category>
@@ -10801,30 +11575,6 @@ b.y; <span class="comment">//1</span>
       </categories>
   </entry>
   <entry>
-    <title>如何用Android Studio查看build.gradle源码</title>
-    <url>/2018/03/31/Gradle/%E5%A6%82%E4%BD%95%E7%94%A8Android-Studio%E6%9F%A5%E7%9C%8Bbuild-gradle%E6%BA%90%E7%A0%81/</url>
-    <content><![CDATA[<blockquote>
-<p><strong>本篇文章已授权微信公众号 dasu_Android（大苏）独家发布</strong>  </p>
-</blockquote>
-<p><strong>2019-7-30 更新：</strong><br>感谢评论区指出，gradle源码下载地址：<a href="http://services.gradle.org/distributions/" target="_blank" rel="noopener">http://services.gradle.org/distributions/</a></p>
-<hr>
-<p>上一篇博客里讲过 build.gradle 里的每一行代码基本都是在调用一个方法，既然是这样，我们就可以用 android studio(下面简称as) 去查看它源码的方法注释说明，这样就可以理解每个方法是做什么的了，就算是在大神的 build.gradle 遇见一些没看懂的代码，也可以点进去看方法介绍来理解。就像我们在查看 SDK 里的各种方法一样。    </p>
-<p>但是有个问题，应该也有小伙伴跟我一样吧，每次在大神的 build.gradle 看到一堆不懂的代码时，按住 <code>Ctrl</code> 键后，鼠标移到代码上时有个跳转的手势时总是很开心，总是心想原来可以看源码啊，那就点进去看看介绍，看这个是干嘛的吧。可是每次一点进去，打开的却是 class 代码文件，顶多就只有方法名，一点注释都没有，而且方法参数命名还混淆过，也猜不出来是干嘛的。又不懂怎么去官方文档里查找，只能去网上用关键字查找，找出来的又跟自己碰到的问题不一样，越找越气干脆不找了，放一边去，以后再说。  </p>
-<p>是吧，如果可以直接通过 as 看源码的注释该多好。好了，废话到这，下面开始正文。    </p>
-<hr>
-<h1 id="系列索引"><a href="#系列索引" class="headerlink" title="系列索引"></a>系列索引</h1><p>build.gradle系列一：<a href="http://www.jianshu.com/p/a3805905a5c7" target="_blank" rel="noopener">看不懂的build.gradle代码</a><br>build.gradle系列二：<a href="http://www.jianshu.com/p/501726c979b1" target="_blank" rel="noopener">学点Groovy来理解build.gradle代码</a><br>build.gradle系列三：<a href>如何用Adnroid Studio查看build.gradle源码</a><br>…  </p>
-<hr>
-<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>我们来举个例子，就像系列一的博客里介绍的 build.gradle 里有这样一段代码：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-d46a0d67f548a7aa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="build.gradle"><br>咦！这代码是第一次在 build.gradle 里看见过，是什么意思呢？不怕，我有绝招：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-5d5db8368916117f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Ctrl + 左键"><br>Android Studio大法—看源码，还有什么是不能通过看源码注释解决的么<br><img src="http://upload-images.jianshu.io/upload_images/1924341-4b6cd41069f7fa21.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.class"><br>是跳到源码了，可是为什么没有方法的注释说明呢，这方法是什么鬼谁知道啊。再仔细看看 as 的提示，原来打开的是个 class 文件啊。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-c55417ff2530580f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="as提示"><br>as 的提示那里应该会有个下载和选择源码位置的按钮的啊，搞不懂为什么不出现。  </p>
-<p>另外，我们知道，as 一般会默认先打开 xxx-sources.jar 也就是 xxx 的 java 文件源码，如果没有源码文件，才会打开 xxx.jar 的 class 代码。我们看一下，打开的是什么文件。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-9692f8b22bf2eda3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle-2.3.0.jar"><br>没错，as 打开的是 gradle-2.3.0.jar，说明 as 没有找到 gradle-2.3.0-sources.jar 源码文件，我们看一下到底是不是这样<br><img src="http://upload-images.jianshu.io/upload_images/1924341-53c68923912bf799.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="as标题栏"><br>as 标题栏会显示你当前打开的文件的具体位置，好了，知道了 gradle-2.3.0.jar 在电脑里的位置了，我们到那个目录下看看<br><img src="http://upload-images.jianshu.io/upload_images/1924341-f9da8ad2908b540e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle-2.3.0.jar本地路径"><br>只有一个 gradle-2.3.0.jar 文件和一个 pom 文件，正常的话应该还要有个 xxx-sources.jar 文件才对，就像下面这样<br><img src="http://upload-images.jianshu.io/upload_images/1924341-f7700195cd081102.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="三个文件"><br>因为这里没有 gradle-2.3.0-sources.jar 文件，所以 as 没办法打开带有方法注释的源码文件了。既然知道问题，那么就好解决了，as 的提示条也没有下载的按钮，那我们就自己去下载好了<br><img src="http://upload-images.jianshu.io/upload_images/1924341-ac54a39b3846d1d4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="seach.maven.org"><br>打开 maven 网站，在这里可以下载 gradle 插件。在搜索框中输入 <code>com.android.tools.build</code>，为什么输入这个，你打开 project 下的 build.gradle 文件看看就知道了<br><img src="http://upload-images.jianshu.io/upload_images/1924341-4796f2199f748565.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="com.android.tools.build"><br><img src="http://upload-images.jianshu.io/upload_images/1924341-374001fbc95ace5c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="search result"><br>这些就是 gradle 插件，我们在根目录下的 build.gradle 配置的 gradle 版本其实就是来这里下载的，应该是吧。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-b9b6f2c35d82ede4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="下载的文件"><br>下载后得到的就是这些文件了，接下去就是找到相应文件的位置，复制一份过去<br><img src="http://upload-images.jianshu.io/upload_images/1924341-139f310de6d6dfc5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle的本地路径"><br>打开相应的插件文件夹，选择相应的版本，最后将下载的 xxx-sources.jar 复制一份进去，最后的样子如下<br><img src="http://upload-images.jianshu.io/upload_images/1924341-9dbac486701a27fa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="三个文件"><br>好了，大功告成，我们再打开 as，记得 ReBuild 一下，然后再试试查看 build.gradle 源码会是什么样子<br><img src="http://upload-images.jianshu.io/upload_images/1924341-327042d04c7edab6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.java"><br><img src="http://upload-images.jianshu.io/upload_images/1924341-5723f731293b39a7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="LintOptions.java"><br>翻译一下英文大概就是说， lintOptions.abortOnError = false 是设置即使 lint 检查时发现错误也不停止构建程序的运行。  </p>
-<p>这种方法比去官方的 api 文档里查阅方便多了吧。再来看看几个效果。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-19e3e3f8353694db.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.java"><br>这里就可以看到源码里介绍 Plugin 的值都有哪些，分别对应哪个类，该去哪个类看它的作用是什么，干什么的。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-3024eb6a6819fd42.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="AndroidConfig.java"><br>借助 as，我们甚至可以很容易的查到 <code>android{...}</code> 这个括号里能使用的方法都有哪些，如果要看各自的作用是干什么的，再继续点进去查看注释就行了。是不是发现，我们在 build.gradle 里的 <code>android{...}</code> 使用过的标签名原来都在这里的啊。  </p>
-<p>以后就算是再碰到大神的 build.gradle 文件里各种没看见过的标签名，不用再担心看不懂了。不懂就看源码注释嘛，so easy!  </p>
-<p>当然，大神的 build.gradle 文件里还是会出现一些 groovy 代码或者是 task 之类的，这些就不是 gradle 源码里能够查到的了，需要稍微了解一下 groovy 和 gradle 语言的基础，有兴趣的可以继续阅读下我写的这个系列里的相关博客，当然能力不够，如果你希望更好的学习，网上资料也很多。   </p>
-]]></content>
-      <categories>
-        <category>Gradle</category>
-      </categories>
-  </entry>
-  <entry>
     <title>分享两个提高效率的AndroidStudio小技巧</title>
     <url>/2018/03/31/%E6%95%99%E7%A8%8B%E7%B1%BB/%E5%88%86%E4%BA%AB%E4%B8%A4%E4%B8%AA%E6%8F%90%E9%AB%98%E6%95%88%E7%8E%87%E7%9A%84AndroidStudio%E5%B0%8F%E6%8A%80%E5%B7%A7/</url>
     <content><![CDATA[<blockquote>
@@ -10917,6 +11667,30 @@ b.y; <span class="comment">//1</span>
 ]]></content>
       <categories>
         <category>教程类</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>如何用Android Studio查看build.gradle源码</title>
+    <url>/2018/03/31/Gradle/%E5%A6%82%E4%BD%95%E7%94%A8Android-Studio%E6%9F%A5%E7%9C%8Bbuild-gradle%E6%BA%90%E7%A0%81/</url>
+    <content><![CDATA[<blockquote>
+<p><strong>本篇文章已授权微信公众号 dasu_Android（大苏）独家发布</strong>  </p>
+</blockquote>
+<p><strong>2019-7-30 更新：</strong><br>感谢评论区指出，gradle源码下载地址：<a href="http://services.gradle.org/distributions/" target="_blank" rel="noopener">http://services.gradle.org/distributions/</a></p>
+<hr>
+<p>上一篇博客里讲过 build.gradle 里的每一行代码基本都是在调用一个方法，既然是这样，我们就可以用 android studio(下面简称as) 去查看它源码的方法注释说明，这样就可以理解每个方法是做什么的了，就算是在大神的 build.gradle 遇见一些没看懂的代码，也可以点进去看方法介绍来理解。就像我们在查看 SDK 里的各种方法一样。    </p>
+<p>但是有个问题，应该也有小伙伴跟我一样吧，每次在大神的 build.gradle 看到一堆不懂的代码时，按住 <code>Ctrl</code> 键后，鼠标移到代码上时有个跳转的手势时总是很开心，总是心想原来可以看源码啊，那就点进去看看介绍，看这个是干嘛的吧。可是每次一点进去，打开的却是 class 代码文件，顶多就只有方法名，一点注释都没有，而且方法参数命名还混淆过，也猜不出来是干嘛的。又不懂怎么去官方文档里查找，只能去网上用关键字查找，找出来的又跟自己碰到的问题不一样，越找越气干脆不找了，放一边去，以后再说。  </p>
+<p>是吧，如果可以直接通过 as 看源码的注释该多好。好了，废话到这，下面开始正文。    </p>
+<hr>
+<h1 id="系列索引"><a href="#系列索引" class="headerlink" title="系列索引"></a>系列索引</h1><p>build.gradle系列一：<a href="http://www.jianshu.com/p/a3805905a5c7" target="_blank" rel="noopener">看不懂的build.gradle代码</a><br>build.gradle系列二：<a href="http://www.jianshu.com/p/501726c979b1" target="_blank" rel="noopener">学点Groovy来理解build.gradle代码</a><br>build.gradle系列三：<a href>如何用Adnroid Studio查看build.gradle源码</a><br>…  </p>
+<hr>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>我们来举个例子，就像系列一的博客里介绍的 build.gradle 里有这样一段代码：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-d46a0d67f548a7aa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="build.gradle"><br>咦！这代码是第一次在 build.gradle 里看见过，是什么意思呢？不怕，我有绝招：<br><img src="http://upload-images.jianshu.io/upload_images/1924341-5d5db8368916117f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Ctrl + 左键"><br>Android Studio大法—看源码，还有什么是不能通过看源码注释解决的么<br><img src="http://upload-images.jianshu.io/upload_images/1924341-4b6cd41069f7fa21.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.class"><br>是跳到源码了，可是为什么没有方法的注释说明呢，这方法是什么鬼谁知道啊。再仔细看看 as 的提示，原来打开的是个 class 文件啊。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-c55417ff2530580f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="as提示"><br>as 的提示那里应该会有个下载和选择源码位置的按钮的啊，搞不懂为什么不出现。  </p>
+<p>另外，我们知道，as 一般会默认先打开 xxx-sources.jar 也就是 xxx 的 java 文件源码，如果没有源码文件，才会打开 xxx.jar 的 class 代码。我们看一下，打开的是什么文件。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-9692f8b22bf2eda3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle-2.3.0.jar"><br>没错，as 打开的是 gradle-2.3.0.jar，说明 as 没有找到 gradle-2.3.0-sources.jar 源码文件，我们看一下到底是不是这样<br><img src="http://upload-images.jianshu.io/upload_images/1924341-53c68923912bf799.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="as标题栏"><br>as 标题栏会显示你当前打开的文件的具体位置，好了，知道了 gradle-2.3.0.jar 在电脑里的位置了，我们到那个目录下看看<br><img src="http://upload-images.jianshu.io/upload_images/1924341-f9da8ad2908b540e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle-2.3.0.jar本地路径"><br>只有一个 gradle-2.3.0.jar 文件和一个 pom 文件，正常的话应该还要有个 xxx-sources.jar 文件才对，就像下面这样<br><img src="http://upload-images.jianshu.io/upload_images/1924341-f7700195cd081102.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="三个文件"><br>因为这里没有 gradle-2.3.0-sources.jar 文件，所以 as 没办法打开带有方法注释的源码文件了。既然知道问题，那么就好解决了，as 的提示条也没有下载的按钮，那我们就自己去下载好了<br><img src="http://upload-images.jianshu.io/upload_images/1924341-ac54a39b3846d1d4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="seach.maven.org"><br>打开 maven 网站，在这里可以下载 gradle 插件。在搜索框中输入 <code>com.android.tools.build</code>，为什么输入这个，你打开 project 下的 build.gradle 文件看看就知道了<br><img src="http://upload-images.jianshu.io/upload_images/1924341-4796f2199f748565.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="com.android.tools.build"><br><img src="http://upload-images.jianshu.io/upload_images/1924341-374001fbc95ace5c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="search result"><br>这些就是 gradle 插件，我们在根目录下的 build.gradle 配置的 gradle 版本其实就是来这里下载的，应该是吧。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-b9b6f2c35d82ede4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="下载的文件"><br>下载后得到的就是这些文件了，接下去就是找到相应文件的位置，复制一份过去<br><img src="http://upload-images.jianshu.io/upload_images/1924341-139f310de6d6dfc5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gradle的本地路径"><br>打开相应的插件文件夹，选择相应的版本，最后将下载的 xxx-sources.jar 复制一份进去，最后的样子如下<br><img src="http://upload-images.jianshu.io/upload_images/1924341-9dbac486701a27fa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="三个文件"><br>好了，大功告成，我们再打开 as，记得 ReBuild 一下，然后再试试查看 build.gradle 源码会是什么样子<br><img src="http://upload-images.jianshu.io/upload_images/1924341-327042d04c7edab6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.java"><br><img src="http://upload-images.jianshu.io/upload_images/1924341-5723f731293b39a7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="LintOptions.java"><br>翻译一下英文大概就是说， lintOptions.abortOnError = false 是设置即使 lint 检查时发现错误也不停止构建程序的运行。  </p>
+<p>这种方法比去官方的 api 文档里查阅方便多了吧。再来看看几个效果。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-19e3e3f8353694db.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="BaseExtension.java"><br>这里就可以看到源码里介绍 Plugin 的值都有哪些，分别对应哪个类，该去哪个类看它的作用是什么，干什么的。<br><img src="http://upload-images.jianshu.io/upload_images/1924341-3024eb6a6819fd42.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="AndroidConfig.java"><br>借助 as，我们甚至可以很容易的查到 <code>android{...}</code> 这个括号里能使用的方法都有哪些，如果要看各自的作用是干什么的，再继续点进去查看注释就行了。是不是发现，我们在 build.gradle 里的 <code>android{...}</code> 使用过的标签名原来都在这里的啊。  </p>
+<p>以后就算是再碰到大神的 build.gradle 文件里各种没看见过的标签名，不用再担心看不懂了。不懂就看源码注释嘛，so easy!  </p>
+<p>当然，大神的 build.gradle 文件里还是会出现一些 groovy 代码或者是 task 之类的，这些就不是 gradle 源码里能够查到的了，需要稍微了解一下 groovy 和 gradle 语言的基础，有兴趣的可以继续阅读下我写的这个系列里的相关博客，当然能力不够，如果你希望更好的学习，网上资料也很多。   </p>
+]]></content>
+      <categories>
+        <category>Gradle</category>
       </categories>
   </entry>
   <entry>
@@ -13519,6 +14293,44 @@ public abstract class ViewPagerFragment extends Fragment {
       </categories>
   </entry>
   <entry>
+    <title>小码农的故事05</title>
+    <url>/2016/09/08/%E7%9E%8E%E6%89%AF%E6%89%AF/%E5%B0%8F%E7%A0%81%E5%86%9C%E7%9A%84%E6%95%85%E4%BA%8B05/</url>
+    <content><![CDATA[<hr>
+<p>前言：这应该是最后一章了，故事虽然到这就结束了，但现实里还要继续下去，希望在很久的以后来回顾时，能因自己学生时代有这样的经历而欣慰。<br>说明：故事中的人物均是化名，故事情节经过些许加工，故事情节并没有针对任何人，仅以此纪念自己的成长。<br>回顾上一章：<a href="http://www.jianshu.com/p/59273956629f" target="_blank" rel="noopener">详情请猛戳</a></p>
+<hr>
+<p>##第四章：Beta收官</p>
+<hr>
+<p>　　三个多周的Alpha冲刺，一个周左右的休息调整时间。紧接着也就是Beta阶段的冲刺了。</p>
+<p>　　在Alpha版本中，虽然你们预期的功能基本都实现了，但仍然有很多不足。比如界面太丑，代码模块化太烂等等。瓜哥跟你在那一周的休息调整时间里都表示过，要在Beta阶段大干一场，好好的将这些问题都解决掉。然而，现实总是残酷了，当然，这是后话，暂且不提。</p>
+<p>　　在Alpha结束后，你写了篇总结。也就是总结了下在Alpha阶段的一些感想，里面你提到了你们的项目因准备不足而陷入各种难题，提到了队友因意见不合而不断争吵的问题。总之，这三周过来，或多或少都学到了很多。</p>
+<p>　　在Alpha刚开始的编程时，你记得懂哥说项目要学会使用在框架的基础上进行开发，而不是所有代码都自己来书写。带着这种观念，你在写界面的时候引入了一大堆第三方库。需要一个点击效果，好，引入。需要一个弹窗效果，好，引入。然而你并没有真正的深入去学习你所引入的第三方库，导致很多库之间其实已经有冗余的功能了。</p>
+<p>　　更糟糕的是，队友因为你引入这么多库，从而导致在编译项目时花费了大量时间。因此，你打算在Beta阶段时将多余的库都删除掉。</p>
+<p>　　另一个项目的问题是，当初因为没认真考虑，而引入了一个不熟悉的数据库框架。到后面进行开发时，才发现你们需要的很多功能那个框架都实现不了，但已经有很多基础的数据库功能是基于那个框架上面编写的，如果要换掉那个框架，将是一个工作量巨大的任务。但如果不换掉，想要的功能又没办法实现。</p>
+<p>　　为了解决这个问题，你查了各种资料，做了各种尝试，熬到了半夜两三点。最后用一种特别暴力的方法去暂时的解决掉，搞定后你特别想去睡一觉，这种活简直了！日后需要怎么做再留给瓜哥去头疼吧。</p>
+<p>　　Beta期间也有两三周的时间，但懂哥只要求进行七次会议记录而已。瓜哥为了能让项目保持一种稳定，平均的进展，安排了每过两三四天开一次会议。但计划总是赶不上变化。</p>
+<p>　　第一周还好，因为大家第一周里面都没有什么考试，进展也还算顺利，一些Alpha遗留的问题也渐渐的解决了。但到了第二周时，有的队员有考试，而且是接连两三场考试，基于此，瓜哥最后表示，这周就先把项目放一边，大家好好复习，准备考试，等最后一周再来继续项目。</p>
+<p>　　本来以为，放一周的时间去调整，不做项目可以让大家到最后一周时能更有干劲。但事实却是，一周没碰过项目，导致大家对于项目的热情大大的降低了。不仅如此，对于项目很多地方都渐渐的感到陌生了，更可怕的是，你居然忘记了某块有合作的代码当初到底是不是你编写的。</p>
+<p>　　日后瓜哥也提过，当初因为放了一周，导致他也对于项目的进展掌握出现了很多问题。当然，这是后话，暂且不提。第二周的Beta过去了，大家都在忙着复习，确确实实都把项目扔一边去了。等到了第三周时，第一次会议上，大家甚至都不知道要说什么话。</p>
+<p>　　离最后的时间也就只剩下一周左右了，你突然觉得来不及了。自己无聊时不断地手工测试你们的软件，你发现似乎还存在一大堆问题，但就是不知道怎么把这个问题描述出来。你觉得队友应该也会自己去手工测试，然后发现相同的问题，但事实上队友基本没提过你发现的问题。</p>
+<p>　　在一次会议上，你直接表示出了厌烦，你表示说这样下去项目根本做不出来，现在仍然存在很多问题。瓜哥要你说出具体有哪些问题，但你又说不出来，你说自己跑一遍就会发现一堆问题了，但瓜哥却表示，你说有问题却又不把问题说清楚。这样，在Alpha阶段发生的一次冲突到现在又出现了一次。只是这次你没有继续接话下去，因为你突然很不想说话了。</p>
+<p>　　甚至，你出现了厌工。你总觉得，软件只有你一个人在测试，在找Bug，但事实上很多Bug都被你因为自己的心情烦躁而放大了。你不知道这是不是因为情绪不好，还是因为时间快临近截止，还是因为缺少跟队友的沟通，从而导致了你对于项目厌工的心情。</p>
+<p>　　你甚至出现过，你不做了的想法，放一边去，反正等最后验收时没办法完成作品那责任也不是你自己去担。</p>
+<p>　　然而，就在你自己胡思乱想，乱发脾气时。瓜哥又对总仓库进行了一次提交，你去看了下瓜哥的提交代码。你发现，瓜哥居然把你一直很苦恼的一些BUG解决了。瞬间，你冷静下来了。每个人都在为这个项目不断的熬夜，不断的努力。在别人埋头修BUG的时候，你却在抱怨，却在厌工。</p>
+<p>　　那天你没敲什么代码，就只是早早结束熬夜，提前上床。你想平静下自己，想让自己恢复到Alpha阶段时的状态。你觉得如果你继续以这种情绪下去的话，特别对不起瓜哥。当初是你把瓜哥拉进队伍里来的，瓜哥对于项目也一直很负责，你不能只是因为自己的情绪不好就厌工。这对项目，对瓜哥，对队员都很不公平。</p>
+<p>　　调整了状态后，你继续做项目下去。每次的会议上，你也很少再带有情绪，而是静静的听着瓜哥的安排。然后根据瓜哥安排的任务，尽可能的保证在规定时间内完成。</p>
+<p>　　Beta阶段的主要任务是实现跟网页端小组的项目的互联互通。使用同一个数据库，对数据库中表的设计，字段的设计，瓜哥都去找网页端的负责人讨论，然后再把结果告诉你们。但实现的过程中仍然碰到很多问题，为了解决这些问题，基本都把时间放在上面。</p>
+<p>　　导致了你们一开始计划在Beta阶段对界面进行大修改，对项目进行大重构的安排完全被丢到一边去了。</p>
+<p>　　在Beta的演示验收上面，又出现了各种问题，更奇葩的是这问题竟不带重复的。Alpha阶段演示验收时你们就碰上了无网络，服务器崩了，数据线连接没反应等问题导致被迫下台，先让下一组演示。而这一次的演示上，居然碰上了服务器连接不上，重启不了，演示时漏掉演示某部分功能~~</p>
+<p>　　Beta的演示验收是由各小组互评加懂哥点评结合完成的。其他小组对于你们的项目看法基本都是功能太单一了，太简单了！好吧，其实是没演示。</p>
+<p>　　演示验收完毕，这学期的软工实践算是告一段落了。也是时候再写篇总结了。</p>
+<p>　　不同于以往的数据库实践之类的课程，这门课确实让你经历了很多。见客户、每日会议、分工开发、Github团队合作、争吵讨论、编码规范、写文档等等。懂哥说过，他最大的希望就是通过这门课程，可以让他的学生能有能力接私活。你突然很期待起来，好想自己接一次私活看看。那么，就再继续充实自己吧，让自己可以拥有接私活的能力。加油吧。</p>
+<p>　　<strong>（完结。再次向懂哥，范老师表示致敬）</strong></p>
+]]></content>
+      <categories>
+        <category>谈人生</category>
+      </categories>
+  </entry>
+  <entry>
     <title>【Android】属性动画的使用理解</title>
     <url>/2016/09/08/Android%E7%9F%A5%E8%AF%86/%E3%80%90Android%E3%80%91%E5%B1%9E%E6%80%A7%E5%8A%A8%E7%94%BB%E7%9A%84%E4%BD%BF%E7%94%A8%E7%90%86%E8%A7%A3/</url>
     <content><![CDATA[<blockquote>
@@ -13616,44 +14428,6 @@ animator.start();
 ]]></content>
       <categories>
         <category>Android知识</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>小码农的故事05</title>
-    <url>/2016/09/08/%E7%9E%8E%E6%89%AF%E6%89%AF/%E5%B0%8F%E7%A0%81%E5%86%9C%E7%9A%84%E6%95%85%E4%BA%8B05/</url>
-    <content><![CDATA[<hr>
-<p>前言：这应该是最后一章了，故事虽然到这就结束了，但现实里还要继续下去，希望在很久的以后来回顾时，能因自己学生时代有这样的经历而欣慰。<br>说明：故事中的人物均是化名，故事情节经过些许加工，故事情节并没有针对任何人，仅以此纪念自己的成长。<br>回顾上一章：<a href="http://www.jianshu.com/p/59273956629f" target="_blank" rel="noopener">详情请猛戳</a></p>
-<hr>
-<p>##第四章：Beta收官</p>
-<hr>
-<p>　　三个多周的Alpha冲刺，一个周左右的休息调整时间。紧接着也就是Beta阶段的冲刺了。</p>
-<p>　　在Alpha版本中，虽然你们预期的功能基本都实现了，但仍然有很多不足。比如界面太丑，代码模块化太烂等等。瓜哥跟你在那一周的休息调整时间里都表示过，要在Beta阶段大干一场，好好的将这些问题都解决掉。然而，现实总是残酷了，当然，这是后话，暂且不提。</p>
-<p>　　在Alpha结束后，你写了篇总结。也就是总结了下在Alpha阶段的一些感想，里面你提到了你们的项目因准备不足而陷入各种难题，提到了队友因意见不合而不断争吵的问题。总之，这三周过来，或多或少都学到了很多。</p>
-<p>　　在Alpha刚开始的编程时，你记得懂哥说项目要学会使用在框架的基础上进行开发，而不是所有代码都自己来书写。带着这种观念，你在写界面的时候引入了一大堆第三方库。需要一个点击效果，好，引入。需要一个弹窗效果，好，引入。然而你并没有真正的深入去学习你所引入的第三方库，导致很多库之间其实已经有冗余的功能了。</p>
-<p>　　更糟糕的是，队友因为你引入这么多库，从而导致在编译项目时花费了大量时间。因此，你打算在Beta阶段时将多余的库都删除掉。</p>
-<p>　　另一个项目的问题是，当初因为没认真考虑，而引入了一个不熟悉的数据库框架。到后面进行开发时，才发现你们需要的很多功能那个框架都实现不了，但已经有很多基础的数据库功能是基于那个框架上面编写的，如果要换掉那个框架，将是一个工作量巨大的任务。但如果不换掉，想要的功能又没办法实现。</p>
-<p>　　为了解决这个问题，你查了各种资料，做了各种尝试，熬到了半夜两三点。最后用一种特别暴力的方法去暂时的解决掉，搞定后你特别想去睡一觉，这种活简直了！日后需要怎么做再留给瓜哥去头疼吧。</p>
-<p>　　Beta期间也有两三周的时间，但懂哥只要求进行七次会议记录而已。瓜哥为了能让项目保持一种稳定，平均的进展，安排了每过两三四天开一次会议。但计划总是赶不上变化。</p>
-<p>　　第一周还好，因为大家第一周里面都没有什么考试，进展也还算顺利，一些Alpha遗留的问题也渐渐的解决了。但到了第二周时，有的队员有考试，而且是接连两三场考试，基于此，瓜哥最后表示，这周就先把项目放一边，大家好好复习，准备考试，等最后一周再来继续项目。</p>
-<p>　　本来以为，放一周的时间去调整，不做项目可以让大家到最后一周时能更有干劲。但事实却是，一周没碰过项目，导致大家对于项目的热情大大的降低了。不仅如此，对于项目很多地方都渐渐的感到陌生了，更可怕的是，你居然忘记了某块有合作的代码当初到底是不是你编写的。</p>
-<p>　　日后瓜哥也提过，当初因为放了一周，导致他也对于项目的进展掌握出现了很多问题。当然，这是后话，暂且不提。第二周的Beta过去了，大家都在忙着复习，确确实实都把项目扔一边去了。等到了第三周时，第一次会议上，大家甚至都不知道要说什么话。</p>
-<p>　　离最后的时间也就只剩下一周左右了，你突然觉得来不及了。自己无聊时不断地手工测试你们的软件，你发现似乎还存在一大堆问题，但就是不知道怎么把这个问题描述出来。你觉得队友应该也会自己去手工测试，然后发现相同的问题，但事实上队友基本没提过你发现的问题。</p>
-<p>　　在一次会议上，你直接表示出了厌烦，你表示说这样下去项目根本做不出来，现在仍然存在很多问题。瓜哥要你说出具体有哪些问题，但你又说不出来，你说自己跑一遍就会发现一堆问题了，但瓜哥却表示，你说有问题却又不把问题说清楚。这样，在Alpha阶段发生的一次冲突到现在又出现了一次。只是这次你没有继续接话下去，因为你突然很不想说话了。</p>
-<p>　　甚至，你出现了厌工。你总觉得，软件只有你一个人在测试，在找Bug，但事实上很多Bug都被你因为自己的心情烦躁而放大了。你不知道这是不是因为情绪不好，还是因为时间快临近截止，还是因为缺少跟队友的沟通，从而导致了你对于项目厌工的心情。</p>
-<p>　　你甚至出现过，你不做了的想法，放一边去，反正等最后验收时没办法完成作品那责任也不是你自己去担。</p>
-<p>　　然而，就在你自己胡思乱想，乱发脾气时。瓜哥又对总仓库进行了一次提交，你去看了下瓜哥的提交代码。你发现，瓜哥居然把你一直很苦恼的一些BUG解决了。瞬间，你冷静下来了。每个人都在为这个项目不断的熬夜，不断的努力。在别人埋头修BUG的时候，你却在抱怨，却在厌工。</p>
-<p>　　那天你没敲什么代码，就只是早早结束熬夜，提前上床。你想平静下自己，想让自己恢复到Alpha阶段时的状态。你觉得如果你继续以这种情绪下去的话，特别对不起瓜哥。当初是你把瓜哥拉进队伍里来的，瓜哥对于项目也一直很负责，你不能只是因为自己的情绪不好就厌工。这对项目，对瓜哥，对队员都很不公平。</p>
-<p>　　调整了状态后，你继续做项目下去。每次的会议上，你也很少再带有情绪，而是静静的听着瓜哥的安排。然后根据瓜哥安排的任务，尽可能的保证在规定时间内完成。</p>
-<p>　　Beta阶段的主要任务是实现跟网页端小组的项目的互联互通。使用同一个数据库，对数据库中表的设计，字段的设计，瓜哥都去找网页端的负责人讨论，然后再把结果告诉你们。但实现的过程中仍然碰到很多问题，为了解决这些问题，基本都把时间放在上面。</p>
-<p>　　导致了你们一开始计划在Beta阶段对界面进行大修改，对项目进行大重构的安排完全被丢到一边去了。</p>
-<p>　　在Beta的演示验收上面，又出现了各种问题，更奇葩的是这问题竟不带重复的。Alpha阶段演示验收时你们就碰上了无网络，服务器崩了，数据线连接没反应等问题导致被迫下台，先让下一组演示。而这一次的演示上，居然碰上了服务器连接不上，重启不了，演示时漏掉演示某部分功能~~</p>
-<p>　　Beta的演示验收是由各小组互评加懂哥点评结合完成的。其他小组对于你们的项目看法基本都是功能太单一了，太简单了！好吧，其实是没演示。</p>
-<p>　　演示验收完毕，这学期的软工实践算是告一段落了。也是时候再写篇总结了。</p>
-<p>　　不同于以往的数据库实践之类的课程，这门课确实让你经历了很多。见客户、每日会议、分工开发、Github团队合作、争吵讨论、编码规范、写文档等等。懂哥说过，他最大的希望就是通过这门课程，可以让他的学生能有能力接私活。你突然很期待起来，好想自己接一次私活看看。那么，就再继续充实自己吧，让自己可以拥有接私活的能力。加油吧。</p>
-<p>　　<strong>（完结。再次向懂哥，范老师表示致敬）</strong></p>
-]]></content>
-      <categories>
-        <category>谈人生</category>
       </categories>
   </entry>
   <entry>

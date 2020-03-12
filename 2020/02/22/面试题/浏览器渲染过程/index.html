@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+      
+    
+    
+      
+    
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+  <link href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/favicon.ico?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="浏览器渲染过程 本文参考：  浏览器渲染详细过程：重绘、重排和 composite 只是冰山一角 你不知道的浏览器页面渲染机制  本文面向面试，只罗列些概念  event loop 规范 任务源产生任务，放入任务队列 eventloop 从不同优先级队列中取出 task 执行（一轮 eventloop 起点） 清空微任务队列（mircotask） 渲染工作，如有需要的话（一轮 eventloop">
+<meta name="keywords" content="dasu, blog, 大苏">
+<meta property="og:type" content="article">
+<meta property="og:title" content="讲讲浏览器渲染过程">
+<meta property="og:url" content="http://woshidasusu.github.io/2020/02/22/面试题/浏览器渲染过程/index.html">
+<meta property="og:site_name" content="dasu&#39;s blog">
+<meta property="og:description" content="浏览器渲染过程 本文参考：  浏览器渲染详细过程：重绘、重排和 composite 只是冰山一角 你不知道的浏览器页面渲染机制  本文面向面试，只罗列些概念  event loop 规范 任务源产生任务，放入任务队列 eventloop 从不同优先级队列中取出 task 执行（一轮 eventloop 起点） 清空微任务队列（mircotask） 渲染工作，如有需要的话（一轮 eventloop">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2017/5/2/869e322f9239edbfa82548d9688c023a">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2018/12/28/167f068e4de6c7ce">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1924341-a229ddf1b9dd0ef6.jpg">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1924341-503e7d297405ba8c.jpg">
+<meta property="og:updated_time" content="2020-03-12T02:09:21.240Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="讲讲浏览器渲染过程">
+<meta name="twitter:description" content="浏览器渲染过程 本文参考：  浏览器渲染详细过程：重绘、重排和 composite 只是冰山一角 你不知道的浏览器页面渲染机制  本文面向面试，只罗列些概念  event loop 规范 任务源产生任务，放入任务队列 eventloop 从不同优先级队列中取出 task 执行（一轮 eventloop 起点） 清空微任务队列（mircotask） 渲染工作，如有需要的话（一轮 eventloop">
+<meta name="twitter:image" content="https://user-gold-cdn.xitu.io/2017/5/2/869e322f9239edbfa82548d9688c023a">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://woshidasusu.github.io/2020/02/22/面试题/浏览器渲染过程/">
+
+
+
+
+
+  <title>讲讲浏览器渲染过程 | dasu's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <a href="https://github.com/woshidasusu" class="github-corner" aria-label="View source on Github"><svg width="80" height="80" viewbox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">dasu's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">I am dasu, and i'm coding</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-gitbook">
+          <a href="http://gitbook.dasu.fun" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br>
+            
+            gitbook
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://woshidasusu.github.io/2020/02/22/面试题/浏览器渲染过程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="请叫我大苏">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/uploads/img.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="dasu's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">讲讲浏览器渲染过程</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-02-22T21:30:25+08:00">
+                2020-02-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/面试题/" itemprop="url" rel="index">
+                    <span itemprop="name">面试题</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/面试题/前端/" itemprop="url" rel="index">
+                    <span itemprop="name">前端</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                  <span class="post-meta-divider">|</span>
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2.6k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  9 min
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="浏览器渲染过程"><a href="#浏览器渲染过程" class="headerlink" title="浏览器渲染过程"></a>浏览器渲染过程</h1><blockquote>
+<p>本文参考：</p>
+<ol>
+<li><a href="https://juejin.im/entry/590801780ce46300617c89b8" target="_blank" rel="noopener">浏览器渲染详细过程：重绘、重排和 composite 只是冰山一角</a></li>
+<li><a href="https://juejin.im/post/5ca0c0abe51d4553a942c17d" target="_blank" rel="noopener">你不知道的浏览器页面渲染机制</a></li>
+</ol>
+<p>本文面向面试，只罗列些概念</p>
+</blockquote>
+<h3 id="event-loop-规范"><a href="#event-loop-规范" class="headerlink" title="event loop 规范"></a>event loop 规范</h3><ol>
+<li>任务源产生任务，放入任务队列</li>
+<li>eventloop 从不同优先级队列中取出 task 执行（一轮 eventloop 起点）</li>
+<li>清空微任务队列（mircotask）</li>
+<li>渲染工作，如有需要的话（一轮 eventloop 终点）</li>
+<li>返回第 2 步，循环</li>
+</ol>
+<p>在执行 2-4 步骤过程中，不同任务源仍旧会产生任务放入任务队列里，等待下一轮 event loop 时进行处理</p>
+<p>每一轮 event loop 都是先处理 task，然后清空微任务队列，而微任务队列被清空的时机不仅仅在 task 执行之后，还有其他时机，比如 javascript 执行栈空闲时等，反正见缝插针</p>
+<p>渲染工作是在一轮 event loop 的最后一步去处理，但并不是每一轮 event loop 都会进行渲染工作，因为只要画面的更新只需保持一定的频率，如 60Hz 即可，而一轮 event loop 耗时可能非常短，几毫秒之内，所以没必要每次都进行渲染工作</p>
+<p>常见任务源有：网络操作、数据库 IO 操作、用户交互事件、setTimeout 等</p>
+<p>产生微任务通常是 Promise</p>
+<h3 id="渲染过程"><a href="#渲染过程" class="headerlink" title="渲染过程"></a>渲染过程</h3><p>渲染的基本流程：</p>
+<p>对于网页页面的初次渲染，自然是从解析 HTML 开始：</p>
+<ol>
+<li>解析 HTML</li>
+<li>构建 DOM 树 </li>
+<li>构建 CSSOM 规则树 </li>
+<li>合成 Render Tree 渲染树</li>
+<li>布局 Layout 计算节点元素的布局信息：位置、大小</li>
+<li>绘制 Paint，计算节点元素显示内容</li>
+<li>呈现</li>
+</ol>
+<p>以上是从整体角度上，一个很简略的过程</p>
+<p>1-3 过程是一个流水线形式进行的工作，每解析一个元素后，就可以交由下一步</p>
+<p>DOM 树根据 HTML 文档构建，与 HTML 文档一一对应，包括注释的节点元素，文本节点元素，通过 css 不显示的节点元素</p>
+<p>CSSOM 规则树则是各个节点元素的样式属性</p>
+<p>Render Tree 渲染树则是最终需要呈现绘制出来的节点元素结构，它就剔除了 DOM 树中那些不显示的节点元素了</p>
+<p>以上过程是理想状态下，也就是纯静态网页时的渲染过程，不涉及外部 css 文件，也不涉及 js 脚本文件</p>
+<p>但一个网页通常都缺不了这两种，那么，在进行上面的过程中，如果遇到 js 脚本文件，会先暂停整个解析流程，等待 js 脚本下载并执行结束后再继续，这是因为，js 脚本里可能会通过 DOM API 来生成、删除、修改 DOM 节点元素</p>
+<p>css 的下载和解析并不会阻塞 HTML 的解析，但会阻塞 js 的执行（因为 js 里可能通过 API 操作一些 CSS 属性），而 js 的执行又会阻塞 HTML 的解析，所以，css 是会间接的阻塞 HTML 解析</p>
+<p>这也是为什么一些优化的文章里会说，将引用外部 css 文件的 link 标签放置在 HTML 文档开头，script 标签放置在底部的原因，就是为了不让 css 阻塞 js 从而阻塞住页面的解析</p>
+<p>那么当 js 脚本里修改了 DOM 结构或样式的场景，页面的刷新流程又是怎么样：</p>
+<p><img src="https://user-gold-cdn.xitu.io/2017/5/2/869e322f9239edbfa82548d9688c023a" alt="盗自开头链接的文章，侵权删"></p>
+<ol>
+<li>js 修改 DOM 结构或样式</li>
+<li>重新修改 CSSOM 规则树，如有需要</li>
+<li>重新计算布局信息，也叫回流或重排</li>
+<li>重新计算绘制信息，也就重绘</li>
+<li>合成层渲染工作，主要处理平移、缩放、旋转等动画行为的优化</li>
+</ol>
+<p>其实，这图还不够全，再看张图：</p>
+<p><img src="https://user-gold-cdn.xitu.io/2018/12/28/167f068e4de6c7ce" alt="盗自开头链接文章，侵权删"></p>
+<p>这图里有很多箭头，箭头指向空中的表示，该操作并不会造成页面刷新，无需进行下个步骤</p>
+<p>所以，其实 js 代码的操作，可能并没改动 DOM 或 CSSOM，也无需重新计算布局信息，只需进行重绘即可</p>
+<p>常见的会造成回流（重排）的操作：</p>
+<ul>
+<li>添加或删除可见 DOM 元素</li>
+<li>元素尺寸改变（边距、边框、宽高）</li>
+<li>内容变化</li>
+<li>计算 offsetWidth、offsetHeigth</li>
+<li>计算 style 属性值</li>
+</ul>
+<p>常见会引起重绘的操作：</p>
+<ul>
+<li>修改字体颜色 color，背景色 background，是否可见 visibility 等</li>
+</ul>
+<h3 id="渲染时机"><a href="#渲染时机" class="headerlink" title="渲染时机"></a>渲染时机</h3><p>通常来说，我们在 js 里修改的 DOM 结构触发了页面的更新，但其实，渲染工作并不会马上进行，因为 event loop 是按照 task，mircotask，渲染工作的流程在轮询的</p>
+<p>也就是 js 里触发的页面更新，通常来说，并不是立马就导致了重排、重绘的工作进行，而是都会等到渲染工作在进行</p>
+<p>比如你在 js 里写个几十行改 CSS 的语句，但这些代码只会在下一次渲染里进行一次重排或重绘工作而已，比如：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-a229ddf1b9dd0ef6.jpg" alt></p>
+<p>紫色的是 Recalculate Style（重新计算 CSS 规则），Layout （重排），Update Layer Tree（更新渲染树）</p>
+<p>绿色是 Paint（绘制）</p>
+<p>setTimeout 的回调 task 里通过 js 修改了元素的 width，即使多次修改，但也只是会在渲染工作中进行回流</p>
+<p>所以，图中应该有两个 task，第一个是 Timer fired 也就是 setTimeout 的回调任务，第二个是渲染工作，包括 Recalculate Style、Layout、Update Layer Tree、Paint</p>
+<p>这里之所以说通常，是因为，有一些场景，一些特别的操作，会导致立马进行重排或重绘的工作，比如</p>
+<p>当元素 layout 状态为 dirty 时，访问了 offsetTop、scrollHeight 等属性，那么，浏览器会立即重新 layout，以保证读取的是正确的信息</p>
+<p>如果元素 layout 状态正常，那么访问 offsetTop 这些属性并不需要重排，因为布局信息是可用的，但如果通过修改元素 width 等属性导致 layout 状态 dirty 之后，再访问 offsetTop 时就需要重新计算，就会立即触发重排工作了</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1924341-503e7d297405ba8c.jpg" alt></p>
+<p>原本正常来说，一轮 event loop 应该是先去任务队列里取一个 task，比如这里的 setTimeout 的回调执行，当该 task 执行结束后，再清空微任务队列，最后再进行渲染工作</p>
+<p>但当元素 layout 状态为 dirty 时，此时 js 里访问了 offsetTop，就会立即先去进行 Layout 重排的计算工作了，图中第一个红框里的紫色也就表明确实在当前 task 里就执行去处理渲染工作的计算了</p>
+<p>但这个目的仅在于让 js 可以拿到正确的布局信息，所以只需要进行 layout 工作即可，后续的 paint 等还是会继续等待当前 task 执行结束，在该轮 event loop 的最后一个渲染步骤里进行</p>
+<h3 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h3><p>其实上面内容都是一些概念性的东西，扫盲用而已</p>
+<p>渲染工作实际上并没有这么简单，比如在浏览器上，就包括了渲染进程、GPU 进程</p>
+<p>渲染进程（Renderer）是每个 tab 页一个，负责执行 js 和页面渲染，包括 Compositor Thread、Main Thread 等线程</p>
+<p>GPU 进程整个浏览器共用一个，主要是将渲染进程中绘制好的位图作为纹理上传给 GPU，调用 GPU 方法显示到屏幕上</p>
+<p>Compositor Thread 线程既负责接收浏览器传过来的垂直同步信息 Vsync，也负责接收 OS 系统传来的用户交互、比如滚动、输入、点击、鼠标移动等事件，如果可能，Compositor Thread 会直接处理这些输入事件，并将新的帧直接 commit 给 GPU Thread，从而直接刷新页面。而如果你在这些输入事件上绑定了回调数据，那么 Compositor Thread 就会唤醒 Main Thread，让后者去执行 js、完成 layout，paint 等过程，最后再将页面数据交由 Compositor Thread 来 commit 给 GPU</p>
+<p>Main Thread 主要负责 js 的执行，渲染工作的计算（回流、重绘、更新渲染树、合成层工作等）</p>
+<p>有时候主线程很卡，导致页面动画很卡时，此时滚动页面，浏览器却仍旧可以做出响应，原因就是因为，渲染的工作其实分多个进程、线程协调合作</p>
+<p>再来，Render Tree 上每个节点，其实要么是 Render Layer，要么是 Render Object。后者是 DOM 和 CSSOM 节点合并后的渲染节点对象，而前者则是用来处理一些多层的布局，比如当使用 position 或者 float 或者 z-index 时造成的多层效果时，就会生成一个 Render Layer 来存储当前节点的布局层次信息</p>
+<p>还有其他的概念，比如位图、纹理、光栅化等</p>
+<p>Main Thread 线程所进行的一系列渲染工作（Layout、Paint）最后得到的是位图数据，也就是页面长什么样的意思</p>
+<p>然后需要经过 Compositor Thread 提交给 Raster 线程进程光栅化，光栅化本质就是进行坐标变化、几何离散化、然后填充到 GPU 接收的纹理数据结构</p>
+<p>你可以试着用 Performance 抓取一段时间，就可以看到这些线程间的合作进行了</p>
+<p>通常界面的刷新过程都是绘制过程，也就是绘制下一帧的界面，但当出现动画，video，canvas 等这些东西时，意味着界面每一帧都在变化，如果每一帧的画面都需要重绘，那么是非常耗性能的，所以针对这种场景，又有一种叫做 Compositing Layer 合成层的来优化</p>
+<p>Render Tree 渲染树里的某个节点，当涉及到动画相关时，就会从 Render Layer 或 Render Object 提升为 Graphics Layer，它优化动画的原理在于，动画导致的界面刷新其实原本长什么样基本不变，只是通过一些动画如平移、缩放等来变化界面，所以合成层在处理时，会对原本缓存的纹理使用不同参数重新合成最后的画面，这样就省略了重排、重绘的开销，达到优化的目的了</p>
+<p>另外，重绘时，是以合成层作为单位的，也就是每次重绘，并不会重绘整个页面，而是该元素所在的合成层，重绘过程可以在开发者工具里查看</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+      <div>
+        <div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center">
+    <img id="wechat_subscriber_qcode" src="/uploads/dasuAndroidTv2.png" alt="请叫我大苏 wechat" style="width: 200px; max-width: 100%;">
+    <div></div>
+</div>
+
+      </div>
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持将鼓励我继续创作！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/uploads/weixin.png" alt="请叫我大苏 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/uploads/alipay.jpg" alt="请叫我大苏 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/02/21/面试题/浏览器缓存/" rel="next" title="讲讲强缓存和协商缓存，F5 和 Ctrl + F5 的区别">
+                <i class="fa fa-chevron-left"></i> 讲讲强缓存和协商缓存，F5 和 Ctrl + F5 的区别
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/02/22/面试题/讲讲EventLoop以及任务源/" rel="prev" title="讲讲 EventLoop 以及任务源">
+                讲讲 EventLoop 以及任务源 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div id="gitalk-container"></div>
+
+  
+
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/uploads/img.jpg" alt="请叫我大苏">
+            
+              <p class="site-author-name" itemprop="name">请叫我大苏</p>
+              <p class="site-description motion-element" itemprop="description">微信公众号：请叫我dasu<br>若图片显示异常，可到其他平台阅读</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">112</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">19</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/woshidasusu" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:295207731@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                其他平台
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.jianshu.com/u/bb52a2918096" title="简书" target="_blank">简书</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.cnblogs.com/dasusu/" title="博客园" target="_blank">博客园</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.dasu.fun:9000/" title="个人网站" target="_blank">个人网站</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#浏览器渲染过程"><span class="nav-number">1.</span> <span class="nav-text">浏览器渲染过程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#event-loop-规范"><span class="nav-number">1.0.1.</span> <span class="nav-text">event loop 规范</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#渲染过程"><span class="nav-number">1.0.2.</span> <span class="nav-text">渲染过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#渲染时机"><span class="nav-number">1.0.3.</span> <span class="nav-text">渲染时机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#扩展"><span class="nav-number">1.0.4.</span> <span class="nav-text">扩展</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; 2019 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">请叫我大苏</span><br>
+	
+  <div class="powered-by">
+    <a href="http://www.beian.miit.gov.cn/" target="_blank">闽ICP备19024580号-1 | </a>
+  </div>
+
+  <div class="theme-info">
+    <div class="powered-by"></div>
+    <span class="post-count">博客全站共 408.4k 字</span>
+  </div>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+  <script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+   <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID: 'af912448da88e6f25c9a',
+          clientSecret: '6165e4b84afc0886973b9232990d260ddd75b434',
+          repo: 'woshidasusu.github.io',
+          owner: 'woshidasusu',
+          admin: ['woshidasusu'],
+          id: md5(window.location.pathname),
+          distractionFreeMode: 'true'
+        })
+        gitalk.render('gitalk-container')
+       </script>
+
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
